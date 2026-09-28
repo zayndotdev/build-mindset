@@ -193,4 +193,148 @@ describe('Fastify Server & Route Integration Tests', () => {
     });
     expect(afterLogoutRes.statusCode).toBe(401);
   });
+
+  it('enforces CORS allow-list for permitted vs disallowed origins', async () => {
+    // Permitted origin configured in default test env (http://localhost:3000)
+    const permittedRes = await app.inject({
+      method: 'GET',
+      url: '/healthz',
+      headers: {
+        origin: 'http://localhost:3000',
+      },
+    });
+    expect(permittedRes.statusCode).toBe(200);
+    expect(permittedRes.headers['access-control-allow-origin']).toBe('http://localhost:3000');
+    expect(permittedRes.headers['access-control-allow-credentials']).toBe('true');
+
+    // Disallowed origin rejected
+    const blockedRes = await app.inject({
+      method: 'GET',
+      url: '/healthz',
+      headers: {
+        origin: 'http://malicious-unauthorized-site.com',
+      },
+    });
+    expect(blockedRes.statusCode).not.toBe(200);
+  });
+
+  it('locks out and rate-limits login after 5 failed attempts within time window', async () => {
+    // Send 5 rapid failed attempts (rate limit max is 5)
+    for (let i = 0; i < 5; i++) {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/v1/auth/login',
+        payload: { passphrase: `wrong-passphrase-${i}` },
+      });
+      expect(res.statusCode).toBe(401);
+    }
+
+    // 6th attempt must be rejected with 429 RATE_LIMIT_EXCEEDED
+    const lockedRes = await app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/login',
+      payload: { passphrase: 'correct-horse-battery-staple' },
+    });
+
+    expect(lockedRes.statusCode).toBe(429);
+    const body = JSON.parse(lockedRes.body);
+    expect(body.error.code).toBe('RATE_LIMIT_EXCEEDED');
+    expect(lockedRes.headers['ratelimit-remaining']).toBe('0');
+  });
+
+  it('checks auth status and handles one-time first-run setup flow', async () => {
+    // 1. Existing seeded DB has setupRequired: false
+    const statusRes = await app.inject({
+      method: 'GET',
+      url: '/api/v1/auth/status',
+    });
+    expect(statusRes.statusCode).toBe(200);
+    expect(JSON.parse(statusRes.body).setupRequired).toBe(false);
+
+    // 2. Existing setup rejects second setup attempt with 409
+    const secondSetup = await app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/setup',
+      payload: { passphrase: 'another-passphrase-2026' },
+    });
+    expect(secondSetup.statusCode).toBe(409);
+    expect(JSON.parse(secondSetup.body).error.code).toBe('SETUP_ALREADY_COMPLETED');
+
+    // 3. Test on fresh unseeded DB: setupRequired is true, setup succeeds
+    const freshDb = createDbClient(':memory:');
+    freshDb.$client.exec(`
+      CREATE TABLE IF NOT EXISTS user (id TEXT PRIMARY KEY, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS credential (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES user(id), passphrase_hash TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
+      CREATE TABLE IF NOT EXISTS session_auth (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES user(id), hashed_token TEXT NOT NULL UNIQUE, expires_at TEXT NOT NULL, created_at TEXT NOT NULL, user_agent TEXT, ip_address TEXT);
+    `);
+
+    const freshApp = buildApp({ db: freshDb, logger: false });
+    await freshApp.ready();
+
+    const freshStatus = await freshApp.inject({
+      method: 'GET',
+      url: '/api/v1/auth/status',
+    });
+    expect(freshStatus.statusCode).toBe(200);
+    expect(JSON.parse(freshStatus.body).setupRequired).toBe(true);
+
+    // Short passphrase rejected
+    const shortSetup = await freshApp.inject({
+      method: 'POST',
+      url: '/api/v1/auth/setup',
+      payload: { passphrase: 'short' },
+    });
+    expect(shortSetup.statusCode).toBe(400);
+
+    // Valid setup succeeds
+    const validSetup = await freshApp.inject({
+      method: 'POST',
+      url: '/api/v1/auth/setup',
+      payload: { passphrase: 'brand-new-secure-passphrase-2026' },
+    });
+    expect(validSetup.statusCode).toBe(201);
+    const validBody = JSON.parse(validSetup.body);
+    expect(validBody.user.id).toBeDefined();
+
+    // Cookie set
+    const cookie = validSetup.headers['set-cookie'] as string;
+    expect(cookie).toContain('mindset_session=');
+
+    // GET /session alias works
+    const sessionRes = await freshApp.inject({
+      method: 'GET',
+      url: '/api/v1/auth/session',
+      headers: { cookie: cookie.split(';')[0] },
+    });
+    expect(sessionRes.statusCode).toBe(200);
+    expect(JSON.parse(sessionRes.body).authenticated).toBe(true);
+
+    await freshApp.close();
+  });
+
+  it('POST /api/v1/auth/logout-all invalidates all active sessions', async () => {
+    // Login
+    const loginRes = await app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/login',
+      payload: { passphrase: 'correct-horse-battery-staple' },
+    });
+    const cookie = (loginRes.headers['set-cookie'] as string).split(';')[0];
+
+    // Invalidate all
+    const logoutAllRes = await app.inject({
+      method: 'POST',
+      url: '/api/v1/auth/logout-all',
+      headers: { cookie },
+    });
+    expect(logoutAllRes.statusCode).toBe(200);
+
+    // Subsequent /me returns 401
+    const meRes = await app.inject({
+      method: 'GET',
+      url: '/api/v1/auth/me',
+      headers: { cookie },
+    });
+    expect(meRes.statusCode).toBe(401);
+  });
 });

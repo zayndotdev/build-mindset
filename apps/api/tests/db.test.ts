@@ -3,6 +3,7 @@ import { createDbClient, AppDatabase } from '../src/db/client';
 import { AuthRepository } from '../src/db/repositories/auth.repository';
 import { TopicRepository } from '../src/db/repositories/topic.repository';
 import { hashPassphrase } from '../src/auth/service';
+import { topics } from '../src/db/schema';
 import fs from 'node:fs';
 import path from 'node:path';
 
@@ -111,5 +112,43 @@ describe('Database Repositories — SQLite & Drizzle ORM', () => {
 
     const allTopics = await topicRepo.listTopics();
     expect(allTopics.length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('rolls back database operations on transaction failure', async () => {
+    const initialTopics = await topicRepo.listTopics();
+    const countBefore = initialTopics.length;
+
+    await expect(
+      db.transaction(async (tx) => {
+        await tx.insert(topics).values({
+          id: 'rollback-test-topic',
+          title: 'Rollback Test',
+          category: 'test',
+          difficulty: 'beginner',
+          standardSteps: [1, 2, 3, 4],
+          prerequisites: [],
+          learningObjectives: ['test'],
+          keyTradeoffs: ['test'],
+          commonPitfalls: ['test'],
+          transferTopicId: 'none',
+          transferPrompt: 'test',
+          estimatedMinutes: 10,
+          tags: ['test'],
+          isCustom: true,
+          isActive: true,
+          stepsData: JSON.stringify({}),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }).run();
+
+        // Intentionally throw an exception to force rollback
+        throw new Error('Simulated transaction failure');
+      })
+    ).rejects.toThrow('Simulated transaction failure');
+
+    const topicsAfter = await topicRepo.listTopics();
+    expect(topicsAfter.length).toBe(countBefore);
+    const rolledBackTopic = await topicRepo.getTopicById('rollback-test-topic');
+    expect(rolledBackTopic).toBeNull();
   });
 });
