@@ -1,0 +1,1 @@
+{"root":["./src/app.ts","./src/index.ts","./src/auth/service.ts","./src/config/env.ts","./src/db/client.ts","./src/db/migrate.ts","./src/db/schema.ts","./src/db/seed.ts","./src/db/repositories/auth.repository.ts","./src/db/repositories/topic.repository.ts","./src/routes/auth.routes.ts","./src/routes/health.routes.ts"],"version":"5.9.3"}
