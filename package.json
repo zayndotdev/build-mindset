@@ -1,0 +1,25 @@
+{
+  "name": "mindset-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Mindset — A Private AI Engineering-Mindset Coach",
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"@mindset/*\" dev",
+    "dev:api": "pnpm --filter @mindset/api dev",
+    "dev:web": "pnpm --filter @mindset/web dev",
+    "build": "pnpm --filter @mindset/shared build && pnpm --filter @mindset/api build && pnpm --filter @mindset/web build",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "typecheck": "pnpm --recursive exec tsc --noEmit",
+    "lint": "pnpm --recursive exec tsc --noEmit",
+    "db:generate": "pnpm --filter @mindset/api db:generate",
+    "db:migrate": "pnpm --filter @mindset/api db:migrate",
+    "db:seed": "pnpm --filter @mindset/api db:seed"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  },
+  "packageManager": "pnpm@9.15.9"
+}
