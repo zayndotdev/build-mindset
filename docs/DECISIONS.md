@@ -164,8 +164,13 @@
 - **Date:** 2026-09-29
 - **Context:** v0.1 referenced `@google/generative-ai` which is a legacy
   package. Google has unified their SDKs under `@google/genai`.
-- **Decision:** Use `@google/genai` (the unified SDK). Do NOT use the legacy
-  `@google/generative-ai` package. Update AI_PROVIDERS.md accordingly.
+### D-019: Native node:sqlite Driver & WebAssembly Argon2id
+- **Date:** 2026-09-29
+- **Context:** `better-sqlite3` and `@node-rs/argon2` native addons caused compilation
+  and MSVC DLL dependencies on Windows and dev machines.
+- **Decision:** Use Node 24 native built-in `node:sqlite` (`DatabaseSync` + `drizzle-orm/sqlite-proxy`)
+  and WebAssembly `hash-wasm` for Argon2id. Pin Node to `^24.0.0`.
+- **ADR:** [ADR-008](adr/008-sqlite-driver-and-argon2-wasm.md)
 
 ---
 

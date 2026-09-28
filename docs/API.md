@@ -41,13 +41,14 @@
 
 ### Auth
 
-| Method | Path | Description | Rate Limit |
-|--------|------|-------------|------------|
-| `POST` | `/auth/login` | Login with passphrase | 5/min |
-| `POST` | `/auth/logout` | Invalidate current session | — |
-| `POST` | `/auth/logout-all` | Invalidate all sessions | — |
-| `GET` | `/auth/session` | Get current session info | — |
-| `POST` | `/auth/setup` | First-run passphrase setup | Once only |
+| Method | Path | Description | Rate Limit | Auth |
+|--------|------|-------------|------------|------|
+| `GET` | `/auth/status` | Check if initial setup is required (`setupRequired: boolean`) | 60/min | No |
+| `POST` | `/auth/setup` | First-run passphrase setup (one-time initialization) | 5/min | No |
+| `POST` | `/auth/login` | Login with passphrase | 5/min | No |
+| `POST` | `/auth/logout` | Invalidate current session | — | Yes |
+| `POST` | `/auth/logout-all` | Invalidate all sessions across all devices | — | Yes |
+| `GET` | `/auth/session` | Get current authenticated session info | 60/min | Yes |
 
 ### Providers
 
@@ -202,19 +203,55 @@ returns the cached response on duplicate requests.
 
 ## Authentication Flow
 
+### 1. First-Run Passphrase Setup Flow
+
+On initial installation or after database purge:
+
 ```
-1. POST /auth/login { passphrase }
-   → Server: argon2id verify
-   → Set-Cookie: session=<token>; HttpOnly; Secure; SameSite=Strict; Path=/
-   → 200 { data: { expiresAt } }
+1. Client requests GET /auth/status
+   → If no credentials exist in database:
+     Response: 200 OK { data: { setupRequired: true } }
+   → If credentials already exist:
+     Response: 200 OK { data: { setupRequired: false } }
 
-2. All subsequent requests include the cookie automatically
-   → Server validates session token on every request
-   → 401 if invalid/expired
+2. If setupRequired is true, client shows Setup Screen (minimum 8 characters):
+   POST /auth/setup { "passphrase": "<user_chosen_passphrase>" }
+   → Server hashes passphrase using Argon2id (RFC 9106, 64 MB RAM, 3 iterations, 4 threads, 16-byte random salt)
+   → Server creates single user (`usr_single_user`) and persists credential
+   → Server creates session, sets HttpOnly cookie:
+     Set-Cookie: session=<token>; HttpOnly; Secure; SameSite=Strict; Path=/
+   → Response: 201 Created { data: { user: { id: "usr_single_user" } } }
 
-3. POST /auth/logout
-   → Server deletes session row
-   → Clear-Cookie
+3. Any subsequent POST /auth/setup calls:
+   → Response: 409 Conflict { error: { code: "SETUP_ALREADY_COMPLETED", message: "Passphrase has already been configured" } }
+
+Note: If APP_PASSPHRASE is defined in .env, db:seed automatically initializes the credential during server startup.
+```
+
+### 2. Login Flow & Rate-Limit Lockout
+
+```
+1. POST /auth/login { "passphrase": "<passphrase>" }
+   → Server retrieves stored credential
+   → If user not found (or in timing attack simulation), runs dummy Argon2id hash to prevent response-time enumeration
+   → Server verifies hash using constant-time comparison
+   → If invalid:
+     - 401 Unauthorized { error: { code: "INVALID_CREDENTIALS" } }
+     - Rate limited: 5 failed attempts per 1-minute window per IP
+     - 6th attempt returns: 429 Too Many Requests { error: { code: "RATE_LIMIT_EXCEEDED" } }
+   → If valid:
+     - Issues 256-bit CSPRNG session token
+     - Set-Cookie: session=<token>; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=2592000
+     - Response: 200 OK { data: { user: { id: "usr_single_user" }, expiresAt: "<ISO8601>" } }
+
+2. Authenticated Requests:
+   → Browser sends HttpOnly session cookie
+   → Pre-handler verifies session token in SQLite and checks expiry (30-day lifetime)
+   → 401 Unauthorized if missing, invalid, or expired
+
+3. Logout:
+   → POST /auth/logout: deletes current session token row and clears cookie
+   → POST /auth/logout-all: revokes all active session tokens across all devices
 ```
 
 ---
