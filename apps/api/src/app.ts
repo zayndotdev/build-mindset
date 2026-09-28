@@ -7,7 +7,10 @@ import { getEnv, AppEnv } from './config/env';
 import { getDb, AppDatabase } from './db/client';
 import { AuthRepository } from './db/repositories/auth.repository';
 import { TopicRepository } from './db/repositories/topic.repository';
+import { ProviderRepository } from './db/repositories/provider.repository';
+import { AIService } from './ai/service';
 import { authRoutes } from './routes/auth.routes';
+import { providerRoutes } from './routes/provider.routes';
 import { healthRoutes } from './routes/health.routes';
 import fastifyStatic from '@fastify/static';
 import { randomUUID } from 'node:crypto';
@@ -96,17 +99,23 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     },
   });
 
-  // Decorate fastify with db and repositories
+  // Decorate fastify with db, repositories, and AI services
   const authRepo = new AuthRepository(db);
   const topicRepo = new TopicRepository(db);
+  const providerRepo = new ProviderRepository(db);
+  const aiService = new AIService(providerRepo, env);
+
   app.decorate('db', db);
   app.decorate('authRepo', authRepo);
   app.decorate('topicRepo', topicRepo);
+  app.decorate('providerRepo', providerRepo);
+  app.decorate('aiService', aiService);
   app.decorate('env', env);
 
   // Register route modules
   app.register(healthRoutes);
   app.register(authRoutes, { prefix: '/api/v1/auth' });
+  app.register(providerRoutes, { prefix: '/api/v1/providers' });
 
   // Serve static PWA assets in production if built
   const candidatePaths = [

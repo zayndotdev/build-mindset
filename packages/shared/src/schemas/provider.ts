@@ -1,7 +1,27 @@
 import { z } from 'zod';
 
-export const ProviderIdSchema = z.enum(['gemini', 'groq', 'mistral', 'cohere']);
+export const ProviderIdSchema = z.enum(['gemini', 'groq', 'mistral', 'cohere', 'mock']);
 export type ProviderId = z.infer<typeof ProviderIdSchema>;
+
+export const CircuitStateSchema = z.enum(['CLOSED', 'OPEN', 'HALF_OPEN']);
+export type CircuitState = z.infer<typeof CircuitStateSchema>;
+
+export const TaskTypeSchema = z.enum([
+  'coach_chat',
+  'grade_answer',
+  'generate_topic',
+  'english_feedback',
+]);
+export type TaskType = z.infer<typeof TaskTypeSchema>;
+
+export const ModelInfoSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  contextWindow: z.number().optional(),
+  maxOutputTokens: z.number().optional(),
+  isDefault: z.boolean().optional(),
+});
+export type ModelInfo = z.infer<typeof ModelInfoSchema>;
 
 export const SaveApiKeySchema = z.object({
   providerId: ProviderIdSchema,
@@ -21,9 +41,14 @@ export const ProviderStatusSchema = z.object({
   name: z.string(),
   hasKey: z.boolean(),
   model: z.string(),
+  discoveredModels: z.array(ModelInfoSchema).default([]),
   priority: z.number(),
   isGradingPrimary: z.boolean(),
   isHealthy: z.boolean(),
+  circuitState: CircuitStateSchema.default('CLOSED'),
+  isResting: z.boolean().default(false),
+  restingUntil: z.string().nullable().optional(),
+  consecutiveFailures: z.number().default(0),
   lastError: z.string().nullable().optional(),
 });
 export type ProviderStatus = z.infer<typeof ProviderStatusSchema>;

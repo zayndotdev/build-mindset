@@ -3,9 +3,9 @@
 > Real-time tracker for the overnight autonomous build run.
 > Updated after every task.
 
-**Current Phase**: Phase 2: AI Provider Layer  
-**Last Commit**: `f792ed1`  
-**Next Action**: Implement Provider Adapter interface, mock adapter, live adapters (Gemini, Groq, Mistral, Cohere), AES-256-GCM encrypted provider keys, router with circuit breaker and quota resting.  
+**Current Phase**: Phase 3: Chat Core with Streaming & Persistence  
+**Last Commit**: `8a157f6`  
+**Next Action**: Implement session message SQLite persistence and SSE streaming endpoint (`POST /sessions/:id/answer`).  
 **Known Issues**: Docker not installed locally on Windows host (runs natively; Docker verified in CI).
 
 ---
@@ -30,17 +30,17 @@
 - [x] `docs/reports/phase1-report.md`
 
 ### Phase 2: AI Provider Layer
-- [ ] Provider Adapter interface & Mock Adapter
-- [ ] Google Gemini, Groq, Mistral, Cohere adapters
-- [ ] AI Router with priority ordering & automatic fallback
-- [ ] Circuit Breaker (CLOSED / OPEN / HALF_OPEN)
-- [ ] Quota-aware resting (backoff window on 429s)
-- [ ] Live `list-models` discovery
-- [ ] Pinned Grader with provenance tracking (`graderId`, `rubricVersion`, `isFallbackGrade`)
-- [ ] Encrypted provider keys (AES-256-GCM) with zero plaintext logging
-- [ ] Settings > Providers UI (live list, key update/delete, test connection, priority ordering)
-- [ ] Unit & integration tests (simulate 429s, timeouts, malformed JSON, circuit breaker recovery)
-- [ ] `docs/reports/phase2-report.md`
+- [x] Provider Adapter interface & Mock Adapter
+- [x] Google Gemini, Groq, Mistral, Cohere adapters
+- [x] AI Router with priority ordering & automatic fallback
+- [x] Circuit Breaker (CLOSED / OPEN / HALF_OPEN)
+- [x] Quota-aware resting (backoff window on 429s)
+- [x] Live `list-models` discovery
+- [x] Pinned Grader with provenance tracking (`graderId`, `rubricVersion`, `isFallbackGrade`)
+- [x] Encrypted provider keys (AES-256-GCM) with zero plaintext logging
+- [x] Settings > Providers UI (live list, key update/delete, test connection, priority ordering)
+- [x] Unit & integration tests (simulate 429s, timeouts, malformed JSON, circuit breaker recovery)
+- [x] `docs/reports/phase2-report.md`
 
 ### Phase 3: Chat Core with Streaming & Persistence
 - [ ] Session message database persistence (SQLite)

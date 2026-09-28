@@ -20,6 +20,7 @@
     "@fastify/helmet": "^13.1.1",
     "@fastify/rate-limit": "^11.2.0",
     "@fastify/static": "^10.1.5",
+    "@mindset/ai": "workspace:*",
     "@mindset/shared": "workspace:*",
     "dotenv": "^16.4.7",
     "drizzle-orm": "^0.39.3",

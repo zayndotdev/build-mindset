@@ -4,6 +4,7 @@ import { getDb } from './client';
 import { runMigrations } from './migrate';
 import { AuthRepository } from './repositories/auth.repository';
 import { TopicRepository } from './repositories/topic.repository';
+import { ProviderRepository } from './repositories/provider.repository';
 import { hashPassphrase } from '../auth/service';
 import { TopicSchema } from '@mindset/shared';
 import { getEnv } from '../config/env';
@@ -15,6 +16,7 @@ export async function seedDatabase(db = getDb()): Promise<void> {
 
   const authRepo = new AuthRepository(db);
   const topicRepo = new TopicRepository(db);
+  const providerRepo = new ProviderRepository(db);
 
   // 1. Ensure User & Credential exist if APP_PASSPHRASE provided
   const existingCred = await authRepo.getCredential();
@@ -23,6 +25,10 @@ export async function seedDatabase(db = getDb()): Promise<void> {
     await authRepo.ensureUserExists(hash);
     console.log('[Seed] Single user and initial passphrase hash initialized from APP_PASSPHRASE.');
   }
+
+  // 2. Ensure default providers (gemini, groq, mistral, cohere) exist
+  await providerRepo.ensureDefaultProviders();
+  console.log('[Seed] Default provider configs verified.');
 
   // 2. Seed all topics from packages/learning/topics
   const topicsDir = path.resolve(process.cwd(), '../../packages/learning/topics');
