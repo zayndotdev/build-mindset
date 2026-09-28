@@ -1,0 +1,10 @@
+title = "Mindset Gitleaks Configuration"
+
+[allowlist]
+description = "Allowlist test suites, documentation, and example configuration files"
+paths = [
+  '''^\.env\.example$''',
+  '''^packages/shared/tests/.*''',
+  '''^apps/api/tests/.*''',
+  '''^docs/.*'''
+]

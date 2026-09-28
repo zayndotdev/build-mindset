@@ -14,9 +14,9 @@ services:
       - PORT=3000
       - HOST=0.0.0.0
       - DATABASE_URL=/app/data/mindset.db
-      - APP_PASSPHRASE=${APP_PASSPHRASE:-mindset-master-passphrase-2026}
-      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
-      - SESSION_SECRET=${SESSION_SECRET:-super-secret-session-key-must-be-at-least-32-chars-long}
+      - APP_PASSPHRASE
+      - ENCRYPTION_KEY
+      - SESSION_SECRET
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
       - LOG_LEVEL=${LOG_LEVEL:-info}
     volumes:
