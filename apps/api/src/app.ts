@@ -9,7 +9,10 @@ import { AuthRepository } from './db/repositories/auth.repository';
 import { TopicRepository } from './db/repositories/topic.repository';
 import { authRoutes } from './routes/auth.routes';
 import { healthRoutes } from './routes/health.routes';
+import fastifyStatic from '@fastify/static';
 import { randomUUID } from 'node:crypto';
+import path from 'node:path';
+import fs from 'node:fs';
 
 export interface AppOptions {
   env?: AppEnv;
@@ -104,6 +107,33 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
   // Register route modules
   app.register(healthRoutes);
   app.register(authRoutes, { prefix: '/api/v1/auth' });
+
+  // Serve static PWA assets in production if built
+  const candidatePaths = [
+    path.resolve(process.cwd(), 'apps/web/dist'),
+    path.resolve(process.cwd(), '../web/dist'),
+    path.resolve(process.cwd(), 'dist/client'),
+  ];
+  const webDist = candidatePaths.find((p) => fs.existsSync(p));
+
+  if (webDist) {
+    app.register(fastifyStatic, {
+      root: webDist,
+      prefix: '/',
+    });
+
+    app.setNotFoundHandler((request, reply) => {
+      if (request.raw.url && (request.raw.url.startsWith('/api') || request.raw.url === '/healthz' || request.raw.url === '/readyz')) {
+        return reply.status(404).send({
+          error: {
+            code: 'NOT_FOUND',
+            message: 'Endpoint not found',
+          },
+        });
+      }
+      return reply.sendFile('index.html');
+    });
+  }
 
   // Centralized Error Handler
   app.setErrorHandler((error: any, request, reply) => {

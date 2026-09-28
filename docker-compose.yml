@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  mindset:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mindset-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - DATABASE_URL=/app/data/mindset.db
+      - APP_PASSPHRASE=${APP_PASSPHRASE:-mindset-master-passphrase-2026}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY:-0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef}
+      - SESSION_SECRET=${SESSION_SECRET:-super-secret-session-key-must-be-at-least-32-chars-long}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+    volumes:
+      - mindset_data:/app/data
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3000/healthz').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  mindset_data:
+    driver: local
