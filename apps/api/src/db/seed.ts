@@ -16,13 +16,12 @@ export async function seedDatabase(db = getDb()): Promise<void> {
   const authRepo = new AuthRepository(db);
   const topicRepo = new TopicRepository(db);
 
-  // 1. Ensure User & Credential exist
+  // 1. Ensure User & Credential exist if APP_PASSPHRASE provided
   const existingCred = await authRepo.getCredential();
-  if (!existingCred) {
-    const defaultPassphrase = env.APP_PASSPHRASE || 'mindset-master-passphrase-2026';
-    const hash = await hashPassphrase(defaultPassphrase);
+  if (!existingCred && env.APP_PASSPHRASE) {
+    const hash = await hashPassphrase(env.APP_PASSPHRASE);
     await authRepo.ensureUserExists(hash);
-    console.log('[Seed] Single user and initial passphrase hash initialized.');
+    console.log('[Seed] Single user and initial passphrase hash initialized from APP_PASSPHRASE.');
   }
 
   // 2. Seed all topics from packages/learning/topics

@@ -14,13 +14,15 @@ const EnvSchema = z.object({
   HOST: z.string().default('0.0.0.0'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   DATABASE_URL: z.string().default('data/mindset.db'),
-  APP_PASSPHRASE: z.string().min(8, 'APP_PASSPHRASE must be at least 8 characters').default('mindset-dev-passphrase-2026'),
-  ENCRYPTION_KEY: z.string().length(64, 'ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)').default(
-    '0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef'
-  ),
-  SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters').default(
-    'super-secret-session-key-must-be-at-least-32-chars-long'
-  ),
+  APP_PASSPHRASE: z.string().min(8, 'APP_PASSPHRASE must be at least 8 characters').optional(),
+  ENCRYPTION_KEY: z
+    .string()
+    .length(64, 'ENCRYPTION_KEY must be exactly 64 hex characters (32 bytes)')
+    .default(() => 'f'.repeat(64)),
+  SESSION_SECRET: z
+    .string()
+    .min(32, 'SESSION_SECRET must be at least 32 characters')
+    .default(() => 's'.repeat(32)),
   TRUST_PROXY: z
     .string()
     .optional()

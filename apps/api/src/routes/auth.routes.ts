@@ -1,6 +1,7 @@
 import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
-import { LoginRequestSchema } from '@mindset/shared';
+import { LoginRequestSchema, SetupRequestSchema } from '@mindset/shared';
 import {
+  hashPassphrase,
   verifyPassphraseTimingSafe,
   generateSessionToken,
   hashSessionToken,
@@ -18,6 +19,68 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const env = (app as any).env as AppEnv;
 
+  // GET /api/v1/auth/status — Checks whether first-run setup is required
+  app.get('/status', async (_request: FastifyRequest, reply: FastifyReply) => {
+    const credential = await authRepo.getCredential();
+    return reply.send({
+      setupRequired: !credential,
+    });
+  });
+
+  // POST /api/v1/auth/setup — One-time first-run passphrase setup
+  app.post('/setup', async (request: FastifyRequest, reply: FastifyReply) => {
+    const existingCred = await authRepo.getCredential();
+    if (existingCred) {
+      return reply.status(409).send({
+        error: {
+          code: 'SETUP_ALREADY_COMPLETED',
+          message: 'Initial passphrase setup has already been completed.',
+        },
+      });
+    }
+
+    const parseResult = SetupRequestSchema.safeParse(request.body);
+    if (!parseResult.success) {
+      return reply.status(400).send({
+        error: {
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid setup payload. Passphrase must be at least 8 characters.',
+          details: parseResult.error.flatten(),
+        },
+      });
+    }
+
+    const { passphrase } = parseResult.data;
+    const hash = await hashPassphrase(passphrase);
+    const { userId } = await authRepo.ensureUserExists(hash);
+
+    // Create initial authenticated session
+    const rawToken = generateSessionToken();
+    const tokenHash = hashSessionToken(rawToken);
+    const expiresAt = new Date(Date.now() + SESSION_MAX_AGE_SECONDS * 1000).toISOString();
+
+    await authRepo.createSession(
+      userId,
+      tokenHash,
+      expiresAt,
+      request.headers['user-agent'],
+      request.ip
+    );
+
+    reply.setCookie(SESSION_COOKIE_NAME, rawToken, {
+      path: '/',
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: SESSION_MAX_AGE_SECONDS,
+    });
+
+    return reply.status(201).send({
+      user: { id: userId },
+      message: 'Setup completed successfully',
+    });
+  });
+
   // POST /api/v1/auth/login
   app.post(
     '/login',
@@ -26,12 +89,14 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         rateLimit: {
           max: 5,
           timeWindow: '15 minutes',
-          errorResponseBuilder: () => ({
-            error: {
-              code: 'RATE_LIMIT_EXCEEDED',
-              message: 'Too many login attempts. Please try again in 15 minutes.',
-            },
-          }),
+          errorResponseBuilder: () => {
+            const err = new Error('Too many login attempts. Please try again in 15 minutes.');
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (err as any).statusCode = 429;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (err as any).code = 'RATE_LIMIT_EXCEEDED';
+            return err;
+          },
         },
       },
     },
@@ -121,8 +186,22 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     return reply.send({ success: true });
   });
 
-  // GET /api/v1/auth/me
-  app.get('/me', async (request: FastifyRequest, reply: FastifyReply) => {
+  // POST /api/v1/auth/logout-all — Invalidate all sessions
+  app.post('/logout-all', async (_request: FastifyRequest, reply: FastifyReply) => {
+    await authRepo.deleteAllSessions();
+
+    reply.clearCookie(SESSION_COOKIE_NAME, {
+      path: '/',
+      httpOnly: true,
+      secure: env.NODE_ENV === 'production',
+      sameSite: 'lax',
+    });
+
+    return reply.send({ success: true, message: 'All sessions invalidated' });
+  });
+
+  // Handler for /me and /session
+  const getSessionHandler = async (request: FastifyRequest, reply: FastifyReply) => {
     const rawToken = request.cookies[SESSION_COOKIE_NAME];
     if (!rawToken) {
       return reply.status(401).send({
@@ -163,5 +242,9 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
         id: session.userId,
       },
     });
-  });
+  };
+
+  // GET /api/v1/auth/me and GET /api/v1/auth/session
+  app.get('/me', getSessionHandler);
+  app.get('/session', getSessionHandler);
 }

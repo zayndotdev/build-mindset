@@ -137,14 +137,14 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
 
   // Centralized Error Handler
   app.setErrorHandler((error: any, request, reply) => {
-    const statusCode = error.statusCode || 500;
+    const statusCode = error.statusCode || (error.code === 'RATE_LIMIT_EXCEEDED' || error.code === 'FST_ERR_RATE_LIMIT_EXCEEDED' ? 429 : 500);
     request.log.error({ err: error, reqId: request.id }, 'Unhandled request error');
 
-    if (statusCode === 429) {
+    if (statusCode === 429 || error.code === 'RATE_LIMIT_EXCEEDED' || error.code === 'FST_ERR_RATE_LIMIT_EXCEEDED') {
       return reply.status(429).send({
         error: {
           code: 'RATE_LIMIT_EXCEEDED',
-          message: 'Too many requests. Please slow down.',
+          message: error.message || 'Too many requests. Please slow down.',
         },
       });
     }
