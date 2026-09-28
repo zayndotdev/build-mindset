@@ -22,6 +22,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@mindset/shared": ["./packages/shared/src/index.ts"]
+    }
   }
 }

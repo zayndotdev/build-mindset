@@ -27,6 +27,9 @@ jobs:
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build Shared Packages
+        run: pnpm --filter @mindset/shared build
+
       - name: Run Typecheck
         run: pnpm -r typecheck
 
