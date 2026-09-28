@@ -11,20 +11,30 @@ export const ProgressView: React.FC = () => {
 
   return (
     <div className="space-y-6 pb-20">
-      <div>
-        <h2 className="text-xl font-bold text-white tracking-tight">Competency Progress</h2>
-        <p className="text-xs text-slate-400 mt-0.5">
-          Track your architectural depth and engineering independence trends
-        </p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-white tracking-tight">Competency Progress</h2>
+          <p className="text-xs text-slate-400 mt-0.5">
+            Track your architectural depth and engineering independence trends
+          </p>
+        </div>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent-amber/10 text-accent-amber border border-accent-amber/20">
+          Placeholder UI / Demo Data
+        </span>
       </div>
 
       {/* Main Readiness Gauge */}
       <div className="glass-card rounded-2xl p-6 border border-surface-border">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary-400">
-              Overall Architecture Readiness
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary-400">
+                Overall Architecture Readiness
+              </span>
+              <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-surface-card text-slate-400 border border-surface-border">
+                Demo
+              </span>
+            </div>
             <div className="text-3xl font-extrabold text-white mt-1">3.4 <span className="text-base text-slate-400 font-normal">/ 4.0</span></div>
             <div className="flex items-center space-x-1 text-xs text-accent-emerald mt-1">
               <TrendingUp className="w-3.5 h-3.5" />
@@ -73,6 +83,9 @@ export const ProgressView: React.FC = () => {
           <div className="flex items-center space-x-2">
             <RotateCcw className="w-4 h-4 text-accent-cyan" />
             <h3 className="text-sm font-semibold text-white">SM-2 Spaced Review Queue</h3>
+            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-surface-card text-slate-400 border border-surface-border">
+              Mock Preview
+            </span>
           </div>
           <span className="text-xs text-slate-400">2 items due today</span>
         </div>

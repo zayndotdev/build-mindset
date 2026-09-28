@@ -67,9 +67,12 @@ export const SettingsView: React.FC = () => {
           <div className="flex items-center space-x-2">
             <Cpu className="w-4 h-4 text-primary-400" />
             <h3 className="text-sm font-semibold text-white">Multi-Provider AI Fallback</h3>
+            <span className="text-[9px] font-mono px-1.5 py-0.2 rounded bg-surface-card text-accent-amber border border-surface-border">
+              Placeholder UI (Phase 2)
+            </span>
           </div>
           <span className="text-[10px] text-accent-emerald font-semibold px-2 py-0.5 rounded-full bg-accent-emerald/10 border border-accent-emerald/20">
-            Dynamic Discovery
+            Preview
           </span>
         </div>
 

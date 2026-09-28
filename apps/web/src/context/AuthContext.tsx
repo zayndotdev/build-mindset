@@ -7,8 +7,10 @@ interface User {
 interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
+  setupRequired: boolean;
   user: User | null;
   login: (passphrase: string) => Promise<{ success: boolean; error?: string }>;
+  setup: (passphrase: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
 }
@@ -18,10 +20,27 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [setupRequired, setSetupRequired] = useState<boolean>(false);
   const [user, setUser] = useState<User | null>(null);
 
   const checkAuth = useCallback(async () => {
     try {
+      // First check if first-run setup is required
+      const statusRes = await fetch('/api/v1/auth/status', {
+        headers: { Accept: 'application/json' },
+      });
+      if (statusRes.ok) {
+        const statusData = await statusRes.json();
+        if (statusData.data?.setupRequired) {
+          setSetupRequired(true);
+          setIsAuthenticated(false);
+          setUser(null);
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      setSetupRequired(false);
       const res = await fetch('/api/v1/auth/me', {
         headers: { Accept: 'application/json' },
       });
@@ -46,6 +65,35 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     checkAuth();
   }, [checkAuth]);
+
+  const setup = async (passphrase: string): Promise<{ success: boolean; error?: string }> => {
+    try {
+      const res = await fetch('/api/v1/auth/setup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passphrase }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        setSetupRequired(false);
+        setIsAuthenticated(true);
+        setUser(data.user || data.data?.user);
+        return { success: true };
+      } else {
+        return {
+          success: false,
+          error: data.error?.message || 'Passphrase setup failed. Please try again.',
+        };
+      }
+    } catch {
+      return {
+        success: false,
+        error: 'Unable to connect to the server. Check your connection.',
+      };
+    }
+  };
 
   const login = async (passphrase: string): Promise<{ success: boolean; error?: string }> => {
     try {
@@ -91,8 +139,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         isAuthenticated,
         isLoading,
+        setupRequired,
         user,
         login,
+        setup,
         logout,
         checkAuth,
       }}

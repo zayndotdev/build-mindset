@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { KeyRound, Eye, EyeOff, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
 
 export const LoginView: React.FC = () => {
-  const { login } = useAuth();
+  const { login, setup, setupRequired } = useAuth();
   const [passphrase, setPassphrase] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -16,12 +16,17 @@ export const LoginView: React.FC = () => {
       return;
     }
 
+    if (setupRequired && passphrase.trim().length < 8) {
+      setError('Passphrase must be at least 8 characters long.');
+      return;
+    }
+
     setError(null);
     setIsSubmitting(true);
 
-    const result = await login(passphrase);
+    const result = setupRequired ? await setup(passphrase) : await login(passphrase);
     if (!result.success) {
-      setError(result.error || 'Authentication failed');
+      setError(result.error || (setupRequired ? 'Setup failed' : 'Authentication failed'));
       setIsSubmitting(false);
     }
   };
@@ -35,9 +40,13 @@ export const LoginView: React.FC = () => {
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary-500/10 border border-primary-500/20 text-primary-400 mb-3">
               <KeyRound className="w-6 h-6" />
             </div>
-            <h1 className="text-xl font-bold text-white tracking-tight">Welcome Back</h1>
+            <h1 className="text-xl font-bold text-white tracking-tight">
+              {setupRequired ? 'First-Run Setup' : 'Welcome Back'}
+            </h1>
             <p className="text-xs text-slate-400 mt-1">
-              Enter your master passphrase to unlock your coaching workspace
+              {setupRequired
+                ? 'Create a secure master passphrase (min 8 chars) to initialize your workspace'
+                : 'Enter your master passphrase to unlock your coaching workspace'}
             </p>
           </div>
 
@@ -81,11 +90,11 @@ export const LoginView: React.FC = () => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Verifying...</span>
+                  <span>{setupRequired ? 'Initializing Security...' : 'Verifying...'}</span>
                 </>
               ) : (
                 <>
-                  <span>Unlock Workspace</span>
+                  <span>{setupRequired ? 'Create Master Passphrase' : 'Unlock Workspace'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
