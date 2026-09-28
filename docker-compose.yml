@@ -1,3 +1,4 @@
+# NOTE: UNVERIFIED LOCALLY (Docker is not installed on local host). Verified via GitHub Actions CI.
 version: '3.8'
 
 services:

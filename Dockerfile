@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1
+# NOTE: UNVERIFIED LOCALLY (Docker is not installed on local host). Verified via GitHub Actions CI.
 
 # Stage 1: Build stage
 FROM node:24-slim AS builder
