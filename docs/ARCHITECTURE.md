@@ -1,6 +1,6 @@
 # Architecture — Mindset
 
-> **Phase 0 — Discovery and Design** · v0.1 · 2026-09-29
+> **Phase 0 — Discovery and Design** · v0.2 · 2026-09-29
 
 ---
 
@@ -102,7 +102,7 @@ build-mindset/
 
 ## 3. Data Flow
 
-### 3.1 Session Chat (Streaming)
+### 3.1 Answer → Grade → Teach (Two Separate LLM Calls)
 
 ```mermaid
 sequenceDiagram
@@ -110,21 +110,36 @@ sequenceDiagram
     participant A as API Server
     participant LE as Learning Engine
     participant R as AI Router
-    participant P as Provider (Gemini/Groq/…)
+    participant GP as Grading Provider (pinned)
+    participant CP as Coach Provider
 
     U->>A: POST /api/v1/sessions/:id/answer { text, modality }
     A->>LE: processAnswer(sessionId, text)
-    LE->>LE: Validate state (must be STEP_n, expecting answer)
-    LE->>LE: Build grading prompt (context + rubric + user answer)
-    LE->>R: streamChat(task: "grade_answer", messages)
-    R->>R: Select provider from priority list
-    R->>P: Stream request
-    P-->>R: SSE tokens
+    LE->>LE: Validate state (STEP_n, expecting answer)
+
+    Note over LE,GP: Call 1: Grade (non-streaming, pinned provider)
+    LE->>R: chat(task: "grade_answer", messages)
+    R->>GP: JSON mode request (Gemini default)
+    GP-->>R: StepGrade JSON
+    R-->>LE: Parsed grade + provenance
+    LE->>LE: Compute independence score (server code)
+    LE->>LE: Store quality + independence + provenance
+
+    Note over LE,CP: Call 2: Coach teaching response (streaming)
+    LE->>R: streamChat(task: "coach_teach", grade + context)
+    R->>CP: Stream request
+    CP-->>R: SSE tokens
     R-->>LE: Normalized stream events
-    LE-->>A: Grade result + coach response tokens
-    A-->>U: SSE stream (Content-Type: text/event-stream)
-    LE->>LE: Persist step result, advance state
+    LE-->>A: SSE stream
+    A-->>U: SSE (Content-Type: text/event-stream)
+    LE->>LE: Advance state machine
 ```
+
+**Key design points:**
+- Grading is a **separate, non-streaming** call pinned to one provider for consistency.
+- If the pinned grader is down, a fallback provider grades with `isFallbackGrade: true`.
+- The coaching response is **streamed** and can use any available provider.
+- Independence score is computed **in server code** from hint count, never by the LLM.
 
 ### 3.2 Voice Input Flow
 
@@ -188,14 +203,15 @@ internal. `packages/ai` and `packages/learning` depend only on `shared`.
 
 ## 6. Deployment Architecture
 
-### Recommended: Oracle Cloud Always Free + Cloudflare Tunnel
+### Oracle Cloud Always Free + Tailscale Serve
 
 ```mermaid
 graph LR
-    PHONE["📱 Android Chrome"] -- "HTTPS" --> CF["Cloudflare Tunnel"]
-    CF -- "localhost:3000" --> DOCKER["Docker Compose"]
+    PHONE["📱 Android Chrome\n(Tailscale installed)"] -- "HTTPS over Tailnet" --> TS["Tailscale Serve\n(.ts.net subdomain)"]
+    TS -- "localhost:3000" --> DOCKER["Docker Compose"]
     subgraph "Oracle Cloud ARM VM (2 OCPU / 12 GB)"
         DOCKER
+        TS
         subgraph "Container: app"
             VITE["Vite static build"]
             FASTIFY["Fastify API"]
@@ -204,18 +220,22 @@ graph LR
     end
 ```
 
-**Why Oracle Cloud + Cloudflare Tunnel:**
+**Why Oracle Cloud + Tailscale Serve:**
 - **Free forever** — Oracle's Always Free ARM tier provides 2 OCPUs, 12 GB RAM,
   200 GB storage at no cost. More than enough for a single-user app.
 - **Always-on** — Unlike Render/Railway/Fly.io free tiers, it doesn't spin down.
 - **Persistent storage** — SQLite file lives on block storage, survives restarts.
-- **Free HTTPS** — Cloudflare Tunnel provides HTTPS with no manual cert management,
-  which is required for PWA install and microphone access.
-- **Private** — Tunnel is not publicly discoverable; only you have the URL.
-- No credit card needed after initial OCI account setup.
+- **Free HTTPS** — Tailscale Serve provides auto-TLS with `.ts.net` subdomains,
+  required for PWA install and microphone access.
+- **Genuinely private** — Traffic stays on the Tailnet mesh. The app is NOT
+  exposed to the public internet (unlike Cloudflare Tunnel URLs, which are
+  publicly reachable by anyone who knows the URL).
+- **No domain needed** — Tailscale provides `<hostname>.<tailnet>.ts.net`.
 
-**Alternative option (documented in DEPLOYMENT.md):** Home PC + Tailscale for
-private mesh VPN access. Simpler but depends on your PC being on 24/7.
+**⚠️ Oracle Cloud caveats:**
+- Credit card required for signup (identity verification, not charged).
+- Idle instances may be reclaimed after 7 days (mitigated by cron heartbeat).
+- ARM capacity may be limited in some regions. See [ADR-004](adr/004-hosting-oracle-cloud.md).
 
 ---
 

@@ -1,0 +1,153 @@
+{
+  "id": "db-relational-schema",
+  "title": "Relational Schema Design",
+  "category": "database",
+  "difficulty": "beginner",
+  "prerequisites": [],
+  "learningObjectives": [
+    "Ask the right questions before designing a schema",
+    "Identify entities, relationships, and constraints from requirements",
+    "Choose appropriate data types, keys, and validation",
+    "Evaluate normalization vs denormalization trade-offs"
+  ],
+  "keyTradeoffs": [
+    "Normalization (no duplication, complex joins) vs denormalization (fast reads, update anomalies)",
+    "Auto-increment ID (simple, ordered) vs UUID (distributed, no collisions)",
+    "SQL (ACID, structured) vs NoSQL (flexible, horizontal scale)"
+  ],
+  "commonPitfalls": [
+    "Not defining foreign key constraints",
+    "Using FLOAT for monetary values instead of DECIMAL",
+    "Missing indexes on frequently queried columns",
+    "Storing derived data that gets out of sync"
+  ],
+  "transferTopicId": "db-indexing-strategy",
+  "transferPrompt": "Your schema is designed. Now queries are slow. How do you decide which indexes to add? What are the trade-offs of indexing (read speed vs write speed vs storage)?",
+  "standardSteps": [1, 5, 4, 9],
+  "estimatedMinutes": 12,
+  "tags": ["database", "schema", "beginner", "priority"],
+  "isCustom": false,
+  "isActive": true,
+  "steps": {
+    "1": {
+      "coachQuestion": "You're asked to design a database schema for a new feature. Before drawing tables, what questions would you ask?",
+      "keyPoints": {
+        "junior": [
+          "What data are we storing — what are the main entities?",
+          "What are the relationships between entities (1:1, 1:N, M:N)?",
+          "Is the workload read-heavy or write-heavy?",
+          "Expected data volume (thousands vs millions of rows)?",
+          "What are the most common queries?"
+        ],
+        "mid": [
+          "Data retention requirements — how long do we keep data?",
+          "Soft delete needed — do users need to recover deleted data?",
+          "Multi-tenancy — one database per tenant or shared with tenant_id?",
+          "Audit trail — do we need to track who changed what?",
+          "Schema migration strategy — how do we evolve the schema safely?"
+        ],
+        "senior": [
+          "Sharding strategy — will the data outgrow one server?",
+          "Read replicas — do we need eventual consistency for reads?",
+          "Cross-region consistency and data residency requirements?",
+          "OLTP vs OLAP separation — do analytics queries run on the same DB?",
+          "Regulatory requirements (GDPR data deletion, PCI-DSS for payment data)?"
+        ]
+      },
+      "modelAnswer": {
+        "junior": "I'd start with: What are the main entities (users, products, orders)? How do they relate — is it one user has many orders (1:N), or many users can have many products (M:N through a join table)? Is this read-heavy (catalog browsing) or write-heavy (event logging)? How much data — thousands of rows or millions? And what queries are most common — this determines which indexes we need.",
+        "mid": "Beyond entities: I'd ask about data lifecycle — how long do we keep records? Do we need soft delete (a deleted_at timestamp) for recovery, or can we hard-delete? Is this multi-tenant — if so, every table needs a tenant_id and every query must filter by it. Do we need an audit trail (who changed what, when)? And what's our migration strategy — we need to evolve the schema without downtime.",
+        "senior": "At scale: Will data outgrow a single server? If so, what's the sharding key (usually tenant_id or user_id)? Do we need read replicas for analytics queries (eventually consistent, but keeps OLTP fast)? Are there data residency requirements (EU data stays in EU)? Do we need to separate OLTP (fast transactions) from OLAP (analytics) — event sourcing with a data warehouse, or a materialized view approach? For GDPR: plan the deletion path upfront — what gets hard-deleted, what gets anonymized?"
+      }
+    },
+    "5": {
+      "coachQuestion": "Now design the actual schema. What tables, columns, relationships, and constraints would you create?",
+      "keyPoints": {
+        "junior": [
+          "Identify entities (nouns from requirements = tables)",
+          "Define relationships: 1:1, 1:N (foreign key on the 'many' side), M:N (junction table)",
+          "Primary keys: auto-increment integer or UUID",
+          "Foreign keys WITH constraints (ON DELETE CASCADE/SET NULL/RESTRICT)",
+          "NOT NULL on required fields, UNIQUE on naturally unique fields (email)",
+          "Appropriate data types (VARCHAR length, INTEGER vs BIGINT, TIMESTAMP)"
+        ],
+        "mid": [
+          "Junction tables for M:N relationships with additional columns (e.g., role, joined_at)",
+          "created_at and updated_at timestamps on every table",
+          "Enum handling: CHECK constraint vs lookup table",
+          "Normalization to 3NF vs strategic denormalization (trade-off)",
+          "Composite unique constraints where appropriate (user_id + product_id)"
+        ],
+        "senior": [
+          "UUID v7 for sortable, distributed-safe primary keys",
+          "Partitioning strategy for large tables (by date, by tenant)",
+          "JSON columns: when appropriate (flexible metadata) vs anti-pattern (querying inside JSON)",
+          "Materialized views for expensive aggregations",
+          "Zero-downtime migration plan (additive changes, backfill, then cleanup)"
+        ]
+      },
+      "modelAnswer": {
+        "junior": "I'd start from the nouns in the requirements — each noun is likely a table. For each table: a primary key (auto-increment id for simplicity), the data columns with appropriate types (VARCHAR(255) for names, TEXT for long content, TIMESTAMP for dates), NOT NULL on required fields, UNIQUE where values must be distinct (email). Relationships: a 1:N relationship puts the foreign key on the 'many' side (orders.user_id → users.id). M:N relationships need a junction table (user_roles with user_id + role_id). Always define foreign key constraints — they catch bugs at the database level.",
+        "mid": "Building on that: junction tables should have their own primary key and may carry data (e.g., team_members has user_id, team_id, role, joined_at). Every table gets created_at (DEFAULT NOW()) and updated_at (trigger or application-managed). For enums, I prefer a lookup table for values that might change (status types) and CHECK constraints for truly fixed enums (gender). Normalize to 3NF first, then denormalize strategically where reads are bottlenecked — but document WHY each denormalization exists.",
+        "senior": "For distributed systems: UUID v7 (timestamp-prefixed) gives you the sortability of auto-increment with the collision-resistance of UUIDs. For tables exceeding millions of rows, plan partitioning (by month for time-series, by tenant_id for multi-tenant). JSON columns are useful for extensible metadata (user preferences, feature flags) but are an anti-pattern for data you query on — index support varies by database. Plan migrations as three phases: (1) add new column/table (additive), (2) backfill data and dual-write, (3) drop old column — never break the running application."
+      }
+    },
+    "4": {
+      "coachQuestion": "What goes into each table and what comes out? Think about inputs, outputs, and validation — at the database level.",
+      "keyPoints": {
+        "junior": [
+          "Column types match the data: strings, numbers, dates, booleans",
+          "NOT NULL constraints on required fields",
+          "String length limits (VARCHAR(255) not TEXT for short fields)",
+          "Valid email format (application-level, not usually DB-level)",
+          "No negative values where they don't make sense (CHECK constraints)"
+        ],
+        "mid": [
+          "CHECK constraints for business rules (price > 0, status IN ('active','inactive'))",
+          "DEFAULT values for optional fields (created_at DEFAULT NOW())",
+          "Application-level vs database-level validation (defense in depth)",
+          "What should NOT be stored: derived data, full credit card numbers, redundant copies",
+          "Output shapes: what a typical SELECT returns, what gets JOINed"
+        ],
+        "senior": [
+          "Input sanitization for SQL injection (parameterized queries always)",
+          "Character encoding: enforce UTF-8 at the database level",
+          "Timezone handling: store as UTC TIMESTAMP, convert in application",
+          "DECIMAL for monetary values (FLOAT introduces rounding errors)",
+          "Pagination strategy for output: cursor-based for large datasets"
+        ]
+      },
+      "modelAnswer": {
+        "junior": "For each column: match the type to the data — VARCHAR(100) for names, TEXT for descriptions, INTEGER for counts, TIMESTAMP for dates, BOOLEAN for flags. Add NOT NULL on required fields (you'll catch missing data at insert time). Use VARCHAR with explicit length limits — don't use TEXT for fields that should be short (email, username). Application-level validation catches bad data before it reaches the DB, but database constraints are the safety net.",
+        "mid": "Defense in depth: validate in the application AND in the database. CHECK constraints enforce business rules (CHECK (price > 0), CHECK (status IN ('active', 'inactive'))). DEFAULT values handle optional fields (DEFAULT NOW() for timestamps, DEFAULT 'pending' for status). Key question: what should NOT be stored? Don't store derived data (age — calculate from birth_date), full credit card numbers (use a payment gateway), or redundant copies of data that create sync issues.",
+        "senior": "Precision matters: use DECIMAL(10,2) for monetary values — FLOAT introduces rounding errors (0.1 + 0.2 ≠ 0.3). Store all timestamps as UTC with TIMESTAMP type, convert to local time in the application layer. Enforce UTF-8 at the database level (CREATE DATABASE ... CHARACTER SET utf8mb4) to avoid encoding bugs. For outputs: plan pagination from day one. Cursor-based pagination (WHERE id > ? ORDER BY id LIMIT 20) is more efficient than OFFSET for large datasets."
+      }
+    },
+    "9": {
+      "coachQuestion": "What are the key trade-offs in your schema design? Pick at least two and explain both sides.",
+      "keyPoints": {
+        "junior": [
+          "Auto-increment ID (simple, ordered, compact) vs UUID (distributed-safe, no collisions, but larger and unordered)",
+          "Normalization (no data duplication, complex joins) vs denormalization (fast reads, update anomalies)",
+          "SQL (ACID, relationships, structured) vs NoSQL (flexible schema, horizontal scale)"
+        ],
+        "mid": [
+          "Soft delete (recoverable, complicates queries with WHERE deleted_at IS NULL) vs hard delete (clean, irreversible)",
+          "Enum column (simple, rigid) vs lookup table (flexible, joinable)",
+          "Storing computed values (fast reads, stale risk) vs computing on read (always fresh, slower)"
+        ],
+        "senior": [
+          "Sharding key choice (tenant_id vs user_id) and cross-shard query implications",
+          "Strong consistency (simpler app logic, higher latency) vs eventual consistency (faster, complex app logic)",
+          "Event sourcing (complete history, complex reads) vs traditional CRUD (simple, lossy history)",
+          "PostgreSQL (feature-rich, extensions) vs MySQL (replication, widespread) vs SQLite (zero-ops, single-writer)"
+        ]
+      },
+      "modelAnswer": {
+        "junior": "Two fundamental trade-offs: (1) Auto-increment vs UUID — auto-increment is compact (4 bytes vs 16), ordered (good for range queries), and human-readable. UUID is safe for distributed systems (no coordination needed), doesn't leak creation order, and prevents enumeration attacks. For a single-database app, auto-increment is simpler. (2) Normalization vs denormalization — normalized schemas avoid data duplication (update one place), but require JOINs. Denormalized schemas are faster to read (fewer JOINs) but create update anomalies (change one thing, must update many rows). Start normalized, denormalize when you have measured performance problems.",
+        "mid": "Soft vs hard delete is practical: soft delete (deleted_at timestamp) lets users recover data and preserves referential integrity (foreign keys don't break). But every query needs WHERE deleted_at IS NULL, which is error-prone and makes indexes less efficient. Hard delete is cleaner but irreversible. For most user-facing data, soft delete is worth the complexity. For logs and analytics, hard delete with a retention policy is better.",
+        "senior": "Event sourcing vs CRUD is an architectural decision: event sourcing stores every state change as an immutable event (complete audit trail, temporal queries, replay). But reads are complex (aggregate events to get current state) and storage grows indefinitely. CRUD is simple and fast for reads, but you lose history. A pragmatic middle ground: CRUD for operational data + an audit_log table that captures changes, giving you 90% of event sourcing's benefit at 10% of the complexity."
+      }
+    }
+  }
+}

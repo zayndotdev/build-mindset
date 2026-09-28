@@ -22,7 +22,8 @@
 
 ### Access
 - **Platform:** Google AI Studio (`https://aistudio.google.com`)
-- **SDK:** `@google/generative-ai` (Node.js)
+- **SDK:** `@google/genai` (Node.js — the unified SDK; do NOT use the
+  legacy `@google/generative-ai` package)
 - **Auth:** API key
 
 ### Available Models (Free Tier, Sep 2026)

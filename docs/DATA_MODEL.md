@@ -1,10 +1,15 @@
 # Data Model — Mindset
 
-> **Phase 0 — Design** · v0.1 · 2026-09-29
+> **Phase 0 — Design** · v0.2 · 2026-09-29
+>
+> **v0.2 changes:** Split quality/independence scores, grader provenance on
+> SESSION_STEP, session_mode replaces quick_mode boolean, TOPIC gains
+> standard_steps + steps JSON, PROVIDER_CONFIG gains is_grading_primary,
+> MESSAGE gains voice_transcript_original, single canonical ERD.
 
 ---
 
-## ER Diagram
+## ER Diagram (Canonical — single source of truth)
 
 ```mermaid
 erDiagram
@@ -53,6 +58,7 @@ erDiagram
         string model_transcribe
         string base_url
         integer priority "lower = preferred"
+        boolean is_grading_primary "Pin grading to this provider"
         string status "active | resting | disabled"
         datetime resting_until
         datetime last_success
@@ -86,6 +92,9 @@ erDiagram
         json key_tradeoffs "string[]"
         json common_pitfalls "string[]"
         string transfer_topic_id FK
+        string transfer_prompt "Transfer challenge question"
+        json standard_steps "number[] exactly 4"
+        json steps "Record of TopicStepData per step"
         integer estimated_minutes
         boolean is_custom
         boolean is_active
@@ -97,7 +106,7 @@ erDiagram
         string topic_id FK
         string state "State machine phase"
         string level
-        boolean quick_mode
+        string session_mode "standard | quick | deep"
         json steps_to_run "number[]"
         integer current_step
         string step_sub_state
@@ -108,6 +117,7 @@ erDiagram
         float transfer_score
         float recap_score
         integer total_hints_used
+        float average_independence "Avg independence across steps"
         integer time_minutes
         datetime started_at
         datetime last_active_at
@@ -121,13 +131,18 @@ erDiagram
         string step_slug
         integer attempts
         integer hints_used
-        float score
-        json grade_result "StepGrade"
+        float quality_score "0-4 from LLM grader"
+        integer independence_score "0-4 from server code"
+        float composite_score "min(quality, independence)"
+        json grade_result "StepGrade including provenance"
+        string grader_id "provider:model e.g. gemini:gemini-2.0-flash"
+        string rubric_version "e.g. v1.0"
+        boolean is_fallback_grade "true if non-primary grader"
         text user_answer
         text coach_question
-        text model_answer
+        text model_answer "Reference from topic definition"
         text teaching_response
-        string provider_used
+        string provider_used "Provider for coaching turn"
         integer tokens_input
         integer tokens_output
         datetime started_at
@@ -139,6 +154,7 @@ erDiagram
         string session_id FK
         string role "user | coach | system"
         text content
+        text voice_transcript_original "Raw STT output, null if typed"
         string modality "text | voice"
         string provider_used
         integer tokens_input
@@ -150,7 +166,7 @@ erDiagram
     SKILL_SCORE {
         string id PK "UUID"
         string dimension "problemFraming | dataDesign | etc."
-        float score
+        float score "composite score"
         string session_id FK
         datetime recorded_at
     }
@@ -172,7 +188,7 @@ erDiagram
     ENGLISH_REPORT {
         string id PK "UUID"
         string session_id FK
-        json corrections "Correction[]"
+        json corrections "Correction[] with wasVoice flag"
         json technical_vocab "string[]"
         json senior_rewrite "SeniorRewrite"
         text pronunciation_note
@@ -181,7 +197,7 @@ erDiagram
 
     ENGLISH_MISTAKE {
         string id PK "UUID"
-        string pattern "e.g. 'subject-verb agreement'"
+        string pattern "e.g. subject-verb agreement"
         text example_original
         text example_corrected
         integer occurrence_count
@@ -224,10 +240,14 @@ erDiagram
 | `user` | Max 1 row | Single-user app |
 | `credential` | Max 1 row | Single user |
 | `provider_config.api_key_encrypted` | Never returned in full | Security |
+| `provider_config.is_grading_primary` | At most 1 row is `true` | Pin grading to one provider |
 | `session_step` | Unique (session_id, step_number) | One grade per step |
+| `session_step.independence_score` | Computed in code, not LLM | Deterministic hint cap |
 | `usage_stat` | Unique (provider_id, stat_date) | One row per provider per day |
 | `review_item` | Unique (topic_id, step_number) | One review item per step per topic |
 | `learning_session.state` | Enum constraint | Valid state machine values only |
+| `learning_session.session_mode` | Enum: standard, quick, deep | Replaces boolean quick_mode |
+| `topic.standard_steps` | Array of exactly 4 ints | Defines default session steps |
 
 ## Indexes
 
@@ -240,20 +260,21 @@ erDiagram
 | `usage_stat` | `(provider_id, stat_date)` | Dashboard queries |
 | `message` | `(session_id, created_at)` | Chat history |
 | `audit_log` | `(created_at)` | Recent activity |
+| `session_step` | `(is_fallback_grade)` | Find fallback-graded steps |
 
 ## What Must NOT Be Stored
 
 - Plain-text API keys (always encrypted with AES-256-GCM)
 - Full prompts at info log level (debug only)
 - Plain-text passphrase (always argon2id hashed)
-- Raw audio data (transcribed and discarded)
+- Raw audio data (transcribed to `voice_transcript_original`, audio discarded)
 
 ## Retention
 
 | Data | Retention | Rationale |
 |------|-----------|-----------|
 | Learning sessions + steps | Forever | Progress tracking |
-| Messages | Forever | Re-readable history |
+| Messages (incl. voice transcripts) | Forever | Re-readable history + English coaching |
 | Audit log | 90 days | Security review |
 | Usage stats | 365 days | Trend analysis |
 | Review items | Forever (active) | Spaced repetition |
@@ -261,6 +282,6 @@ erDiagram
 ## Migration Strategy
 
 - Drizzle ORM manages all migrations in `apps/api/src/db/migrations/`
-- Seed script populates the 50-topic catalog
+- Seed script populates the 50-topic catalog (including 4 fully authored)
 - Backup script: encrypted SQLite file copy
 - Restore: decrypt + replace + restart

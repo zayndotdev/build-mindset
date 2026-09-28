@@ -1,0 +1,155 @@
+{
+  "id": "api-restful-design",
+  "title": "RESTful API Design",
+  "category": "apis",
+  "difficulty": "beginner",
+  "prerequisites": [],
+  "learningObjectives": [
+    "Identify the right questions before designing an API",
+    "Design resource-oriented URLs with proper HTTP verbs and status codes",
+    "Anticipate API abuse and failure modes",
+    "Evaluate trade-offs in API design decisions"
+  ],
+  "keyTradeoffs": [
+    "REST vs GraphQL for different consumer needs",
+    "Offset pagination (simple) vs cursor pagination (scalable)",
+    "Synchronous response vs async with polling for long operations"
+  ],
+  "commonPitfalls": [
+    "Using verbs in URLs instead of resource nouns",
+    "Returning 200 for all responses with error in the body",
+    "No pagination on list endpoints",
+    "Leaking stack traces in error responses"
+  ],
+  "transferTopicId": "api-versioning",
+  "transferPrompt": "You've designed the API. Now a breaking change is needed. How would you version it? What are the options (URL path, header, query param) and what are the trade-offs of each?",
+  "standardSteps": [1, 7, 8, 9],
+  "estimatedMinutes": 12,
+  "tags": ["api", "rest", "beginner", "priority"],
+  "isCustom": false,
+  "isActive": true,
+  "steps": {
+    "1": {
+      "coachQuestion": "You're asked to design a RESTful API. Before jumping into endpoints, what questions would you ask to clarify the requirements?",
+      "keyPoints": {
+        "junior": [
+          "What resources/entities are we exposing?",
+          "Who are the consumers (web frontend, mobile app, third-party)?",
+          "Is this a public or internal API?",
+          "What operations are needed (CRUD, search, bulk)?",
+          "What authentication method will be used?"
+        ],
+        "mid": [
+          "Expected request volume and peak traffic patterns?",
+          "Caching requirements (which resources change rarely)?",
+          "Real-time requirements (webhooks, SSE, WebSocket)?",
+          "Pagination needs (how large are collections)?",
+          "Rate limiting requirements per consumer?"
+        ],
+        "senior": [
+          "API governance: who owns the contract, how are changes approved?",
+          "Backward compatibility requirements and deprecation policy?",
+          "Documentation strategy (OpenAPI spec-first)?",
+          "Multi-tenant considerations (data isolation in responses)?",
+          "SLA requirements (latency, uptime guarantees)?"
+        ]
+      },
+      "modelAnswer": {
+        "junior": "Before designing endpoints, I'd ask: What resources are we exposing (users, products, orders)? Who consumes this — our own frontend, a mobile app, or third parties? Is it public or internal? What operations — just CRUD or also search, bulk updates, aggregations? What auth — API keys, OAuth, session cookies? These determine the URL structure, response formats, and security model.",
+        "mid": "Beyond the basics: What's the expected volume — 100 requests/min or 10,000? This affects caching strategy and rate limiting. Which resources are read-heavy vs write-heavy? Do we need real-time updates (webhooks for third parties, SSE for our frontend)? How large are collections — we need pagination, but should it be offset-based (simple) or cursor-based (consistent under writes)?",
+        "senior": "At the organizational level: Who owns the API contract — is it spec-first (OpenAPI written before code) or code-first? What's the deprecation policy — how long do we support old versions? For multi-tenant APIs: how is data isolated in responses (tenant ID in path vs header)? What are the SLA commitments — p99 latency targets, uptime guarantees? These determine whether we need an API gateway, contract testing, and versioning strategy."
+      }
+    },
+    "7": {
+      "coachQuestion": "Design the API contract for your resources. What endpoints would you define, and what does a request/response look like?",
+      "keyPoints": {
+        "junior": [
+          "Resource-oriented URLs: /users, /users/:id (nouns, not verbs)",
+          "HTTP verbs map to CRUD: GET=read, POST=create, PUT/PATCH=update, DELETE=delete",
+          "Proper status codes: 200 OK, 201 Created, 400 Bad Request, 401 Unauthorized, 404 Not Found, 500 Internal Server Error",
+          "Consistent response shape: { data, error } or similar envelope"
+        ],
+        "mid": [
+          "Pagination: cursor-based for large collections (?cursor=abc&limit=20)",
+          "Filtering and sorting via query params (?status=active&sort=-created_at)",
+          "Partial updates with PATCH (only changed fields) vs PUT (full replacement)",
+          "Idempotency keys for POST to prevent duplicates",
+          "Nested resources: /users/:id/orders vs flat /orders?userId=123"
+        ],
+        "senior": [
+          "Content negotiation (Accept header for format selection)",
+          "Versioning: /v1/ in URL vs Accept header vs query param",
+          "Bulk operations: POST /users/batch vs individual requests",
+          "Rate limit headers: X-RateLimit-Limit, X-RateLimit-Remaining, Retry-After",
+          "ETag/If-None-Match for conditional requests (caching)",
+          "HATEOAS links for discoverability (when appropriate)"
+        ]
+      },
+      "modelAnswer": {
+        "junior": "I'd use resource-oriented URLs with HTTP verbs: GET /users (list), GET /users/:id (detail), POST /users (create, returns 201), PATCH /users/:id (update), DELETE /users/:id (delete, returns 204). Every response follows a consistent shape: { data: T } for success, { error: { code: 'VALIDATION_ERROR', message: '...' } } for errors. Status codes are semantic — 400 for bad input, 401 for auth required, 404 for not found, 500 for server errors (never leak stack traces).",
+        "mid": "Beyond CRUD: List endpoints need pagination — I'd use cursor-based (GET /users?cursor=abc&limit=20 → response includes { data, nextCursor, hasMore }). Filtering via query params: GET /users?status=active&sort=-created_at. PATCH for partial updates (only send changed fields). POST endpoints accept an Idempotency-Key header to prevent duplicate creation on retry. For nested resources, I prefer flat with filters (/orders?userId=123) over deep nesting (/users/:id/orders/:orderId/items) — it keeps URLs manageable.",
+        "senior": "For production APIs: version in the URL path (/v1/users) — it's the most explicit and cacheable option. Bulk endpoints (POST /v1/users/batch) accept arrays with per-item error reporting. Rate limit headers on every response (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset). ETag headers on GET responses enable conditional requests — the client sends If-None-Match, server returns 304 Not Modified if unchanged (saves bandwidth). For spec-first development, define the OpenAPI spec before writing code, then generate validation middleware from the spec."
+      }
+    },
+    "8": {
+      "coachQuestion": "What could go wrong with your API? Think about invalid input, abuse, and failure scenarios.",
+      "keyPoints": {
+        "junior": [
+          "Input validation on every endpoint (type, required fields, length limits)",
+          "Proper error responses (structured JSON, never leak stack traces)",
+          "Rate limiting to prevent abuse",
+          "Authentication/authorization checks on every protected endpoint",
+          "Request body size limits"
+        ],
+        "mid": [
+          "Malformed JSON handling (400, not 500)",
+          "Type coercion attacks (string '0' treated as falsy)",
+          "CORS misconfiguration (allowing * in production)",
+          "Over-fetching sensitive data (returning password hashes, internal IDs)",
+          "429 Too Many Requests with Retry-After header"
+        ],
+        "senior": [
+          "Distributed rate limiting across multiple API servers",
+          "API scraping and data harvesting patterns",
+          "Circuit breaker for downstream service failures",
+          "Graceful degradation (partial responses when a dependency is down)",
+          "Audit logging for sensitive operations",
+          "API key rotation without downtime"
+        ]
+      },
+      "modelAnswer": {
+        "junior": "Four categories of failure: (1) Invalid input — validate every field on every endpoint with a schema (Zod, Joi). Return 400 with a structured error, never a 500 with stack trace. (2) Abuse — rate limit all endpoints (e.g., 100 requests/minute per user). (3) Auth — check authentication and authorization on every protected route. A missing auth check on one endpoint is a security hole. (4) Size limits — cap request body size (e.g., 1 MB) to prevent memory exhaustion.",
+        "mid": "Beyond validation: handle malformed JSON gracefully (return 400, not crash). Watch for type coercion — '0', null, undefined can behave differently. Lock down CORS — never use * in production; whitelist your own domains. Don't over-fetch: if your ORM loads all columns, your API might return password hashes. Use a serialization layer that explicitly lists returned fields. Return 429 with Retry-After header so clients know when to retry.",
+        "senior": "At scale: rate limiting needs to be distributed (Redis-backed, not in-memory per server). Detect scraping patterns (sequential ID enumeration, rapid pagination crawls). Implement circuit breakers for downstream dependencies — if the payment service is down, return partial data with a degradation notice, don't let every request hang. Audit log all sensitive operations (data access, permission changes). Plan for API key rotation: support two active keys simultaneously during rotation windows."
+      }
+    },
+    "9": {
+      "coachQuestion": "What are the key trade-offs you'd evaluate when designing this API? Pick at least two and explain both sides.",
+      "keyPoints": {
+        "junior": [
+          "REST vs GraphQL: REST (simple, cacheable, standard) vs GraphQL (flexible queries, one endpoint, over-fetching problem solved)",
+          "JSON vs other formats (Protobuf for internal, XML for legacy)",
+          "Nested resources (/users/:id/orders) vs flat (/orders?userId=123)",
+          "Singular vs plural resource names (/user vs /users)"
+        ],
+        "mid": [
+          "Offset pagination (simple, random access) vs cursor pagination (consistent, scalable)",
+          "Synchronous response vs async with polling for long operations",
+          "Fine-grained endpoints (many specific) vs coarse-grained (fewer, richer)"
+        ],
+        "senior": [
+          "API gateway vs direct access (routing, auth, rate limiting)",
+          "gRPC for internal service communication vs REST everywhere",
+          "BFF (Backend For Frontend) per client type vs universal API",
+          "Event-driven (webhooks) vs polling for state changes",
+          "Open API spec-first vs code-first development"
+        ]
+      },
+      "modelAnswer": {
+        "junior": "Two key trade-offs: (1) REST vs GraphQL — REST is simpler, widely understood, and inherently cacheable (GET requests). GraphQL lets clients request exactly what they need (no over-fetching), but adds complexity (query parsing, depth limiting, N+1 problems). For a standard CRUD app, REST is usually the right choice. GraphQL shines when many different clients need different data shapes. (2) Nested vs flat resources — /users/:id/orders feels natural but creates deep URLs. Flat /orders?userId=123 is simpler to implement and more flexible for filtering.",
+        "mid": "Pagination is a critical trade-off: offset-based (page=3&limit=20) is simple and allows jumping to any page, but it breaks when data is inserted/deleted between pages (items shift). Cursor-based (cursor=abc123&limit=20) is consistent and scales to billions of records, but you can't jump to 'page 5'. For most APIs, cursor pagination is worth the slightly harder client implementation.",
+        "senior": "Architecture-level: an API gateway (Kong, AWS API Gateway) centralizes auth, rate limiting, and routing — but adds latency and a single point of failure. For internal services, gRPC is faster (binary, streaming, code generation) but loses REST's browser-friendliness and cacheability. The BFF pattern (one API per client type) prevents mobile from downloading desktop-sized payloads, but multiplies the API surface to maintain."
+      }
+    }
+  }
+}

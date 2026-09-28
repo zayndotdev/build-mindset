@@ -1,8 +1,11 @@
 # API Outline — Mindset
 
-> **Phase 0 — Design** · v0.1 · 2026-09-29
+> **Phase 0 — Design** · v0.2 · 2026-09-29
 >
 > Full OpenAPI spec will be generated in Phase 1. This is the design outline.
+>
+> **v0.2 changes:** Fixed SSE event flow to match split grade/coach
+> architecture. Fixed idempotency table. Sessions use `sessionMode`.
 
 ---
 
@@ -70,7 +73,7 @@
 
 | Method | Path | Description |
 |--------|------|-------------|
-| `POST` | `/sessions` | Create new session (topic, level, quickMode) |
+| `POST` | `/sessions` | Create new session (topic, level, sessionMode) |
 | `GET` | `/sessions/:id` | Get session state + history |
 | `GET` | `/sessions/current` | Get active (non-complete) session |
 | `POST` | `/sessions/:id/answer` | Submit answer for current step |
@@ -138,41 +141,63 @@
 
 ## SSE Stream Format
 
-`GET /api/v1/sessions/:id/stream`
+`POST /api/v1/sessions/:id/answer` returns `Content-Type: text/event-stream`.
+
+The server performs two LLM calls sequentially and streams the combined
+result as SSE events:
 
 ```
-event: token
-data: {"content": "Let", "role": "coach"}
-
-event: token
-data: {"content": "'s", "role": "coach"}
-
+// Phase 1: Grade result (non-streaming LLM call, sent as a single event)
 event: grade
-data: {"score": 3, "covered": [...], "missed": [...]}
+data: {"qualityScore": 3, "independenceScore": 4, "compositeScore": 3,
+       "covered": ["hashing", "unique constraint"],
+       "missed": ["timing attacks"],
+       "graderId": "gemini:gemini-2.0-flash",
+       "isFallbackGrade": false}
 
-event: teaching
-data: {"modelAnswer": "...", "reasoning": "..."}
+// Phase 2: Coach teaching response (streamed token by token)
+event: token
+data: {"content": "✅ You"}
 
+event: token
+data: {"content": " correctly identified"}
+
+... (more tokens)
+
+// Final event: step complete
 event: done
-data: {"nextStep": 6, "sessionState": "STEP_6"}
+data: {"nextStep": 8, "stepIndex": 3, "totalSteps": 4,
+       "sessionState": "STEP_8"}
 
+// Error (replaces above if something fails)
 event: error
-data: {"code": "PROVIDER_ERROR", "message": "..."}
+data: {"code": "PROVIDER_ERROR", "message": "...", "retryable": true}
 ```
+
+**Design notes:**
+- The `grade` event arrives first (after the grading LLM call completes).
+- Then `token` events stream the coaching response.
+- The client shows a brief "Evaluating..." state until `grade` arrives,
+  then streams the coaching text.
+- `done` includes `stepIndex`/`totalSteps` so the client can show "Step 3/4".
 
 ---
 
 ## Idempotency
 
-Mutating endpoints that should be idempotent accept an `Idempotency-Key`
-header. The server stores the key + response for 24h and returns the cached
-response on duplicate requests.
+Mutating endpoints that trigger LLM calls or create resources accept an
+`Idempotency-Key` header. The server stores the key + response for 24h and
+returns the cached response on duplicate requests.
 
-Endpoints with idempotency support:
-- `POST /sessions` (create)
-- `POST /sessions/:id/answer`
-- `POST /sessions/:id/hint`
-- `POST /voice/transcribe`
+| Method | Path | Why Idempotent |
+|--------|------|----------------|
+| `POST` | `/sessions` | Prevent duplicate session creation on retry |
+| `POST` | `/sessions/:id/answer` | Prevent double-grading same answer |
+| `POST` | `/sessions/:id/hint` | Prevent skipping hint levels |
+| `POST` | `/sessions/:id/recap` | Prevent double-grading recap |
+| `POST` | `/sessions/:id/transfer-answer` | Prevent double-grading transfer |
+| `POST` | `/voice/transcribe` | Prevent re-transcribing same audio |
+| `POST` | `/topics/generate` | Prevent duplicate LLM topic generation |
 
 ---
 

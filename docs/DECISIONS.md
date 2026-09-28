@@ -16,15 +16,16 @@
   added by changing config.
 - **ADR:** [ADR-003](adr/003-groq-fourth-provider.md)
 
-### D-002: Hosting — Oracle Cloud Always Free (Recommended)
-- **Date:** 2026-09-29
+### D-002: Hosting — Oracle Cloud Always Free + Tailscale Serve
+- **Date:** 2026-09-29 (revised)
 - **Context:** User needs free hosting on the internet. Render/Railway/Fly.io
-  free tiers spin down or have been discontinued. Home PC + Tailscale requires
-  24/7 uptime of a personal machine.
-- **Decision:** Recommend Oracle Cloud Always Free ARM tier (2 OCPU, 12 GB RAM,
-  200 GB storage) with Cloudflare Tunnel for HTTPS. Truly free, always-on,
-  persistent storage for SQLite. Document home PC + Tailscale as a secondary
-  option.
+  free tiers spin down or have been discontinued. Cloudflare Tunnel URLs are
+  publicly reachable (v0.1 incorrectly called them "private").
+- **Decision:** Oracle Cloud Always Free ARM tier (2 OCPU, 12 GB RAM, 200 GB
+  storage) with Tailscale Serve for HTTPS. Genuinely private (Tailnet only),
+  no domain needed, auto-TLS via `.ts.net` subdomain. Credit card required
+  for Oracle signup. Idle instances may be reclaimed after 7 days (mitigated
+  by cron heartbeat).
 - **ADR:** [ADR-004](adr/004-hosting-oracle-cloud.md)
 
 ### D-003: Primary Phone — Android Chrome
@@ -95,10 +96,82 @@
 
 ---
 
+## Phase 0.2 Decisions (Revisions)
+
+### D-012: Default 4-Step Sessions with Topic-Specific Step Selection
+- **Date:** 2026-09-29
+- **Context:** Running all 10 framework steps makes sessions too long (~30 min),
+  causes fatigue, and wastes free-tier quota. Most topics have ~4 steps where
+  real learning happens.
+- **Decision:** Standard session = 4 steps, selected per-topic in the topic
+  definition (`standardSteps: [1, 5, 8, 9]`). Quick Mode = 2 steps + mini
+  transfer. Deep Dive = all 10 steps (opt-in). The topic author decides which
+  steps matter most.
+
+### D-013: Split Quality and Independence Scoring
+- **Date:** 2026-09-29
+- **Context:** v0.1 had a single score with hint caps enforced in the LLM
+  grading prompt. This conflates "how good was the answer" with "how much
+  help was needed" and adds a non-deterministic dependency to hint enforcement.
+- **Decision:** Two separate scores per step:
+  - **Quality (0–4):** Graded by the LLM purely on answer content.
+  - **Independence (0–4):** Computed deterministically in server code from
+    hint count (`0 hints = 4, 1 = 3, 2 = 2, 3 = 1, 4+ = 0`).
+  - **Composite:** `min(quality, independence)` — used for spaced rep and radar.
+  Hint info is NOT sent to the grading prompt.
+
+### D-014: Grader Provenance and Pinning
+- **Date:** 2026-09-29
+- **Context:** Different LLMs grade inconsistently. A score of 3 from Gemini
+  may be 2 from Groq. This makes progress trends meaningless.
+- **Decision:** Pin grading to one provider (Gemini by default, configurable
+  via `is_grading_primary` flag). Store `grader_id` (provider:model),
+  `rubric_version`, and `is_fallback_grade` on every `SESSION_STEP`. If the
+  primary grader is unavailable, the fallback grades with a flag so the user
+  knows scores may not be directly comparable.
+
+### D-015: User Text in USER Role, Not SYSTEM
+- **Date:** 2026-09-29
+- **Context:** v0.1 stuffed the user's answer into the SYSTEM prompt alongside
+  the grading instructions. This is prompt injection surface and is semantically
+  wrong — user-provided text should be in the USER role.
+- **Decision:** All user-provided text (answers, recaps, custom topic requests)
+  is sent in the USER message role. SYSTEM contains only instructions, rubric,
+  and reference key points. This is both more secure and more natural for LLMs.
+
+### D-016: Grade Original Voice Transcripts
+- **Date:** 2026-09-29
+- **Context:** Voice answers are transcribed by browser STT or Groq Whisper.
+  v0.1 allowed the user to edit the transcript before submission (for grading)
+  but then graded the edited version, losing the raw speech data.
+- **Decision:** Store the original voice transcript separately
+  (`voice_transcript_original` column on `MESSAGE`). Grade the submitted text
+  (which may be edited). Send the original transcript to the English coach
+  with `[VOICE]` markers so it can provide speech-specific feedback (filler
+  words, run-on sentences, pronunciation-related errors).
+
+### D-017: Quick Mode Gets Mini Transfer Challenge
+- **Date:** 2026-09-29
+- **Context:** v0.1 Quick Mode had no transfer challenge, meaning users who
+  only do Quick Mode never practice applying knowledge to new problems.
+- **Decision:** Quick Mode (2 steps) ends with a **mini transfer challenge**:
+  a single focused question applying the same thinking to a related scenario.
+  No full recap or English report in Quick Mode (keep it fast).
+
+### D-018: Gemini SDK — Use `@google/genai`
+- **Date:** 2026-09-29
+- **Context:** v0.1 referenced `@google/generative-ai` which is a legacy
+  package. Google has unified their SDKs under `@google/genai`.
+- **Decision:** Use `@google/genai` (the unified SDK). Do NOT use the legacy
+  `@google/generative-ai` package. Update AI_PROVIDERS.md accordingly.
+
+---
+
 ## Unanswered Questions (recorded for future phases)
 
 | # | Question | Status |
 |---|----------|--------|
 | 1 | Exact Gemini free-tier RPM/RPD — dynamic per project | Check at key setup time |
 | 2 | Oracle Cloud region availability for user's signup | Verify during Phase 7 deploy |
-| 3 | Cohere trial key monthly call cap (1000/mo) — may be too low for daily use | Monitor; may need paid key or deprioritize Cohere |
+| 3 | Cohere trial key monthly call cap (1000/mo) — may be too low | Monitor; may deprioritize |
+| 4 | Tailscale Serve TLS cert renewal — is it fully automatic? | Test during deployment |
