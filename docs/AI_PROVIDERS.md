@@ -26,14 +26,16 @@
   legacy `@google/generative-ai` package)
 - **Auth:** API key
 
-### Available Models (Free Tier, Sep 2026)
-| Model | Context Window | Notes |
-|-------|---------------|-------|
-| `gemini-2.0-flash` | 1M tokens | Stable, recommended for free tier |
-| `gemini-3.5-flash-lite` | TBD | Newer, check AI Studio availability |
-| `gemini-3.6-flash` | TBD | Newer, check AI Studio availability |
+### Available Models & Dynamic Discovery (Free Tier, Sep 2026)
 
-> **Note:** `gemini-2.5-flash` retiring Oct 20, 2026. Do NOT use as default.
+> [!IMPORTANT]
+> **Dynamic Discovery:** Do not hardcode static model strings in server logic. Mindset dynamically queries available models via live `ai.models.list()` calls, cross-referencing against Google's official model deprecation schedule (`https://ai.google.dev/gemini-api/docs/models/gemini`). `gemini-2.0-flash` was retired on June 1, 2026.
+
+| Model | Context Window | Status & Recommended Role |
+|-------|---------------|---------------------------|
+| `gemini-3.8-flash` | 1M tokens | Current stable default for coach chat & grading |
+| `gemini-3.5-flash-lite` | 1M tokens | High-speed, lightweight reasoning / topic generation |
+| `gemini-2.5-flash` | 1M tokens | Legacy fallback (retiring Oct 20, 2026 — avoid as default) |
 
 ### Free-Tier Limits (approximate — check AI Studio)
 | Metric | Typical Value |

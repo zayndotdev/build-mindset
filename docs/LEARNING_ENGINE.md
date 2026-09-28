@@ -1,15 +1,14 @@
 # Learning Engine Design — Mindset
 
-> **Phase 0 — Detailed Design** · v0.2 · 2026-09-29
+> **Phase 0 — Detailed Design** · v0.3 · 2026-09-29
 >
 > This is the most important document in the project. It defines how the AI
 > coach teaches engineering thinking.
 >
-> **v0.2 changes:** 4-step default sessions with topic-specific step selection,
-> split quality/independence scoring, reference key points + model answers per
-> topic/step/level, grader provenance tracking, user text moved out of SYSTEM
-> prompts, original voice transcripts graded for English, Quick Mode gets a
-> mini transfer challenge, first 4 topics fully authored.
+> **v0.3 changes:** Replaced dead gemini-2.0-flash with gemini-3.8-flash,
+> radar uses quality only (independence is a separate trend), min() for SM-2
+> only, Deep Dive deferred to v2, core/bonus flags on key points, fixed
+> db-relational-schema step order, SSE leftovers removed.
 
 ---
 
@@ -104,10 +103,16 @@ Quick Mode runs the topic's top-2 steps plus a **mini transfer challenge**:
 a single focused question applying the same thinking to a related scenario.
 No full recap or English report in Quick Mode.
 
-### 1.3 Deep Dive Mode (All 10 Steps)
+### 1.3 Deep Dive Mode (All 10 Steps) — ⚠️ DEFERRED TO v2
 
-Available via "Deep Dive" button. Runs all 10 framework steps plus full
-review, transfer, and English feedback. For when the user wants to go deep.
+> [!WARNING]
+> Deep Dive is **not in v1 scope**. It is included here as a design sketch
+> for future implementation. Do not build UI or server code for it in Phase 1.
+
+Would run all 10 framework steps plus full review, transfer, and English
+feedback. Deferred because: (a) the topic authoring investment is 10× per
+topic instead of 4×, (b) we have no evidence users will want 30-min sessions,
+and (c) the free-tier token budget is tighter per session.
 
 ### 1.4 Sub-States Within Each Step
 
@@ -363,17 +368,25 @@ Generate ONLY the hint for level {hint_level}. Be concise.
 
 Each step produces **two** scores:
 
-| Score | Range | Source | Measures |
-|-------|-------|--------|----------|
-| **Quality** | 0–4 | LLM grader | How good is the answer content? |
-| **Independence** | 0–4 | Server code | How much help did they need? |
+| Score | Range | Source | Measures | Used For |
+|-------|-------|--------|----------|----------|
+| **Quality** | 0–4 | LLM grader | How good is the answer content? | Skill radar, dimension averages |
+| **Independence** | 0–4 | Server code | How much help did they need? | Separate independence trend |
+| **Composite** | min(Q, I) | Server code | Combined for scheduling | SM-2 spaced repetition only |
 
-The **composite score** for spaced repetition and radar is:
-`composite = min(quality, independence)`.
+**Why this split matters:**
 
-This split prevents a user who got L3 hints and then recited the hints from
-scoring 4 on quality while hiding that they needed heavy help. It also means
-the LLM grader doesn't need to know about hints, simplifying the prompt and
+- **Radar chart** shows **quality only**. Quality is what the user is trying
+  to improve, and mixing in independence would penalize users who wisely used
+  a hint to learn something new (that's good learning behavior).
+- **Independence** is shown as a **separate trend line** on the progress
+  page, so the user can see if they're becoming more self-sufficient over time.
+- **`min(quality, independence)`** is used **only for SM-2 spaced repetition
+  scheduling**. A step where the user needed L3 hints (independence = 1) will
+  be reviewed sooner, even if the final answer was good (quality = 3), because
+  they haven't yet proven they can produce it independently.
+
+The LLM grader doesn't need to know about hints, simplifying the prompt and
 reducing a source of inconsistency.
 
 ### 5.2 Quality Score (LLM-Graded)
@@ -390,7 +403,7 @@ interface StepGrade {
   confidence: number;          // 0-1, grader's confidence in this score
   
   // Provenance (set by server, not LLM)
-  graderId: string;            // provider:model, e.g. "gemini:gemini-2.0-flash"
+  graderId: string;            // provider:model, e.g. "gemini:gemini-3.8-flash"
   rubricVersion: string;       // e.g. "v1.0"
   isFallbackGrade: boolean;    // true if graded by non-primary provider
   gradedAt: string;            // ISO timestamp
@@ -440,19 +453,20 @@ Six dimensions tracked over time:
 
 ```typescript
 interface SessionScore {
-  overall: number;              // Average of composite scores
+  overallQuality: number;       // Average of quality scores (for radar)
+  overallComposite: number;     // Average of min(Q,I) (for SM-2)
   dimensions: {
-    problemFraming: number;
+    problemFraming: number;     // Average QUALITY for steps in this dimension
     dataDesign: number;
     systemFlow: number;
     failureThinking: number;
     tradeoffAnalysis: number;
     communication: number;
   };
-  transferScore: number;        // Transfer challenge composite (0-4)
+  transferScore: number;        // Transfer challenge quality (0-4)
   recapScore: number;           // Own-words recap quality (0-4)
   totalHintsUsed: number;
-  averageIndependence: number;  // Average independence across steps
+  averageIndependence: number;  // Average independence (separate trend)
   timeMinutes: number;
   level: Level;
 }
@@ -609,7 +623,7 @@ interface PromptContext {
   stepDescription: string;
   level: Level;
   statePhase: string;
-  sessionMode: 'standard' | 'quick' | 'deep';
+  sessionMode: 'standard' | 'quick';   // Deep deferred to v2
   totalSteps: number;
   stepIndex: number;                 // 1-based index within stepsToRun
 
@@ -736,15 +750,21 @@ interface Topic {
 interface TopicStepData {
   coachQuestion: string;          // Topic-specific question for this step
   keyPoints: {
-    junior: string[];             // What a junior should cover
-    mid: string[];                // Additional points for mid
-    senior: string[];             // Additional points for senior
+    junior: KeyPoint[];           // What a junior should cover
+    mid: KeyPoint[];              // Additional points for mid
+    senior: KeyPoint[];           // Additional points for senior
   };
   modelAnswer: {
     junior: string;               // Reference answer for junior
     mid: string;                  // Reference answer for mid
     senior: string;               // Reference answer for senior
   };
+}
+
+interface KeyPoint {
+  point: string;                  // The key point text
+  isCore: boolean;                // true = must-cover (affects quality score)
+                                  // false = bonus (mentioned in strengths if covered)
 }
 ```
 
@@ -995,7 +1015,7 @@ See [topics/auth-email-password.json](../packages/learning/topics/auth-email-pas
 - **ID:** `db-relational-schema`
 - **Category:** Database Design
 - **Difficulty:** Beginner
-- **Standard Steps:** [1, 5, 4, 9]
+- **Standard Steps:** [1, 4, 5, 9]
 - **Transfer:** `db-indexing-strategy`
 - **Transfer Prompt:** "Your schema is designed. Now queries are slow. How do you decide which indexes to add? What are the trade-offs of indexing?"
 

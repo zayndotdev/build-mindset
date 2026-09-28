@@ -135,7 +135,7 @@ erDiagram
         integer independence_score "0-4 from server code"
         float composite_score "min(quality, independence)"
         json grade_result "StepGrade including provenance"
-        string grader_id "provider:model e.g. gemini:gemini-2.0-flash"
+        string grader_id "provider:model e.g. gemini:gemini-3.8-flash"
         string rubric_version "e.g. v1.0"
         boolean is_fallback_grade "true if non-primary grader"
         text user_answer
@@ -246,7 +246,7 @@ erDiagram
 | `usage_stat` | Unique (provider_id, stat_date) | One row per provider per day |
 | `review_item` | Unique (topic_id, step_number) | One review item per step per topic |
 | `learning_session.state` | Enum constraint | Valid state machine values only |
-| `learning_session.session_mode` | Enum: standard, quick, deep | Replaces boolean quick_mode |
+| `learning_session.session_mode` | Enum: standard, quick (deep deferred to v2) | Session mode |
 | `topic.standard_steps` | Array of exactly 4 ints | Defines default session steps |
 
 ## Indexes

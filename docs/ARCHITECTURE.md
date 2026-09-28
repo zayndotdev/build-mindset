@@ -269,7 +269,7 @@ graph TD
 
 - All endpoints under `/api/v1/`
 - Consistent error shape: `{ error: { code, message, details? } }`
-- Streaming via SSE on `GET /api/v1/sessions/:id/stream`
+- Streaming via SSE on `POST /api/v1/sessions/:id/answer` (direct `text/event-stream` response: grade event, then coach token stream)
 - Pagination: cursor-based for lists
 - Idempotency keys for mutating operations where sensible
 - Request IDs (`X-Request-Id`) propagated through logs

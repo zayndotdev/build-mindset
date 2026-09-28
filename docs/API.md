@@ -82,7 +82,6 @@
 | `POST` | `/sessions/:id/recap` | Submit own-words recap |
 | `POST` | `/sessions/:id/transfer-answer` | Submit transfer challenge answer |
 | `POST` | `/sessions/:id/complete` | Mark session complete |
-| `GET` | `/sessions/:id/stream` | SSE — stream coach response |
 
 ### Voice
 
@@ -152,7 +151,7 @@ event: grade
 data: {"qualityScore": 3, "independenceScore": 4, "compositeScore": 3,
        "covered": ["hashing", "unique constraint"],
        "missed": ["timing attacks"],
-       "graderId": "gemini:gemini-2.0-flash",
+       "graderId": "gemini:gemini-3.8-flash",
        "isFallbackGrade": false}
 
 // Phase 2: Coach teaching response (streamed token by token)

@@ -73,23 +73,48 @@ resources, but a small temporary authorization hold may appear.
 
 ### ⚠️ Idle Instance Reclaim Policy
 
-Oracle may reclaim Always Free instances that are **idle for 7 consecutive
-days**. An instance is "idle" if ALL of the following are true over the
-7-day period:
+Oracle may reclaim Always Free compute instances that are **idle for 7 consecutive
+days**. An instance is classified as "idle" if ALL of the following conditions
+are met over the 7-day period:
 
-- CPU utilization (95th percentile) < 20%
-- Network utilization < 20%
-- Memory utilization < 20% (for A1 shapes)
+- CPU utilization (95th percentile) is less than 20%
+- Network utilization is less than 20%
+- Memory utilization is less than 20% (applicable to A1 shapes)
 
-**Mitigation strategies:**
-1. **Cron heartbeat:** A simple cron job (e.g., `curl localhost:3000/healthz`
-   every 5 minutes) generates enough CPU/network activity to stay above
-   thresholds.
-2. **SQLite WAL checkpoints:** Periodic background tasks (backup, stats
-   rollup) keep the process active.
-3. **Monitoring:** Set up a free uptime checker (e.g., Uptime Robot free
-   tier, which won't reach the app on Tailnet — use a Tailscale-accessible
-   monitor or the cron on the VM itself).
+> [!WARNING]
+> **Why fake heartbeats (e.g. `curl localhost/healthz`) do NOT work:**
+> Lightweight curl pings consume ~0.001% CPU and negligible local loopback network.
+> They will never push 95th percentile utilization past 20%, and attempting
+> artificial synthetic load scripts risks violating Oracle Acceptable Use policies.
+
+**True Mitigation Strategies:**
+
+1. **Upgrade to Pay As You Go (PAYG) Account (Recommended):**
+   - Upgrading your Oracle Cloud account to a Pay As You Go (PAYG) payment tier
+     **permanently exempts your compute instances from idle reclamation**.
+   - You retain all Always Free resource allowances (you pay $0 as long as you
+     stay within the 4 OCPU / 24 GB RAM / 200 GB disk limits).
+   - Requires a temporary credit card verification authorization (~$100,
+     released immediately).
+   - This is the single cleanest and safest solution to eliminate reclaim risk.
+
+2. **Real Utilization Monitoring & Alerting:**
+   - Configure OCI Monitoring Alarms (via OCI Console or CLI) on compute metrics:
+     `CpuUtilization`, `MemoryUtilization`, and `NetworkBytesIn/Out`.
+   - Set up notifications (email/webhook) when 7-day averages trend near the
+     idle threshold.
+   - Oracle sends an official email notification 7 days *before* an idle instance
+     is reclaimed. Ensure account contact emails are actively monitored.
+
+3. **Off-VM Nightly Encrypted Backup (Critical Data Defense):**
+   - Because cloud VMs can face reclaim, outage, or hardware failure, the SQLite
+     database must never exist exclusively on the VM.
+   - Run a nightly cron job on the VM that:
+     1. Uses the SQLite safe online backup API (`sqlite3 /app/data/mindset.db ".backup /tmp/mindset-backup.db"`).
+     2. Encrypts the snapshot with `age` or `gpg` using an off-server public key.
+     3. Pushes the encrypted archive off-VM (e.g., to Cloudflare R2 free tier [10 GB free], AWS S3 free tier, or via Tailscale to the user's local PC).
+   - If the VM is ever reclaimed or lost, a new instance can be stood up from
+     Docker and the encrypted backup in under 5 minutes with zero data loss.
 
 ### ⚠️ Regional Capacity
 
@@ -100,6 +125,7 @@ especially in popular regions. Retry strategies:
 2. Try different availability domains within the same region
 3. Try a different home region (can't change after account creation)
 4. Use the OCI CLI with a provisioning script that retries automatically
+5. Upgrading to PAYG accounts also grants higher provisioning priority for ARM instances.
 
 ## Consequences
 
@@ -110,7 +136,7 @@ especially in popular regions. Retry strategies:
 - ✅ No domain purchase needed
 - ✅ 2 OCPU + 12 GB RAM is generous for a single-user Node.js + SQLite app
 - ⚠️ Credit card required for Oracle Cloud signup
-- ⚠️ Idle instances may be reclaimed (mitigated by cron heartbeat)
+- ⚠️ Idle instances may be reclaimed on pure Free accounts (eliminated by upgrading to PAYG; mitigated by off-VM nightly encrypted backups and OCI alerts)
 - ⚠️ ARM capacity may be limited in some regions
 - ⚠️ User must manage OS updates and security patches
 - ⚠️ Phone must have Tailscale installed and logged in

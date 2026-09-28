@@ -87,12 +87,10 @@
   engineering discussion content. User is aware and can switch to paid tiers
   for privacy.
 
-### D-011: Gemini Model Selection
+### D-011: Gemini Model Selection — Dynamic Discovery & Deprecation Verification
 - **Date:** 2026-09-29
-- **Context:** Gemini 2.5 Flash retiring Oct 20, 2026. Newer models available.
-- **Decision:** Default to `gemini-2.0-flash` as the stable free-tier option.
-  Make model IDs configurable in settings. Document that user should check
-  AI Studio for latest available models and update config accordingly.
+- **Context:** `gemini-2.0-flash` was permanently shut down on June 1, 2026. Hardcoding static model names creates runtime failure when providers deprecate models.
+- **Decision:** Default to `gemini-3.8-flash` for the primary Gemini tier. The application builds model lists dynamically via live `ai.models.list()` API calls, verified against Google's official deprecation schedule. Model IDs remain configurable in user settings.
 
 ---
 
@@ -105,8 +103,8 @@
   real learning happens.
 - **Decision:** Standard session = 4 steps, selected per-topic in the topic
   definition (`standardSteps: [1, 5, 8, 9]`). Quick Mode = 2 steps + mini
-  transfer. Deep Dive = all 10 steps (opt-in). The topic author decides which
-  steps matter most.
+  transfer challenge. **Deep Dive (all 10 steps) is deferred to v2** (low confidence
+  for v1, high authoring overhead, tighter token budgets).
 
 ### D-013: Split Quality and Independence Scoring
 - **Date:** 2026-09-29
@@ -114,10 +112,13 @@
   grading prompt. This conflates "how good was the answer" with "how much
   help was needed" and adds a non-deterministic dependency to hint enforcement.
 - **Decision:** Two separate scores per step:
-  - **Quality (0–4):** Graded by the LLM purely on answer content.
+  - **Quality (0–4):** Graded by the LLM purely on answer content against key points.
+    Used for the **skill radar chart** and dimension averages.
   - **Independence (0–4):** Computed deterministically in server code from
-    hint count (`0 hints = 4, 1 = 3, 2 = 2, 3 = 1, 4+ = 0`).
-  - **Composite:** `min(quality, independence)` — used for spaced rep and radar.
+    hint count (`0 hints = 4, 1 = 3, 2 = 2, 3 = 1, 4+ = 0`). Displayed as a
+    **separate trend line** on progress charts.
+  - **Composite:** `min(quality, independence)` — used **only for SM-2 spaced repetition**
+    scheduling (so assisted answers are reviewed sooner).
   Hint info is NOT sent to the grading prompt.
 
 ### D-014: Grader Provenance and Pinning
@@ -139,14 +140,14 @@
   is sent in the USER message role. SYSTEM contains only instructions, rubric,
   and reference key points. This is both more secure and more natural for LLMs.
 
-### D-016: Grade Original Voice Transcripts
+### D-016: English Feedback on Original Voice Transcripts (Grading Submitted Text)
 - **Date:** 2026-09-29
 - **Context:** Voice answers are transcribed by browser STT or Groq Whisper.
   v0.1 allowed the user to edit the transcript before submission (for grading)
   but then graded the edited version, losing the raw speech data.
 - **Decision:** Store the original voice transcript separately
   (`voice_transcript_original` column on `MESSAGE`). Grade the submitted text
-  (which may be edited). Send the original transcript to the English coach
+  (which may be edited) for engineering quality. Send the original transcript to the English coach
   with `[VOICE]` markers so it can provide speech-specific feedback (filler
   words, run-on sentences, pronunciation-related errors).
 
