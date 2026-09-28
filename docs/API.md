@@ -216,3 +216,17 @@ returns the cached response on duplicate requests.
    → Server deletes session row
    → Clear-Cookie
 ```
+
+---
+
+## Rate Limiting Headers
+
+All API endpoints return standard IETF draft rate limit headers (alongside legacy `X-RateLimit-*` aliases):
+
+| Header | Description | Example |
+|--------|-------------|---------|
+| `RateLimit-Limit` | Request quota allowed within time window | `60` |
+| `RateLimit-Remaining` | Available requests remaining in current window | `58` |
+| `RateLimit-Reset` | Window reset interval (seconds remaining or UNIX epoch) | `42` |
+| `Retry-After` | Returned on HTTP 429 Too Many Requests responses | `42` |
+

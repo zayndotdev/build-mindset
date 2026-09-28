@@ -166,7 +166,7 @@ erDiagram
     SKILL_SCORE {
         string id PK "UUID"
         string dimension "problemFraming | dataDesign | etc."
-        float score "composite score"
+        float score "quality score (0-4) for this dimension"
         string session_id FK
         datetime recorded_at
     }
@@ -219,6 +219,16 @@ erDiagram
         datetime created_at
     }
 
+    IDEMPOTENCY_KEY {
+        string key PK "client-provided idempotency key"
+        string request_hash "SHA-256 of path + body"
+        integer response_status "HTTP status code"
+        text response_body "Cached response body"
+        json response_headers "Headers to replay"
+        datetime created_at
+        datetime expires_at "TTL e.g. 24 hours"
+    }
+
     USER ||--|| CREDENTIAL : "has"
     USER ||--o{ SESSION_AUTH : "has active"
     USER ||--o{ PROVIDER_CONFIG : "configures"
@@ -248,6 +258,7 @@ erDiagram
 | `learning_session.state` | Enum constraint | Valid state machine values only |
 | `learning_session.session_mode` | Enum: standard, quick (deep deferred to v2) | Session mode |
 | `topic.standard_steps` | Array of exactly 4 ints | Defines default session steps |
+| `idempotency_key` | PK on `key`, check `expires_at > created_at` | Exactly-once execution on retried mutations |
 
 ## Indexes
 
@@ -261,6 +272,7 @@ erDiagram
 | `message` | `(session_id, created_at)` | Chat history |
 | `audit_log` | `(created_at)` | Recent activity |
 | `session_step` | `(is_fallback_grade)` | Find fallback-graded steps |
+| `idempotency_key` | `(expires_at)` | Periodic TTL eviction worker |
 
 ## What Must NOT Be Stored
 

@@ -234,7 +234,7 @@ graph LR
 
 **⚠️ Oracle Cloud caveats:**
 - Credit card required for signup (identity verification, not charged).
-- Idle instances may be reclaimed after 7 days (mitigated by cron heartbeat).
+- Idle instances may be reclaimed after 7 days on pure free accounts (eliminated by upgrading to Pay As You Go and mitigated by OCI metric alarms plus nightly off-VM encrypted backups).
 - ARM capacity may be limited in some regions. See [ADR-004](adr/004-hosting-oracle-cloud.md).
 
 ---

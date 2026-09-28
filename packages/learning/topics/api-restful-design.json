@@ -23,9 +23,19 @@
   ],
   "transferTopicId": "api-versioning",
   "transferPrompt": "You've designed the API. Now a breaking change is needed. How would you version it? What are the options (URL path, header, query param) and what are the trade-offs of each?",
-  "standardSteps": [1, 7, 8, 9],
+  "standardSteps": [
+    1,
+    7,
+    8,
+    9
+  ],
   "estimatedMinutes": 12,
-  "tags": ["api", "rest", "beginner", "priority"],
+  "tags": [
+    "api",
+    "rest",
+    "beginner",
+    "priority"
+  ],
   "isCustom": false,
   "isActive": true,
   "steps": {
@@ -33,25 +43,70 @@
       "coachQuestion": "You're asked to design a RESTful API. Before jumping into endpoints, what questions would you ask to clarify the requirements?",
       "keyPoints": {
         "junior": [
-          { "point": "What resources/entities are we exposing?", "isCore": true },
-          { "point": "Who are the consumers (web frontend, mobile app, third-party developers)?", "isCore": true },
-          { "point": "Is this a public, internal, or partner API?", "isCore": true },
-          { "point": "What operations are needed (CRUD, search, bulk)?", "isCore": true },
-          { "point": "What authentication method will be used (OAuth, API keys, cookies)?", "isCore": false }
+          {
+            "point": "What resources/entities are we exposing?",
+            "isCore": true
+          },
+          {
+            "point": "Who are the consumers (web frontend, mobile app, third-party developers)?",
+            "isCore": true
+          },
+          {
+            "point": "Is this a public, internal, or partner API?",
+            "isCore": true
+          },
+          {
+            "point": "What operations are needed (CRUD, search, bulk)?",
+            "isCore": false
+          },
+          {
+            "point": "What authentication method will be used (OAuth, API keys, cookies)?",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Expected request volume and peak traffic patterns?", "isCore": true },
-          { "point": "Caching requirements (which resources change rarely)?", "isCore": true },
-          { "point": "Real-time requirements (webhooks, SSE, WebSocket)?", "isCore": false },
-          { "point": "Pagination needs (how large are collections)?", "isCore": true },
-          { "point": "Rate limiting requirements per consumer?", "isCore": false }
+          {
+            "point": "Expected request volume and peak traffic patterns?",
+            "isCore": true
+          },
+          {
+            "point": "Caching requirements (which resources change rarely)?",
+            "isCore": true
+          },
+          {
+            "point": "Real-time requirements (webhooks, SSE, WebSocket)?",
+            "isCore": false
+          },
+          {
+            "point": "Pagination needs (how large are collections)?",
+            "isCore": true
+          },
+          {
+            "point": "Rate limiting requirements per consumer?",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "API governance: who owns the contract, how are changes approved?", "isCore": true },
-          { "point": "Backward compatibility requirements and deprecation policy?", "isCore": true },
-          { "point": "Documentation strategy (OpenAPI spec-first)?", "isCore": false },
-          { "point": "Multi-tenant considerations (data isolation in responses)?", "isCore": false },
-          { "point": "SLA requirements (latency targets, uptime guarantees)?", "isCore": true }
+          {
+            "point": "API governance: who owns the contract, how are changes approved?",
+            "isCore": true
+          },
+          {
+            "point": "Backward compatibility requirements and deprecation policy?",
+            "isCore": true
+          },
+          {
+            "point": "Documentation strategy (OpenAPI spec-first)?",
+            "isCore": false
+          },
+          {
+            "point": "Multi-tenant considerations (data isolation in responses)?",
+            "isCore": false
+          },
+          {
+            "point": "SLA requirements (latency targets, uptime guarantees)?",
+            "isCore": true
+          }
         ]
       },
       "modelAnswer": {
@@ -64,56 +119,146 @@
       "coachQuestion": "Design the API contract for your resources. What endpoints would you define, and what does a request/response look like?",
       "keyPoints": {
         "junior": [
-          { "point": "Resource-oriented URLs: /users, /users/:id (nouns, plural, not verbs)", "isCore": true },
-          { "point": "HTTP verbs map to operations: GET (read), POST (create), PUT (replace), PATCH (partial update), DELETE (remove)", "isCore": true },
-          { "point": "Semantic status codes: 200 OK, 201 Created, 204 No Content, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 500 Internal Error", "isCore": true },
-          { "point": "Consistent response envelope: { data } on success, { error: { code, message } } on failure", "isCore": true }
+          {
+            "point": "Resource-oriented URLs: /users, /users/:id (nouns, plural, not verbs)",
+            "isCore": true
+          },
+          {
+            "point": "HTTP verbs map to operations: GET (read), POST (create), PUT (replace), PATCH (partial update), DELETE (remove)",
+            "isCore": true
+          },
+          {
+            "point": "Semantic status codes: 200 OK, 201 Created, 204 No Content, 400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 500 Internal Error",
+            "isCore": true
+          },
+          {
+            "point": "Consistent response envelope: { data } on success, { error: { code, message } } on failure",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Cursor-based pagination for large datasets (?cursor=abc&limit=20)", "isCore": true },
-          { "point": "Filtering and sorting via query params (?status=active&sort=-created_at)", "isCore": true },
-          { "point": "Partial updates with PATCH (send only delta fields) vs PUT (idempotent full replacement)", "isCore": true },
-          { "point": "Idempotency-Key header for POST operations to prevent duplicate creation on network retries", "isCore": false },
-          { "point": "Resource nesting: flat resources with query filters (/orders?userId=123) over deep hierarchies", "isCore": false }
+          {
+            "point": "Cursor-based pagination for large datasets (?cursor=abc&limit=20)",
+            "isCore": true
+          },
+          {
+            "point": "Filtering and sorting via query params (?status=active&sort=-created_at)",
+            "isCore": true
+          },
+          {
+            "point": "Partial updates with PATCH (send only delta fields) vs PUT (idempotent full replacement)",
+            "isCore": true
+          },
+          {
+            "point": "Idempotency-Key header for POST operations to prevent duplicate creation on network retries",
+            "isCore": false
+          },
+          {
+            "point": "Resource nesting: flat resources with query filters (/orders?userId=123) over deep hierarchies",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "Content negotiation (Accept and Content-Type headers for JSON / binary payloads)", "isCore": false },
-          { "point": "API versioning strategy: URI path (/v1/users) vs custom headers vs Accept header", "isCore": true },
-          { "point": "Batch / bulk operations design with atomic vs partial failure reporting", "isCore": false },
-          { "point": "Standard rate limit response headers (RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset)", "isCore": true },
-          { "point": "Conditional requests via ETag and If-None-Match headers (returning 304 Not Modified to save egress)", "isCore": true }
+          {
+            "point": "Content negotiation (Accept and Content-Type headers for JSON / binary payloads)",
+            "isCore": false
+          },
+          {
+            "point": "API versioning strategy: URI path (/v1/users) vs custom headers vs Accept header",
+            "isCore": true
+          },
+          {
+            "point": "Batch / bulk operations design with atomic vs partial failure reporting",
+            "isCore": false
+          },
+          {
+            "point": "Standard rate limit response headers (RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset)",
+            "isCore": true
+          },
+          {
+            "point": "Conditional requests via ETag and If-None-Match headers (returning 304 Not Modified to save egress)",
+            "isCore": true
+          }
         ]
       },
       "modelAnswer": {
         "junior": "I'd use resource-oriented URLs with HTTP verbs: GET /users (list), GET /users/:id (detail), POST /users (create, returns 201), PATCH /users/:id (update), DELETE /users/:id (delete, returns 204). Every response follows a consistent shape: { data: T } for success, { error: { code: 'VALIDATION_ERROR', message: '...' } } for errors. Status codes are semantic — 400 for bad input, 401 for auth required, 404 for not found, 500 for server errors (never leak stack traces).",
         "mid": "Beyond CRUD: List endpoints need pagination — I'd use cursor-based (GET /users?cursor=abc&limit=20 → response includes { data, nextCursor, hasMore }). Filtering via query params: GET /users?status=active&sort=-created_at. PATCH for partial updates (only send changed fields). POST endpoints accept an Idempotency-Key header to prevent duplicate creation on retry. For nested resources, I prefer flat with filters (/orders?userId=123) over deep nesting (/users/:id/orders/:orderId/items) — it keeps URLs manageable.",
-        "senior": "For production APIs: version in the URL path (/v1/users) — it's the most explicit and cacheable option. Bulk endpoints (POST /v1/users/batch) accept arrays with per-item error reporting. Rate limit headers on every response (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset). ETag headers on GET responses enable conditional requests — the client sends If-None-Match, server returns 304 Not Modified if unchanged (saves bandwidth). For spec-first development, define the OpenAPI spec before writing code, then generate validation middleware from the spec."
+        "senior": "For production APIs: version in the URL path (/v1/users) — it's the most explicit and cacheable option. Bulk endpoints (POST /v1/users/batch) accept arrays with per-item error reporting. Rate limit headers on every response (standard IETF RateLimit-Limit, RateLimit-Remaining, RateLimit-Reset, plus legacy X-RateLimit-* aliases). ETag headers on GET responses enable conditional requests — the client sends If-None-Match, server returns 304 Not Modified if unchanged (saves bandwidth). For spec-first development, define the OpenAPI spec before writing code, then generate validation middleware from the spec."
       }
     },
     "8": {
       "coachQuestion": "What could go wrong with your API? Think about invalid input, abuse, and failure scenarios.",
       "keyPoints": {
         "junior": [
-          { "point": "Input validation on every endpoint (schema validation with types, required fields, size bounds)", "isCore": true },
-          { "point": "Structured error responses that never leak raw stack traces or internal environment variables", "isCore": true },
-          { "point": "Rate limiting to prevent abuse and brute force", "isCore": true },
-          { "point": "Authentication and authorization checks enforced on every protected route", "isCore": true },
-          { "point": "Request payload body size limits (e.g. 1MB cap) to guard against memory exhaustion", "isCore": false }
+          {
+            "point": "Input validation on every endpoint (schema validation with types, required fields, size bounds)",
+            "isCore": true
+          },
+          {
+            "point": "Structured error responses that never leak raw stack traces or internal environment variables",
+            "isCore": true
+          },
+          {
+            "point": "Rate limiting to prevent abuse and brute force",
+            "isCore": true
+          },
+          {
+            "point": "Authentication and authorization checks enforced on every protected route",
+            "isCore": false
+          },
+          {
+            "point": "Request payload body size limits (e.g. 1MB cap) to guard against memory exhaustion",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Malformed JSON handling: return 400 Bad Request, never trigger an unhandled 500 crash", "isCore": true },
-          { "point": "Type coercion vulnerabilities and loose comparison bugs", "isCore": false },
-          { "point": "CORS configuration: explicit whitelist of allowed origins and headers, avoid wildcard * in production", "isCore": true },
-          { "point": "Over-fetching and data exposure: serialize explicit response DTOs rather than raw ORM entities", "isCore": true },
-          { "point": "429 Too Many Requests response with standard Retry-After header", "isCore": true }
+          {
+            "point": "Malformed JSON handling: return 400 Bad Request, never trigger an unhandled 500 crash",
+            "isCore": true
+          },
+          {
+            "point": "Type coercion vulnerabilities and loose comparison bugs",
+            "isCore": false
+          },
+          {
+            "point": "CORS configuration: explicit whitelist of allowed origins and headers, avoid wildcard * in production",
+            "isCore": true
+          },
+          {
+            "point": "Over-fetching and data exposure: serialize explicit response DTOs rather than raw ORM entities",
+            "isCore": true
+          },
+          {
+            "point": "429 Too Many Requests response with standard Retry-After header",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "Distributed rate limiting with token bucket / sliding window algorithms across multi-node clusters", "isCore": true },
-          { "point": "Abuse detection: identifying scraping bots, sequential identifier enumeration, and distributed attacks", "isCore": false },
-          { "point": "Circuit breaker patterns for downstream microservices and third-party dependencies", "isCore": true },
-          { "point": "Graceful degradation (fallback cached responses or degraded modes when dependencies fail)", "isCore": true },
-          { "point": "Audit logging for sensitive administrative and state-mutating actions", "isCore": false },
-          { "point": "Zero-downtime API key and secret rotation procedures", "isCore": false }
+          {
+            "point": "Distributed rate limiting with token bucket / sliding window algorithms across multi-node clusters",
+            "isCore": true
+          },
+          {
+            "point": "Abuse detection: identifying scraping bots, sequential identifier enumeration, and distributed attacks",
+            "isCore": false
+          },
+          {
+            "point": "Circuit breaker patterns for downstream microservices and third-party dependencies",
+            "isCore": true
+          },
+          {
+            "point": "Graceful degradation (fallback cached responses or degraded modes when dependencies fail)",
+            "isCore": true
+          },
+          {
+            "point": "Audit logging for sensitive administrative and state-mutating actions",
+            "isCore": false
+          },
+          {
+            "point": "Zero-downtime API key and secret rotation procedures",
+            "isCore": false
+          }
         ]
       },
       "modelAnswer": {
@@ -126,22 +271,58 @@
       "coachQuestion": "What are the key trade-offs you'd evaluate when designing this API? Pick at least two and explain both sides.",
       "keyPoints": {
         "junior": [
-          { "point": "REST vs GraphQL: REST (simple, standard caching, predictable) vs GraphQL (flexible client-specified shapes, resolves over-fetching, complex parsing)", "isCore": true },
-          { "point": "Data serialization: JSON (universal, human-readable) vs Protobuf/gRPC (compact binary, fast serialization, typed schema)", "isCore": false },
-          { "point": "Nested resources (/users/:id/orders) vs flat resources with filters (/orders?userId=123)", "isCore": true },
-          { "point": "Plural vs singular naming consistency across the API surface", "isCore": false }
+          {
+            "point": "REST vs GraphQL: REST (simple, standard caching, predictable) vs GraphQL (flexible client-specified shapes, resolves over-fetching, complex parsing)",
+            "isCore": true
+          },
+          {
+            "point": "Data serialization: JSON (universal, human-readable) vs Protobuf/gRPC (compact binary, fast serialization, typed schema)",
+            "isCore": false
+          },
+          {
+            "point": "Nested resources (/users/:id/orders) vs flat resources with filters (/orders?userId=123)",
+            "isCore": true
+          },
+          {
+            "point": "Plural vs singular naming consistency across the API surface",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Offset pagination (simple, random access, broken on concurrent writes) vs cursor pagination (stable keyset, scalable, no arbitrary page jumps)", "isCore": true },
-          { "point": "Synchronous HTTP execution vs asynchronous job submission with status polling / webhook callbacks", "isCore": true },
-          { "point": "Fine-grained endpoints (many micro-requests) vs coarse-grained endpoints (richer payloads, fewer roundtrips)", "isCore": false }
+          {
+            "point": "Offset pagination (simple, random access, broken on concurrent writes) vs cursor pagination (stable keyset, scalable, no arbitrary page jumps)",
+            "isCore": true
+          },
+          {
+            "point": "Synchronous HTTP execution vs asynchronous job submission with status polling / webhook callbacks",
+            "isCore": true
+          },
+          {
+            "point": "Fine-grained endpoints (many micro-requests) vs coarse-grained endpoints (richer payloads, fewer roundtrips)",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "API Gateway pattern (centralized auth, rate limiting, routing) vs direct service exposure", "isCore": true },
-          { "point": "Internal service protocols: gRPC for service-to-service vs universal REST over HTTP/2", "isCore": true },
-          { "point": "Backend-for-Frontend (BFF) pattern tailored per client platform vs a unified general-purpose API", "isCore": false },
-          { "point": "Event-driven updates (Webhooks / SSE / WebSockets) vs polling strategies for real-time state changes", "isCore": true },
-          { "point": "Spec-first OpenAPI development with contract validation vs code-first implementation", "isCore": false }
+          {
+            "point": "API Gateway pattern (centralized auth, rate limiting, routing) vs direct service exposure",
+            "isCore": true
+          },
+          {
+            "point": "Internal service protocols: gRPC for service-to-service vs universal REST over HTTP/2",
+            "isCore": true
+          },
+          {
+            "point": "Backend-for-Frontend (BFF) pattern tailored per client platform vs a unified general-purpose API",
+            "isCore": false
+          },
+          {
+            "point": "Event-driven updates (Webhooks / SSE / WebSockets) vs polling strategies for real-time state changes",
+            "isCore": true
+          },
+          {
+            "point": "Spec-first OpenAPI development with contract validation vs code-first implementation",
+            "isCore": false
+          }
         ]
       },
       "modelAnswer": {

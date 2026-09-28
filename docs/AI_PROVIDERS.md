@@ -16,6 +16,21 @@
 | **Mistral** | Native SDK | Backup coach, structured output | ~1 RPS, no published hard limits |
 | **Cohere** | Native SDK | Tertiary fallback, topic generation | 1,000 calls/month hard cap |
 
+### Universal Dynamic Model Discovery
+
+Mindset does NOT rely on brittle, hardcoded model strings that cause silent outages when providers deprecate models. At adapter initialization and periodic sync, Mindset dynamically discovers available models across all four providers:
+
+| Provider | Discovery Mechanism | Default Verified Model |
+|----------|---------------------|------------------------|
+| **Google Gemini** | `ai.models.list()` (`@google/genai`) | `gemini-3.8-flash` |
+| **Groq** | `openai.models.list()` (OpenAI client with Groq baseURL) | `llama-3.3-70b-versatile` / `llama-3.1-8b-instant` |
+| **Mistral** | `client.models.list()` (`@mistralai/mistralai`) | `mistral-small-latest` |
+| **Cohere** | `client.models.list()` (`cohere-ai`) | `command-r` |
+
+- **Validation:** Discovered models are matched against known task capabilities (chat completion, structured JSON output, transcription).
+- **Graceful Fallback:** If the provider's discovery endpoint is temporarily unreachable, the adapter falls back to the verified default model.
+- **Configurability:** All discovered models are populated in the Web UI Settings dropdown so users can explicitly override defaults at any time.
+
 ---
 
 ## 1. Google Gemini

@@ -23,9 +23,19 @@
   ],
   "transferTopicId": "db-indexing-strategy",
   "transferPrompt": "Your schema is designed. Now queries are slow. How do you decide which indexes to add? What are the trade-offs of indexing (read speed vs write speed vs storage)?",
-  "standardSteps": [1, 4, 5, 9],
+  "standardSteps": [
+    1,
+    4,
+    5,
+    9
+  ],
   "estimatedMinutes": 12,
-  "tags": ["database", "schema", "beginner", "priority"],
+  "tags": [
+    "database",
+    "schema",
+    "beginner",
+    "priority"
+  ],
   "isCustom": false,
   "isActive": true,
   "steps": {
@@ -33,25 +43,70 @@
       "coachQuestion": "You're asked to design a database schema for a new feature. Before drawing tables, what questions would you ask?",
       "keyPoints": {
         "junior": [
-          { "point": "What data are we storing — what are the main entities?", "isCore": true },
-          { "point": "What are the relationships between entities (1:1, 1:N, M:N)?", "isCore": true },
-          { "point": "Is the workload read-heavy or write-heavy?", "isCore": true },
-          { "point": "Expected data volume (thousands vs millions of rows)?", "isCore": true },
-          { "point": "What are the most common queries and access patterns?", "isCore": false }
+          {
+            "point": "What data are we storing — what are the main entities?",
+            "isCore": true
+          },
+          {
+            "point": "What are the relationships between entities (1:1, 1:N, M:N)?",
+            "isCore": true
+          },
+          {
+            "point": "Is the workload read-heavy or write-heavy?",
+            "isCore": true
+          },
+          {
+            "point": "Expected data volume (thousands vs millions of rows)?",
+            "isCore": false
+          },
+          {
+            "point": "What are the most common queries and access patterns?",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Data retention requirements — how long do we keep data?", "isCore": true },
-          { "point": "Soft delete needed — do users need to recover deleted data?", "isCore": true },
-          { "point": "Multi-tenancy — one database per tenant or shared with tenant_id?", "isCore": true },
-          { "point": "Audit trail — do we need to track who changed what?", "isCore": false },
-          { "point": "Schema migration strategy — how do we evolve the schema safely?", "isCore": false }
+          {
+            "point": "Data retention requirements — how long do we keep data?",
+            "isCore": true
+          },
+          {
+            "point": "Soft delete needed — do users need to recover deleted data?",
+            "isCore": true
+          },
+          {
+            "point": "Multi-tenancy — one database per tenant or shared with tenant_id?",
+            "isCore": true
+          },
+          {
+            "point": "Audit trail — do we need to track who changed what?",
+            "isCore": false
+          },
+          {
+            "point": "Schema migration strategy — how do we evolve the schema safely?",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "Sharding strategy — will the data outgrow one server?", "isCore": true },
-          { "point": "Read replicas — do we need eventual consistency for reads?", "isCore": true },
-          { "point": "Cross-region consistency and data residency requirements?", "isCore": false },
-          { "point": "OLTP vs OLAP separation — do analytics queries run on the same DB?", "isCore": false },
-          { "point": "Regulatory requirements (GDPR data deletion, PCI-DSS for payment data)?", "isCore": true }
+          {
+            "point": "Sharding strategy — will the data outgrow one server?",
+            "isCore": true
+          },
+          {
+            "point": "Read replicas — do we need eventual consistency for reads?",
+            "isCore": true
+          },
+          {
+            "point": "Cross-region consistency and data residency requirements?",
+            "isCore": false
+          },
+          {
+            "point": "OLTP vs OLAP separation — do analytics queries run on the same DB?",
+            "isCore": false
+          },
+          {
+            "point": "Regulatory requirements (GDPR data deletion, PCI-DSS for payment data)?",
+            "isCore": true
+          }
         ]
       },
       "modelAnswer": {
@@ -64,24 +119,66 @@
       "coachQuestion": "What goes into each table and what comes out? Think about inputs, outputs, and validation — at the database level.",
       "keyPoints": {
         "junior": [
-          { "point": "Column types match the data: strings, numbers, dates, booleans", "isCore": true },
-          { "point": "NOT NULL constraints on required fields", "isCore": true },
-          { "point": "VARCHAR vs TEXT fact: in modern Postgres and SQLite, VARCHAR and TEXT have identical storage and performance; length limits enforce domain validation, not speed", "isCore": true },
-          { "point": "Format and range checks (CHECK constraints for positive prices or allowed statuses)", "isCore": false }
+          {
+            "point": "Column types match the data: strings, numbers, dates, booleans",
+            "isCore": true
+          },
+          {
+            "point": "NOT NULL constraints on required fields",
+            "isCore": true
+          },
+          {
+            "point": "VARCHAR vs TEXT fact: in modern Postgres and SQLite, VARCHAR and TEXT have identical storage and performance; length limits enforce domain validation, not speed",
+            "isCore": true
+          },
+          {
+            "point": "Format and range checks (CHECK constraints for positive prices or allowed statuses)",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "CHECK constraints for domain business rules (price > 0, status IN ('active','inactive'))", "isCore": true },
-          { "point": "DEFAULT values for optional fields (created_at DEFAULT CURRENT_TIMESTAMP)", "isCore": true },
-          { "point": "Application-level vs database-level validation (defense in depth)", "isCore": true },
-          { "point": "What should NOT be stored: derived/calculated data, plain credentials, redundant copies", "isCore": false },
-          { "point": "Output shapes: what a typical SELECT returns, what gets JOINed", "isCore": false }
+          {
+            "point": "CHECK constraints for domain business rules (price > 0, status IN ('active','inactive'))",
+            "isCore": true
+          },
+          {
+            "point": "DEFAULT values for optional fields (created_at DEFAULT CURRENT_TIMESTAMP)",
+            "isCore": true
+          },
+          {
+            "point": "Application-level vs database-level validation (defense in depth)",
+            "isCore": true
+          },
+          {
+            "point": "What should NOT be stored: derived/calculated data, plain credentials, redundant copies",
+            "isCore": false
+          },
+          {
+            "point": "Output shapes: what a typical SELECT returns, what gets JOINed",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "Input sanitization: parameterized queries / prepared statements always to prevent SQL injection", "isCore": true },
-          { "point": "Character encoding: enforce UTF-8 (utf8mb4 in MySQL, UTF8 in Postgres) at database level", "isCore": true },
-          { "point": "Timezone handling: store as UTC TIMESTAMP (e.g. TIMESTAMPTZ), convert in client/application", "isCore": true },
-          { "point": "DECIMAL / NUMERIC for monetary values (FLOAT introduces binary rounding errors)", "isCore": true },
-          { "point": "Pagination strategy for query output: cursor-based (keyset) for large datasets", "isCore": false }
+          {
+            "point": "Input sanitization: parameterized queries / prepared statements always to prevent SQL injection",
+            "isCore": true
+          },
+          {
+            "point": "Character encoding: enforce UTF-8 (utf8mb4 in MySQL, UTF8 in Postgres) at database level",
+            "isCore": false
+          },
+          {
+            "point": "Timezone handling: store as UTC TIMESTAMP (e.g. TIMESTAMPTZ), convert in client/application",
+            "isCore": true
+          },
+          {
+            "point": "DECIMAL / NUMERIC for monetary values (FLOAT introduces binary rounding errors)",
+            "isCore": true
+          },
+          {
+            "point": "Pagination strategy for query output: cursor-based (keyset) for large datasets",
+            "isCore": false
+          }
         ]
       },
       "modelAnswer": {
@@ -94,25 +191,70 @@
       "coachQuestion": "Now design the actual schema. What tables, columns, relationships, and constraints would you create?",
       "keyPoints": {
         "junior": [
-          { "point": "Identify entities (nouns from requirements = tables)", "isCore": true },
-          { "point": "Define relationships: 1:1, 1:N (foreign key on 'many' side), M:N (junction table)", "isCore": true },
-          { "point": "Primary keys: auto-increment integer or UUID", "isCore": true },
-          { "point": "Foreign keys WITH integrity constraints (ON DELETE CASCADE/SET NULL/RESTRICT)", "isCore": true },
-          { "point": "NOT NULL on required fields, UNIQUE on naturally unique fields (email)", "isCore": true }
+          {
+            "point": "Identify entities (nouns from requirements = tables)",
+            "isCore": true
+          },
+          {
+            "point": "Define relationships: 1:1, 1:N (foreign key on 'many' side), M:N (junction table)",
+            "isCore": true
+          },
+          {
+            "point": "Primary keys: auto-increment integer or UUID",
+            "isCore": false
+          },
+          {
+            "point": "Foreign keys WITH integrity constraints (ON DELETE CASCADE/SET NULL/RESTRICT)",
+            "isCore": true
+          },
+          {
+            "point": "NOT NULL on required fields, UNIQUE on naturally unique fields (email)",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Junction tables for M:N relationships with additional attributes (e.g. role, joined_at)", "isCore": true },
-          { "point": "created_at and updated_at timestamps on every table", "isCore": true },
-          { "point": "Enum handling: CHECK constraint vs dedicated lookup table", "isCore": false },
-          { "point": "Normalization to 3NF vs strategic denormalization trade-offs", "isCore": true },
-          { "point": "Composite unique constraints where appropriate (e.g. user_id + project_id)", "isCore": false }
+          {
+            "point": "Junction tables for M:N relationships with additional attributes (e.g. role, joined_at)",
+            "isCore": true
+          },
+          {
+            "point": "created_at and updated_at timestamps on every table",
+            "isCore": true
+          },
+          {
+            "point": "Enum handling: CHECK constraint vs dedicated lookup table",
+            "isCore": false
+          },
+          {
+            "point": "Normalization to 3NF vs strategic denormalization trade-offs",
+            "isCore": true
+          },
+          {
+            "point": "Composite unique constraints where appropriate (e.g. user_id + project_id)",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "UUID v7 for sortable, distributed-safe, collision-free primary keys", "isCore": true },
-          { "point": "Partitioning strategy for high-volume tables (by range/date or tenant)", "isCore": false },
-          { "point": "JSON columns: when appropriate (semi-structured metadata) vs anti-pattern (relational queries inside JSON)", "isCore": true },
-          { "point": "Materialized views for computationally expensive aggregations", "isCore": false },
-          { "point": "Zero-downtime migration plan (additive column, dual-write/backfill, deprecate old)", "isCore": true }
+          {
+            "point": "UUID v7 for sortable, distributed-safe, collision-free primary keys",
+            "isCore": true
+          },
+          {
+            "point": "Partitioning strategy for high-volume tables (by range/date or tenant)",
+            "isCore": false
+          },
+          {
+            "point": "JSON columns: when appropriate (semi-structured metadata) vs anti-pattern (relational queries inside JSON)",
+            "isCore": true
+          },
+          {
+            "point": "Materialized views for computationally expensive aggregations",
+            "isCore": false
+          },
+          {
+            "point": "Zero-downtime migration plan (additive column, dual-write/backfill, deprecate old)",
+            "isCore": true
+          }
         ]
       },
       "modelAnswer": {
@@ -125,20 +267,50 @@
       "coachQuestion": "What are the key trade-offs in your schema design? Pick at least two and explain both sides.",
       "keyPoints": {
         "junior": [
-          { "point": "Auto-increment ID (simple, ordered, compact) vs UUID (distributed-safe, no collisions, but larger and random)", "isCore": true },
-          { "point": "Normalization (no data duplication, clean writes, complex joins) vs denormalization (fast reads, update anomaly risks)", "isCore": true },
-          { "point": "SQL (ACID guarantees, rigid schema, structured relations) vs NoSQL (flexible schema, horizontal scale)", "isCore": true }
+          {
+            "point": "Auto-increment ID (simple, ordered, compact) vs UUID (distributed-safe, no collisions, but larger and random)",
+            "isCore": true
+          },
+          {
+            "point": "Normalization (no data duplication, clean writes, complex joins) vs denormalization (fast reads, update anomaly risks)",
+            "isCore": true
+          },
+          {
+            "point": "SQL (ACID guarantees, rigid schema, structured relations) vs NoSQL (flexible schema, horizontal scale)",
+            "isCore": true
+          }
         ],
         "mid": [
-          { "point": "Soft delete (recoverable, audit preservation, but clutters queries with WHERE deleted_at IS NULL) vs hard delete (clean, space reclamation)", "isCore": true },
-          { "point": "Enum column (simple, rigid schema changes) vs lookup table (dynamic values, extra joins)", "isCore": false },
-          { "point": "Storing computed values (fast reads, risk of drift) vs computing on read (always accurate, CPU intensive)", "isCore": false }
+          {
+            "point": "Soft delete (recoverable, audit preservation, but clutters queries with WHERE deleted_at IS NULL) vs hard delete (clean, space reclamation)",
+            "isCore": true
+          },
+          {
+            "point": "Enum column (simple, rigid schema changes) vs lookup table (dynamic values, extra joins)",
+            "isCore": true
+          },
+          {
+            "point": "Storing computed values (fast reads, risk of drift) vs computing on read (always accurate, CPU intensive)",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "Sharding key choice (tenant_id vs user_id) and cross-shard join limitations", "isCore": true },
-          { "point": "Strong consistency (linearizable, higher latency) vs eventual consistency (fast, complex conflict resolution)", "isCore": true },
-          { "point": "Event sourcing (full immutable history, auditability, complex read projection) vs traditional CRUD (simple, lossy)", "isCore": false },
-          { "point": "Database engine selection: PostgreSQL (extensible, advanced indexing) vs MySQL vs SQLite (embedded, zero-ops)", "isCore": false }
+          {
+            "point": "Sharding key choice (tenant_id vs user_id) and cross-shard join limitations",
+            "isCore": true
+          },
+          {
+            "point": "Strong consistency (linearizable, higher latency) vs eventual consistency (fast, complex conflict resolution)",
+            "isCore": true
+          },
+          {
+            "point": "Event sourcing (full immutable history, auditability, complex read projection) vs traditional CRUD (simple, lossy)",
+            "isCore": false
+          },
+          {
+            "point": "Database engine selection: PostgreSQL (extensible, advanced indexing) vs MySQL vs SQLite (embedded, zero-ops)",
+            "isCore": false
+          }
         ]
       },
       "modelAnswer": {

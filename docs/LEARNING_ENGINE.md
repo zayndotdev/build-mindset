@@ -83,7 +83,7 @@ stateDiagram-v2
 topics have 4 steps where the real learning happens. Running all 10 makes
 sessions too long (30+ min), causes fatigue, and wastes free-tier quota on
 steps that are trivial for a given topic. The topic author picks the 4
-most valuable steps; the user can always request a "deep dive" (all 10).
+most valuable steps for standard mode. (Deep Dive mode is deferred to v2).
 
 ### 1.2 Quick Mode (2 Steps + Mini Transfer)
 
@@ -989,7 +989,7 @@ See [topics/auth-email-password.json](../packages/learning/topics/auth-email-pas
 |-------|------------|
 | Junior | Resource-oriented URLs (`/users`, `/users/:id`). HTTP verbs map to CRUD (GET=read, POST=create, PUT/PATCH=update, DELETE=delete). Proper status codes (200, 201, 400, 401, 404, 500). Consistent response shape (`{ data, error }`). |
 | Mid | + Pagination design (cursor vs offset). Filtering and sorting query params. Partial updates (PATCH vs PUT). HATEOAS links. Idempotency keys for POST. |
-| Senior | + Content negotiation. API versioning in URL vs header. Bulk operations. Rate limit headers (X-RateLimit-*). ETag/conditional requests. OpenAPI spec-first development. |
+| Senior | + Content negotiation. API versioning in URL vs header. Bulk operations. Rate limit headers (RateLimit-* per IETF draft, legacy X-RateLimit-*). ETag/conditional requests. OpenAPI spec-first development. |
 
 **Step 8 — Failure & Abuse:**
 

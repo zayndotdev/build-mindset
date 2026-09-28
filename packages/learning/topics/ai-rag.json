@@ -23,9 +23,20 @@
   ],
   "transferTopicId": "ai-chat-memory",
   "transferPrompt": "You've built RAG for documents. Now the user wants the chat to remember previous conversations across sessions. How does the retrieval and context strategy change? What new data do you need to store?",
-  "standardSteps": [1, 5, 6, 8],
+  "standardSteps": [
+    1,
+    5,
+    6,
+    8
+  ],
   "estimatedMinutes": 14,
-  "tags": ["ai", "llm", "rag", "intermediate", "priority"],
+  "tags": [
+    "ai",
+    "llm",
+    "rag",
+    "intermediate",
+    "priority"
+  ],
   "isCustom": false,
   "isActive": true,
   "steps": {
@@ -33,25 +44,70 @@
       "coachQuestion": "You're asked to build a RAG system so users can ask questions about a document corpus. What questions would you ask before designing it?",
       "keyPoints": {
         "junior": [
-          { "point": "What data sources are we ingesting (PDFs, Markdown, web pages, database records)?", "isCore": true },
-          { "point": "What types of questions will users ask (factual lookup, synthesis, code comparison)?", "isCore": true },
-          { "point": "How large is the corpus (tens of docs, thousands, millions)?", "isCore": true },
-          { "point": "How frequently is the corpus updated (static, daily batch, streaming real-time)?", "isCore": true },
-          { "point": "What accuracy/faithfulness and citation requirements are expected?", "isCore": false }
+          {
+            "point": "What data sources are we ingesting (PDFs, Markdown, web pages, database records)?",
+            "isCore": true
+          },
+          {
+            "point": "What types of questions will users ask (factual lookup, synthesis, code comparison)?",
+            "isCore": true
+          },
+          {
+            "point": "How large is the corpus (tens of docs, thousands, millions)?",
+            "isCore": true
+          },
+          {
+            "point": "How frequently is the corpus updated (static, daily batch, streaming real-time)?",
+            "isCore": false
+          },
+          {
+            "point": "What accuracy/faithfulness and citation requirements are expected?",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Multi-modal content handling (tables, embedded diagrams, source code)?", "isCore": true },
-          { "point": "Access control and permissions (document-level or chunk-level ACLs)?", "isCore": true },
-          { "point": "Latency budget (sub-second interactive chat vs asynchronous research)?", "isCore": true },
-          { "point": "Quality evaluation framework (RAG triad: context relevance, groundedness, answer relevance)?", "isCore": false },
-          { "point": "Source citation format and user interface display needs?", "isCore": false }
+          {
+            "point": "Multi-modal content handling (tables, embedded diagrams, source code)?",
+            "isCore": true
+          },
+          {
+            "point": "Access control and permissions (document-level or chunk-level ACLs)?",
+            "isCore": true
+          },
+          {
+            "point": "Latency budget (sub-second interactive chat vs asynchronous research)?",
+            "isCore": true
+          },
+          {
+            "point": "Quality evaluation framework (RAG triad: context relevance, groundedness, answer relevance)?",
+            "isCore": false
+          },
+          {
+            "point": "Source citation format and user interface display needs?",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "Multi-tenant document and vector isolation architecture?", "isCore": true },
-          { "point": "Compliance and data privacy (sending private corporate docs to third-party LLM APIs vs self-hosted)?", "isCore": true },
-          { "point": "Cost projections at scale (embedding token costs, vector index hosting, LLM input context pricing)?", "isCore": false },
-          { "point": "Hybrid search requirements (combining dense vector embeddings with sparse BM25 keyword matching)?", "isCore": true },
-          { "point": "Continuous evaluation pipeline to catch quality drift over time?", "isCore": false }
+          {
+            "point": "Multi-tenant document and vector isolation architecture?",
+            "isCore": true
+          },
+          {
+            "point": "Compliance and data privacy (sending private corporate docs to third-party LLM APIs vs self-hosted)?",
+            "isCore": true
+          },
+          {
+            "point": "Cost projections at scale (embedding token costs, vector index hosting, LLM input context pricing)?",
+            "isCore": false
+          },
+          {
+            "point": "Hybrid search requirements (combining dense vector embeddings with sparse BM25 keyword matching)?",
+            "isCore": true
+          },
+          {
+            "point": "Continuous evaluation pipeline to catch quality drift over time?",
+            "isCore": false
+          }
         ]
       },
       "modelAnswer": {
@@ -64,25 +120,70 @@
       "coachQuestion": "Design the data model for your RAG system. What do you need to store and how is it structured?",
       "keyPoints": {
         "junior": [
-          { "point": "documents table: id, title, source_url, raw_content, content_hash, created_at", "isCore": true },
-          { "point": "chunks table: id, document_id (FK), content text, embedding vector, chunk_index, created_at", "isCore": true },
-          { "point": "Vector storage mechanisms (e.g. pgvector, dedicated vector databases like Qdrant/Pinecone)", "isCore": true },
-          { "point": "Chunk size selection: typically 256–512 tokens based on embedding model context limits", "isCore": true },
-          { "point": "Chunk overlap (10–20%, e.g. 50 tokens) to prevent context fragmentation across boundaries", "isCore": false }
+          {
+            "point": "documents table: id, title, source_url, raw_content, content_hash, created_at",
+            "isCore": true
+          },
+          {
+            "point": "chunks table: id, document_id (FK), content text, embedding vector, chunk_index, created_at",
+            "isCore": true
+          },
+          {
+            "point": "Vector storage mechanisms (e.g. pgvector, dedicated vector databases like Qdrant/Pinecone)",
+            "isCore": true
+          },
+          {
+            "point": "Chunk size selection: typically 256–512 tokens based on embedding model context limits",
+            "isCore": false
+          },
+          {
+            "point": "Chunk overlap (10–20%, e.g. 50 tokens) to prevent context fragmentation across boundaries",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Metadata columns on chunks for pre-filtering (category, author, timestamp, tenant_id)", "isCore": true },
-          { "point": "Embedding model tracking column (model name, dimensions) to govern re-indexing migrations", "isCore": true },
-          { "point": "Document versioning and atomic chunk replacement when source documents change", "isCore": true },
-          { "point": "Chunking strategy choice (recursive character text splitting vs sentence / semantic chunking)", "isCore": false },
-          { "point": "Vector index types: HNSW (Hierarchical Navigable Small World) vs IVFFlat trade-offs", "isCore": false }
+          {
+            "point": "Metadata columns on chunks for pre-filtering (category, author, timestamp, tenant_id)",
+            "isCore": true
+          },
+          {
+            "point": "Embedding model tracking column (model name, dimensions) to govern re-indexing migrations",
+            "isCore": true
+          },
+          {
+            "point": "Document versioning and atomic chunk replacement when source documents change",
+            "isCore": true
+          },
+          {
+            "point": "Chunking strategy choice (recursive character text splitting vs sentence / semantic chunking)",
+            "isCore": false
+          },
+          {
+            "point": "Vector index types: HNSW (Hierarchical Navigable Small World) vs IVFFlat trade-offs",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "Multi-index hybrid architecture (dense vectors alongside BM25 sparse inverted index)", "isCore": true },
-          { "point": "Decoupling vector indexing from transactional metadata storage for query scalability", "isCore": false },
-          { "point": "Content hashing (SHA-256) caching to eliminate redundant embedding computation", "isCore": true },
-          { "point": "TTL and invalidation pipelines for dynamic/ephemeral documentation sources", "isCore": false },
-          { "point": "Strict multi-tenant partitioning (tenant_id as hard pre-filter in ANN vector index)", "isCore": true }
+          {
+            "point": "Multi-index hybrid architecture (dense vectors alongside BM25 sparse inverted index)",
+            "isCore": true
+          },
+          {
+            "point": "Decoupling vector indexing from transactional metadata storage for query scalability",
+            "isCore": false
+          },
+          {
+            "point": "Content hashing (SHA-256) caching to eliminate redundant embedding computation",
+            "isCore": true
+          },
+          {
+            "point": "TTL and invalidation pipelines for dynamic/ephemeral documentation sources",
+            "isCore": false
+          },
+          {
+            "point": "Strict multi-tenant partitioning (tenant_id as hard pre-filter in ANN vector index)",
+            "isCore": true
+          }
         ]
       },
       "modelAnswer": {
@@ -95,24 +196,66 @@
       "coachQuestion": "Walk me through the flow: what happens when a document is added, and what happens when a user asks a question?",
       "keyPoints": {
         "junior": [
-          { "point": "Indexing flow: Document Ingest → Text Extraction → Chunking with overlap → Embedding generation → Vector DB storage", "isCore": true },
-          { "point": "Query flow: User Question → Query Embedding → Vector Similarity Search (Top-K) → Prompt Construction with context → LLM Generation", "isCore": true },
-          { "point": "Top-K selection (typically 3–5 chunks) balanced against token limits and relevance", "isCore": true },
-          { "point": "System prompt framing: 'Answer strictly using the provided context; state if information is missing'", "isCore": false }
+          {
+            "point": "Indexing flow: Document Ingest → Text Extraction → Chunking with overlap → Embedding generation → Vector DB storage",
+            "isCore": true
+          },
+          {
+            "point": "Query flow: User Question → Query Embedding → Vector Similarity Search (Top-K) → Prompt Construction with context → LLM Generation",
+            "isCore": true
+          },
+          {
+            "point": "Top-K selection (typically 3–5 chunks) balanced against token limits and relevance",
+            "isCore": true
+          },
+          {
+            "point": "System prompt framing: 'Answer strictly using the provided context; state if information is missing'",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Query rewriting / expansion (hypothetical document embeddings or rephrasing user queries)", "isCore": false },
-          { "point": "Re-ranking stage (using a cross-encoder model like Cohere Rerank to reorder Top-K candidates)", "isCore": true },
-          { "point": "Source citations: passing document title, URL, or section ID into the generated response", "isCore": true },
-          { "point": "Streaming output (SSE / token streaming) to optimize user perceived latency (TTFT)", "isCore": false },
-          { "point": "Confidence thresholding: returning a clear 'I do not have information' when distance exceeds cutoff", "isCore": true }
+          {
+            "point": "Query rewriting / expansion (hypothetical document embeddings or rephrasing user queries)",
+            "isCore": false
+          },
+          {
+            "point": "Re-ranking stage (using a cross-encoder model like Cohere Rerank to reorder Top-K candidates)",
+            "isCore": true
+          },
+          {
+            "point": "Source citations: passing document title, URL, or section ID into the generated response",
+            "isCore": true
+          },
+          {
+            "point": "Streaming output (SSE / token streaming) to optimize user perceived latency (TTFT)",
+            "isCore": false
+          },
+          {
+            "point": "Confidence thresholding: returning a clear 'I do not have information' when distance exceeds cutoff",
+            "isCore": true
+          }
         ],
         "senior": [
-          { "point": "Agentic RAG: dynamic tool calling, multi-hop retrieval, and query decomposition", "isCore": true },
-          { "point": "Query classification and routing (fast direct LLM vs vector search vs SQL lookup)", "isCore": false },
-          { "point": "Feedback loops (implicit click-through or explicit thumbs up/down mapped to retrieval tuning)", "isCore": false },
-          { "point": "Automated evaluation metrics (Ragas, TruLens: Context Recall, Faithfulness, Answer Relevance)", "isCore": true },
-          { "point": "Semantic caching of frequent queries and response embeddings to slash latency and cost", "isCore": false }
+          {
+            "point": "Agentic RAG: dynamic tool calling, multi-hop retrieval, and query decomposition",
+            "isCore": true
+          },
+          {
+            "point": "Query classification and routing (fast direct LLM vs vector search vs SQL lookup)",
+            "isCore": false
+          },
+          {
+            "point": "Feedback loops (implicit click-through or explicit thumbs up/down mapped to retrieval tuning)",
+            "isCore": false
+          },
+          {
+            "point": "Automated evaluation metrics (Ragas, TruLens: Context Recall, Faithfulness, Answer Relevance)",
+            "isCore": true
+          },
+          {
+            "point": "Semantic caching of frequent queries and response embeddings to slash latency and cost",
+            "isCore": false
+          }
         ]
       },
       "modelAnswer": {
@@ -125,25 +268,70 @@
       "coachQuestion": "What can go wrong with your RAG system? Think about failures, bad outputs, and abuse.",
       "keyPoints": {
         "junior": [
-          { "point": "Empty retrieval / no relevant chunks: must gracefully decline rather than hallucinating answers", "isCore": true },
-          { "point": "Hallucination despite context: LLM extrapolates beyond supplied facts; enforce strict prompt constraints", "isCore": true },
-          { "point": "Stale data: failure to invalidate embeddings when source documents are modified or removed", "isCore": true },
-          { "point": "Chunk sizing pitfalls: loss of semantic coherence if too small, diluted cosine similarity if too large", "isCore": true },
-          { "point": "Embedding model mismatch: query and documents MUST use the exact same embedding model", "isCore": true }
+          {
+            "point": "Empty retrieval / no relevant chunks: must gracefully decline rather than hallucinating answers",
+            "isCore": true
+          },
+          {
+            "point": "Hallucination despite context: LLM extrapolates beyond supplied facts; enforce strict prompt constraints",
+            "isCore": true
+          },
+          {
+            "point": "Stale data: failure to invalidate embeddings when source documents are modified or removed",
+            "isCore": true
+          },
+          {
+            "point": "Chunk sizing pitfalls: loss of semantic coherence if too small, diluted cosine similarity if too large",
+            "isCore": false
+          },
+          {
+            "point": "Embedding model mismatch: query and documents MUST use the exact same embedding model",
+            "isCore": false
+          }
         ],
         "mid": [
-          { "point": "Indirect prompt injection via retrieved documents (untrusted document content commanding the LLM)", "isCore": true },
-          { "point": "Embedding model deprecation and drift: changing models requires full corpus re-embedding", "isCore": true },
-          { "point": "API rate limits and cost spikes during batch ingestion and high-concurrency query spikes", "isCore": false },
-          { "point": "Handling token context window overflow when too many chunks are injected", "isCore": false },
-          { "point": "Multilingual retrieval challenges (cross-lingual query vs document mismatch)", "isCore": false }
+          {
+            "point": "Indirect prompt injection via retrieved documents (untrusted document content commanding the LLM)",
+            "isCore": true
+          },
+          {
+            "point": "Embedding model deprecation and drift: changing models requires full corpus re-embedding",
+            "isCore": true
+          },
+          {
+            "point": "API rate limits and cost spikes during batch ingestion and high-concurrency query spikes",
+            "isCore": false
+          },
+          {
+            "point": "Handling token context window overflow when too many chunks are injected",
+            "isCore": false
+          },
+          {
+            "point": "Multilingual retrieval challenges (cross-lingual query vs document mismatch)",
+            "isCore": false
+          }
         ],
         "senior": [
-          { "point": "Corpus poisoning: malicious documents engineered to override legitimate operational guidelines", "isCore": true },
-          { "point": "Cross-tenant data leakage: ensuring tenant filters are cryptographically/hard enforced at index query time", "isCore": true },
-          { "point": "Vector database outage resilience: graceful fallback to BM25 keyword search or cached answers", "isCore": true },
-          { "point": "Silent degradation monitoring: tracking average similarity scores and answer groundedness drifts", "isCore": false },
-          { "point": "Copyright, privacy (PII scrubbing in ingested chunks), and data residency compliance", "isCore": false }
+          {
+            "point": "Corpus poisoning: malicious documents engineered to override legitimate operational guidelines",
+            "isCore": true
+          },
+          {
+            "point": "Cross-tenant data leakage: ensuring tenant filters are cryptographically/hard enforced at index query time",
+            "isCore": true
+          },
+          {
+            "point": "Vector database outage resilience: graceful fallback to BM25 keyword search or cached answers",
+            "isCore": true
+          },
+          {
+            "point": "Silent degradation monitoring: tracking average similarity scores and answer groundedness drifts",
+            "isCore": false
+          },
+          {
+            "point": "Copyright, privacy (PII scrubbing in ingested chunks), and data residency compliance",
+            "isCore": false
+          }
         ]
       },
       "modelAnswer": {

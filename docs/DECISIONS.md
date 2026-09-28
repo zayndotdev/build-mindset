@@ -24,8 +24,9 @@
 - **Decision:** Oracle Cloud Always Free ARM tier (2 OCPU, 12 GB RAM, 200 GB
   storage) with Tailscale Serve for HTTPS. Genuinely private (Tailnet only),
   no domain needed, auto-TLS via `.ts.net` subdomain. Credit card required
-  for Oracle signup. Idle instances may be reclaimed after 7 days (mitigated
-  by cron heartbeat).
+  for Oracle signup. Idle instance reclaim risk on Always Free accounts is
+  eliminated by upgrading to Pay As You Go (PAYG) and mitigated by OCI metric
+  alarms plus nightly off-VM encrypted backups.
 - **ADR:** [ADR-004](adr/004-hosting-oracle-cloud.md)
 
 ### D-003: Primary Phone — Android Chrome
@@ -87,10 +88,10 @@
   engineering discussion content. User is aware and can switch to paid tiers
   for privacy.
 
-### D-011: Gemini Model Selection — Dynamic Discovery & Deprecation Verification
+### D-011: Universal Dynamic Model Discovery Across All Providers
 - **Date:** 2026-09-29
-- **Context:** `gemini-2.0-flash` was permanently shut down on June 1, 2026. Hardcoding static model names creates runtime failure when providers deprecate models.
-- **Decision:** Default to `gemini-3.8-flash` for the primary Gemini tier. The application builds model lists dynamically via live `ai.models.list()` API calls, verified against Google's official deprecation schedule. Model IDs remain configurable in user settings.
+- **Context:** Free-tier AI model lifecycles are volatile (e.g. `gemini-2.0-flash` shut down June 1, 2026). Hardcoding static model names across providers causes silent runtime failures when models are retired.
+- **Decision:** Dynamic model discovery applies to all four providers (Gemini `ai.models.list()`, Groq `models.list()`, Mistral `models.list()`, Cohere `models.list()`). Discovered models are verified against capabilities and cached, with verified fallbacks (`gemini-3.8-flash`, `llama-3.3-70b-versatile`, `mistral-small-latest`, `command-r`). Users can override models in Settings.
 
 ---
 
