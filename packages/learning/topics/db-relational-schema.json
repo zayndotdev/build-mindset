@@ -38,6 +38,7 @@
   ],
   "isCustom": false,
   "isActive": true,
+  "referenceStatus": "authored",
   "steps": {
     "1": {
       "coachQuestion": "You're asked to design a database schema for a new feature. Before drawing tables, what questions would you ask?",

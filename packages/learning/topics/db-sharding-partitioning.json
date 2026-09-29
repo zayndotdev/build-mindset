@@ -1,0 +1,41 @@
+{
+  "id": "db-sharding-partitioning",
+  "title": "Horizontal Database Sharding & Partitioning",
+  "category": "data and storage",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Select partition keys to balance write loads and avoid hot spots",
+    "Compare range-based, hash-based, and directory-based sharding architectures",
+    "Handle cross-shard queries and distributed transactions"
+  ],
+  "keyTradeoffs": [
+    "Application-level sharding vs transparent distributed database engines (Citrus, Vitess)",
+    "Co-locating related entity tables vs uniform horizontal data distribution"
+  ],
+  "commonPitfalls": [
+    "Choosing a monotonically increasing ID as partition key (causing single-shard write bottleneck)",
+    "Executing unindexed scatter-gather queries across all database shards"
+  ],
+  "transferTopicId": "db-read-replicas",
+  "transferPrompt": "When should a team choose read replicas over sharding for scaling database read bottlenecks?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "database",
+    "sharding",
+    "scalability",
+    "partitioning"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

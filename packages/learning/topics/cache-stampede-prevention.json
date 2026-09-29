@@ -1,0 +1,41 @@
+{
+  "id": "cache-stampede-prevention",
+  "title": "Cache Invalidation, Thundering Herd & Dogpiling",
+  "category": "caching",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "cache-redis-patterns"
+  ],
+  "learningObjectives": [
+    "Prevent Cache Stampedes (Dogpiling / Thundering Herd) using probabilistic early expiration (XFetch)",
+    "Implement distributed single-flight query coalescing and mutex locking",
+    "Design reliable cache invalidation patterns via event-driven pub/sub"
+  ],
+  "keyTradeoffs": [
+    "Serving stale data while background refresh completes vs blocking client threads on cache misses",
+    "Probabilistic early recomputation CPU cost vs deterministic TTL simplicity"
+  ],
+  "commonPitfalls": [
+    "Allowing 10,000 concurrent web requests to hit PostgreSQL at once when a homepage cache key expires",
+    "Deadlocks in distributed cache locking implementations"
+  ],
+  "transferTopicId": "rate-limiting-token-bucket",
+  "transferPrompt": "How can rate limiters protect backends when cache layers fail or are completely flushed?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "caching",
+    "stampede",
+    "thundering-herd",
+    "resilience"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

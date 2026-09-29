@@ -1,0 +1,41 @@
+{
+  "id": "file-s3-direct-upload",
+  "title": "Direct Pre-Signed S3 File Uploads & Antivirus Scanning",
+  "category": "file handling",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Generate pre-signed S3/GCS PUT URLs with strict content-type and size limits",
+    "Prevent server bottlenecking by bypassing API servers for large file uploads",
+    "Trigger asynchronous malware/antivirus scanning before making uploaded files public"
+  ],
+  "keyTradeoffs": [
+    "Direct client-to-storage upload vs API proxy streaming",
+    "Pre-signed POST with policy conditions vs pre-signed PUT URLs"
+  ],
+  "commonPitfalls": [
+    "Allowing public read access on bucket uploads before security inspection completes",
+    "Trusting client-reported MIME types without inspecting magic bytes"
+  ],
+  "transferTopicId": "file-image-processing",
+  "transferPrompt": "Once a raw image file lands in S3, how do you trigger automated thumbnail generation pipelines?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "files",
+    "s3",
+    "storage",
+    "security"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

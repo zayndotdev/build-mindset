@@ -1,0 +1,41 @@
+{
+  "id": "deploy-canary-blue-green",
+  "title": "Blue-Green & Canary Deployment Pipelines",
+  "category": "deployment",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "scale-load-balancing"
+  ],
+  "learningObjectives": [
+    "Compare Blue-Green instant switch deployments with gradual Canary percentage rollouts",
+    "Automate automated rollback triggers on error rate or latency metric anomalies",
+    "Maintain backward-compatible database schemas across concurrent running versions"
+  ],
+  "keyTradeoffs": [
+    "Double infrastructure footprint cost during Blue-Green deployments vs Canary gradual risk exposure",
+    "Sticky canary sessions by user ID vs random percentage request routing"
+  ],
+  "commonPitfalls": [
+    "Deploying breaking database schema changes during a blue-green swap, crashing the live version",
+    "Failing to monitor canary metrics for subtle errors before rolling out to 100% of production"
+  ],
+  "transferTopicId": "obs-slos-alerting",
+  "transferPrompt": "How do automated canary deployment controllers evaluate SLO burn rates to trigger rollbacks?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "deployment",
+    "canary",
+    "blue-green",
+    "devops"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

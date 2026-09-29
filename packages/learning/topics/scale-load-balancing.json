@@ -1,0 +1,41 @@
+{
+  "id": "scale-load-balancing",
+  "title": "Load Balancing Strategies & Health Probing",
+  "category": "scalability",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Compare Layer 4 (TCP/UDP) vs Layer 7 (HTTP) load balancing algorithms",
+    "Evaluate Round Robin, Least Connections, and Consistent Hashing distribution",
+    "Configure deep vs shallow `/healthz` and `/readyz` probes without cascading outages"
+  ],
+  "keyTradeoffs": [
+    "Layer 7 path-based routing flexibility vs Layer 4 maximum packet throughput",
+    "Sticky sessions (session affinity) vs stateless uniform request distribution"
+  ],
+  "commonPitfalls": [
+    "Health check endpoints that query the database, causing all pods to be marked dead when the database is slow",
+    "Uneven load distribution caused by long-lived persistent HTTP/2 connections on standard round-robin"
+  ],
+  "transferTopicId": "scale-cdn-edge-caching",
+  "transferPrompt": "How does CDN edge caching reduce load on central application load balancers?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "scalability",
+    "loadbalancing",
+    "devops",
+    "networking"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

@@ -1,0 +1,41 @@
+{
+  "id": "db-read-replicas",
+  "title": "Read Replicas & Eventual Consistency",
+  "category": "data and storage",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Route read-only queries to secondary replicas while directing writes to primary",
+    "Mitigate replication lag and read-your-own-writes inconsistencies",
+    "Implement sticky sessions or session-consistency tokens for user actions"
+  ],
+  "keyTradeoffs": [
+    "Synchronous vs asynchronous replication overhead and durability guarantees",
+    "Query router middleware vs separate connection pools in application code"
+  ],
+  "commonPitfalls": [
+    "Showing stale data to a user immediately after they submit a profile or checkout update",
+    "Overwhelming primary when replica lag monitor trips fallback switches"
+  ],
+  "transferTopicId": "cache-redis-patterns",
+  "transferPrompt": "How does caching with Redis interact with replica lag in a high-traffic read environment?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "database",
+    "replication",
+    "consistency",
+    "scalability"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

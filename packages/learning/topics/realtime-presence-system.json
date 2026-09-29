@@ -1,0 +1,41 @@
+{
+  "id": "realtime-presence-system",
+  "title": "User Online Presence & Heartbeat Tracking",
+  "category": "real-time features",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "realtime-websockets-chat"
+  ],
+  "learningObjectives": [
+    "Design heartbeat pings and TTL-based key expiry in Redis for presence detection",
+    "Broadcast presence transitions (online, idle, offline) efficiently to followers",
+    "Handle connection flapping and brief network drops without false offline alerts"
+  ],
+  "keyTradeoffs": [
+    "Continuous active heartbeats vs passive request-driven last-seen timestamps",
+    "Immediate broadcast of every presence change vs batched delta updates"
+  ],
+  "commonPitfalls": [
+    "Flooding network sockets by broadcasting presence changes to millions of irrelevant users",
+    "Setting heartbeat TTLs too short, triggering spurious offline flickers during momentary packet loss"
+  ],
+  "transferTopicId": "realtime-collaborative-editing",
+  "transferPrompt": "How is user presence combined with cursor coordinates in collaborative document workspaces?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "realtime",
+    "presence",
+    "redis",
+    "websockets"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

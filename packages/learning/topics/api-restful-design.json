@@ -38,6 +38,7 @@
   ],
   "isCustom": false,
   "isActive": true,
+  "referenceStatus": "authored",
   "steps": {
     "1": {
       "coachQuestion": "You're asked to design a RESTful API. Before jumping into endpoints, what questions would you ask to clarify the requirements?",

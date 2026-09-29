@@ -1,0 +1,41 @@
+{
+  "id": "jobs-distributed-cron",
+  "title": "Distributed Scheduled Tasks & Cron Coordination",
+  "category": "async/background jobs",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "jobs-async-queues"
+  ],
+  "learningObjectives": [
+    "Prevent duplicate execution of scheduled jobs in horizontally scaled clusters",
+    "Implement distributed leader election or distributed mutex locks (Redlock)",
+    "Handle job drift, missed schedules during outages, and catch-up policies"
+  ],
+  "keyTradeoffs": [
+    "Centralized cloud scheduler (e.g. AWS EventBridge) vs application-level distributed scheduler",
+    "Catch-up execution of historical intervals vs skipping to current clock time"
+  ],
+  "commonPitfalls": [
+    "Assuming a single server will run standard Unix cron when deployed in Kubernetes pods",
+    "Lock expiration that occurs while a long-running batch job is still executing"
+  ],
+  "transferTopicId": "jobs-event-driven-pubsub",
+  "transferPrompt": "How can recurring jobs emit events to a pub/sub bus to decouple triggers from execution logic?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "cron",
+    "jobs",
+    "distributed-systems",
+    "scheduling"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

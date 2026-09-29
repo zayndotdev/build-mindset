@@ -1,0 +1,41 @@
+{
+  "id": "rel-circuit-breaker",
+  "title": "Circuit Breakers & Graceful Degradation",
+  "category": "reliability and failure handling",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Implement the three-state Circuit Breaker pattern: CLOSED, OPEN, and HALF_OPEN",
+    "Track failure thresholds, timeout frequencies, and cooldown recovery windows",
+    "Design graceful fallbacks when dependencies fail (cached responses, default states)"
+  ],
+  "keyTradeoffs": [
+    "Failing fast with an immediate fallback error vs waiting on upstream connection timeouts",
+    "Shared distributed circuit breaker state vs local per-process circuit breaker state"
+  ],
+  "commonPitfalls": [
+    "Setting trip thresholds too sensitive, causing cascading circuit trips during momentary network blips",
+    "Treating 4xx client errors as upstream service failures that trip the breaker"
+  ],
+  "transferTopicId": "rel-retry-exponential-jitter",
+  "transferPrompt": "How do client-side retry strategies collaborate with circuit breakers without amplifying upstream outages?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "reliability",
+    "circuit-breaker",
+    "resilience",
+    "architecture"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

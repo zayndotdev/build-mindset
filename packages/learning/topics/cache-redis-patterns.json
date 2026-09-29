@@ -1,0 +1,41 @@
+{
+  "id": "cache-redis-patterns",
+  "title": "Redis Caching Patterns: Cache-Aside vs Write-Through",
+  "category": "caching",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Implement Cache-Aside, Write-Through, and Write-Behind caching strategies",
+    "Determine appropriate Time-To-Live (TTL) policies and eviction strategies (LRU, LFU)",
+    "Design composite cache keys and namespace invalidation patterns"
+  ],
+  "keyTradeoffs": [
+    "Read-heavy cache-aside simplicity vs write-through data consistency guarantees",
+    "Memory cost of high TTL caches vs database query load on cache misses"
+  ],
+  "commonPitfalls": [
+    "Setting identical TTLs on thousands of cached keys, causing synchronized mass expiration",
+    "Caching null or error responses improperly without a short protective TTL"
+  ],
+  "transferTopicId": "cache-stampede-prevention",
+  "transferPrompt": "What happens when a hot cache key expires while thousands of concurrent requests arrive simultaneously?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "caching",
+    "redis",
+    "performance",
+    "architecture"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

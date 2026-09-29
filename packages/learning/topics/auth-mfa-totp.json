@@ -1,0 +1,41 @@
+{
+  "id": "auth-mfa-totp",
+  "title": "Multi-Factor Authentication via TOTP",
+  "category": "authentication and authorization",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "auth-email-password"
+  ],
+  "learningObjectives": [
+    "Understand RFC 6238 Time-based One-Time Password algorithm",
+    "Securely encrypt TOTP shared secrets at rest",
+    "Design emergency single-use backup recovery codes"
+  ],
+  "keyTradeoffs": [
+    "App-based TOTP vs SMS/Email verification codes",
+    "Grace periods for clock drift (30-second steps vs 60-second window)"
+  ],
+  "commonPitfalls": [
+    "Storing TOTP secrets in plaintext in the user table",
+    "Accepting the same 6-digit TOTP code multiple times within the time step window"
+  ],
+  "transferTopicId": "auth-session-jwt",
+  "transferPrompt": "How does session state and token issuance change between step 1 (passphrase) and step 2 (TOTP verification)?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "auth",
+    "mfa",
+    "totp",
+    "security"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

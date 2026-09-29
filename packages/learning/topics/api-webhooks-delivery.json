@@ -1,0 +1,41 @@
+{
+  "id": "api-webhooks-delivery",
+  "title": "Outbound Webhook Delivery & At-Least-Once Guarantees",
+  "category": "APIs",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Sign payloads with HMAC-SHA256 and timestamp headers to prevent replay attacks",
+    "Implement exponential backoff retry schedules for failing customer endpoints",
+    "Isolate tenant delivery queues so slow consumer endpoints do not block others"
+  ],
+  "keyTradeoffs": [
+    "Immediate delivery synchronous HTTP calls vs background worker queue dispatch",
+    "Strict ordered delivery per resource vs high-throughput concurrent deliveries"
+  ],
+  "commonPitfalls": [
+    "Failing to verify recipient SSL certificates or following unbounded redirect chains (SSRF risks)",
+    "Retrying without jitter, causing thundering herds on customer servers when they recover"
+  ],
+  "transferTopicId": "api-idempotency-keys",
+  "transferPrompt": "How should webhook consumers use idempotency keys and event IDs to handle duplicate deliveries gracefully?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "api",
+    "webhooks",
+    "security",
+    "integration"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

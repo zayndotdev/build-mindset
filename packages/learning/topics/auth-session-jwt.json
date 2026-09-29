@@ -1,0 +1,41 @@
+{
+  "id": "auth-session-jwt",
+  "title": "Session Management vs Stateless JWTs",
+  "category": "authentication and authorization",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "auth-email-password"
+  ],
+  "learningObjectives": [
+    "Compare server-side session stores with stateless JSON Web Tokens",
+    "Design revocation strategies for distributed tokens (blacklists, token versioning)",
+    "Secure HttpOnly cookie storage vs Authorization bearer tokens"
+  ],
+  "keyTradeoffs": [
+    "Instant revocation capability vs zero-database-lookup verification performance",
+    "Payload size and network overhead on high-throughput microservices"
+  ],
+  "commonPitfalls": [
+    "Storing sensitive credentials or excessive claims inside JWT payload",
+    "Accepting the `none` algorithm or weak signing secrets"
+  ],
+  "transferTopicId": "cache-redis-patterns",
+  "transferPrompt": "How would you leverage Redis to implement hybrid short-lived JWTs with central session revocation?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "auth",
+    "sessions",
+    "jwt",
+    "security"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

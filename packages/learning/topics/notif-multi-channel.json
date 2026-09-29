@@ -1,0 +1,41 @@
+{
+  "id": "notif-multi-channel",
+  "title": "Multi-Channel Notification Fanout (Email, SMS, Push)",
+  "category": "notifications",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "jobs-async-queues"
+  ],
+  "learningObjectives": [
+    "Design unified notification schemas with provider-specific adapter templates",
+    "Implement fallback routing across external gateways (e.g. Twilio, SendGrid, FCM)",
+    "Track delivery states (sent, delivered, opened, bounced) through webhooks"
+  ],
+  "keyTradeoffs": [
+    "Immediate delivery cascade vs batching notification digests",
+    "In-house template rendering vs third-party notification platforms"
+  ],
+  "commonPitfalls": [
+    "Blocking user-facing requests on external SMTP/SMS network calls",
+    "Failing to handle hard bounces and spam complaints, leading to IP reputation burn"
+  ],
+  "transferTopicId": "notif-user-preferences",
+  "transferPrompt": "How does notification fanout check customer preference rules and quiet hours before sending messages?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "notifications",
+    "email",
+    "sms",
+    "push"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

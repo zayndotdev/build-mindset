@@ -1,0 +1,41 @@
+{
+  "id": "pay-refund-reconciliation",
+  "title": "Payment Reconciliation & Chargeback Handling",
+  "category": "payments",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "pay-ledger-double-entry"
+  ],
+  "learningObjectives": [
+    "Reconcile internal transaction ledgers with external bank settlement files",
+    "Model partial refunds, dispute workflows, and penalty fee allocation",
+    "Generate automated variance reports and audit trails"
+  ],
+  "keyTradeoffs": [
+    "Automated automated settlement matching vs manual exceptions workflow",
+    "Immediate merchant account debit on dispute notice vs holding reserves"
+  ],
+  "commonPitfalls": [
+    "Refunding more than the original captured charge amount",
+    "Failing to account for currency exchange fluctuations between charge date and settlement date"
+  ],
+  "transferTopicId": "pay-stripe-checkout",
+  "transferPrompt": "How do gateway chargeback webhooks trigger automatic license/subscription revocations in your app?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "payments",
+    "reconciliation",
+    "chargebacks",
+    "fintech"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

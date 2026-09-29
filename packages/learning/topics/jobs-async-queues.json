@@ -1,0 +1,41 @@
+{
+  "id": "jobs-async-queues",
+  "title": "Asynchronous Background Job Processing & Dead-Letter Queues",
+  "category": "async/background jobs",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Decouple heavy processing from HTTP request cycles using reliable message brokers",
+    "Design idempotent job workers that survive ungraceful process crashes",
+    "Configure Dead-Letter Queues (DLQ) and alerting for unrecoverable poisonous messages"
+  ],
+  "keyTradeoffs": [
+    "Redis-based lightweight queues (BullMQ) vs distributed persistent logs (RabbitMQ, SQS, Kafka)",
+    "At-least-once processing guarantees vs at-most-once performance"
+  ],
+  "commonPitfalls": [
+    "Passing large payload objects in job metadata instead of entity IDs",
+    "Lacking dead-letter queue limits, allowing malformed poison pill jobs to loop endlessly"
+  ],
+  "transferTopicId": "jobs-distributed-cron",
+  "transferPrompt": "How do you coordinate recurring scheduled batch jobs using queue workers without duplicate task execution?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "jobs",
+    "queues",
+    "async",
+    "workers"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

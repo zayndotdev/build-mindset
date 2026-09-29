@@ -1,0 +1,41 @@
+{
+  "id": "ai-chat-memory",
+  "title": "Conversational AI Context Window Management & Memory",
+  "category": "AI/LLM features",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "ai-rag"
+  ],
+  "learningObjectives": [
+    "Design context window management: rolling window, semantic summary, and vector retrieval",
+    "Extract structured entities and long-term user preferences from conversational history",
+    "Manage token budgets across system prompt, retrieved context, chat history, and generation reserve"
+  ],
+  "keyTradeoffs": [
+    "Summarization LLM latency and token cost vs loss of verbatim historical dialogue details",
+    "Client-side state tracking vs server-managed persistent conversational memory"
+  ],
+  "commonPitfalls": [
+    "Exceeding LLM context window limits without a graceful compression or truncation policy",
+    "Injecting unsanitized user chat history into system prompt instructions (indirect prompt injection)"
+  ],
+  "transferTopicId": "ai-rag",
+  "transferPrompt": "How do you combine conversational memory with external vector RAG to answer queries grounded in user history?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "ai",
+    "llm",
+    "memory",
+    "context-window"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

@@ -27,6 +27,7 @@ export class TopicRepository {
         tags: topicData.tags,
         isCustom: topicData.isCustom ?? false,
         isActive: topicData.isActive ?? true,
+        referenceStatus: topicData.referenceStatus ?? 'authored',
         stepsData: JSON.stringify(topicData.steps),
         createdAt: now,
         updatedAt: now,
@@ -52,6 +53,7 @@ export class TopicRepository {
       tags: r.tags,
       isCustom: r.isCustom,
       isActive: r.isActive,
+      referenceStatus: (r.referenceStatus as Topic['referenceStatus']) ?? 'authored',
     }));
   }
 
@@ -76,6 +78,7 @@ export class TopicRepository {
       tags: r.tags,
       isCustom: r.isCustom,
       isActive: r.isActive ?? true,
+      referenceStatus: (r.referenceStatus as Topic['referenceStatus']) ?? 'authored',
       steps: typeof r.stepsData === 'string' ? JSON.parse(r.stepsData) : (r.stepsData as unknown as Topic['steps']),
     };
   }

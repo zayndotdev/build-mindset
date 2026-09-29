@@ -1,0 +1,41 @@
+{
+  "id": "search-elasticsearch",
+  "title": "Full-Text Search with Elasticsearch",
+  "category": "search",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Configure tokenizers, stemmers, and analyzers for multi-language search",
+    "Sync database state to search indexes using Transactional Outbox or CDC",
+    "Structure multi-match queries with field boosting and fuzzy matching"
+  ],
+  "keyTradeoffs": [
+    "Real-time indexing lag vs primary database write latency",
+    "Elasticsearch cluster operational overhead vs PostgreSQL pg_trgm / tsvector"
+  ],
+  "commonPitfalls": [
+    "Using Elasticsearch as the primary source of truth rather than a secondary index",
+    "Mapping explosion caused by dynamic field generation from arbitrary user JSON"
+  ],
+  "transferTopicId": "search-autocomplete",
+  "transferPrompt": "How does full-text document search differ in indexing structures from instant prefix autocomplete?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "search",
+    "elasticsearch",
+    "indexing",
+    "fulltext"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

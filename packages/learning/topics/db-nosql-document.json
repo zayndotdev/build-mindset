@@ -1,0 +1,41 @@
+{
+  "id": "db-nosql-document",
+  "title": "NoSQL Document Store Modeling",
+  "category": "data and storage",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Model entities with embedded documents vs normalized references",
+    "Design query-first schema patterns optimized for single-read retrieval",
+    "Enforce atomic updates using optimistic concurrency control (CAS / version fields)"
+  ],
+  "keyTradeoffs": [
+    "Denormalization write amplification vs low-latency document read speeds",
+    "Document size limits (e.g. MongoDB 16MB) vs splitting into subcollections"
+  ],
+  "commonPitfalls": [
+    "Treating a document store like an RDBMS and attempting client-side multi-table joins",
+    "Unbounded array growth inside a single document"
+  ],
+  "transferTopicId": "search-elasticsearch",
+  "transferPrompt": "When query patterns require arbitrary multi-field filtering, how do you pair document stores with full-text search indexes?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "database",
+    "nosql",
+    "mongodb",
+    "schema"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

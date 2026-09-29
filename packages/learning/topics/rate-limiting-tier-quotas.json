@@ -1,0 +1,41 @@
+{
+  "id": "rate-limiting-tier-quotas",
+  "title": "Multi-Tier API Quotas & Tenant Throttling",
+  "category": "rate limiting",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "rate-limiting-token-bucket"
+  ],
+  "learningObjectives": [
+    "Design multi-tier quota limits (Free vs Pro vs Enterprise) per API key",
+    "Implement fair-share tenant resource throttling to prevent noisy-neighbor degradation",
+    "Track monthly rollover usage and send usage warning notifications"
+  ],
+  "keyTradeoffs": [
+    "Hard cut-off on quota exhaustion vs billing for overages with soft throttling",
+    "Evaluating usage in API gateway middleware vs asynchronous billing aggregation"
+  ],
+  "commonPitfalls": [
+    "A single free-tier customer consuming 100% of available backend database connections",
+    "Timezone mismatch bugs when resetting monthly quota allowances"
+  ],
+  "transferTopicId": "api-restful-design",
+  "transferPrompt": "How do you design API responses and error codes when a customer exceeds their paid tier quota?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "ratelimiting",
+    "quotas",
+    "saas",
+    "multitenancy"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

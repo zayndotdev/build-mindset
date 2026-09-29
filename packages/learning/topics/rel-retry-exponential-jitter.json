@@ -1,0 +1,41 @@
+{
+  "id": "rel-retry-exponential-jitter",
+  "title": "Retries with Exponential Backoff & Jitter",
+  "category": "reliability and failure handling",
+  "difficulty": "beginner",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Calculate exponential backoff delays with full jitter: `delay = random(0, min(cap, base * 2^attempt))`",
+    "Differentiate retryable transient errors (503, 429, ECONNRESET) from non-retryable errors (400, 401, 404)",
+    "Enforce maximum retry attempt limits and overall request deadline timeouts"
+  ],
+  "keyTradeoffs": [
+    "Full jitter vs decorrelated jitter in reducing synchronized client thundering herds",
+    "Retrying inside application services vs delegating to service mesh sidecars (Envoy)"
+  ],
+  "commonPitfalls": [
+    "Retrying non-idempotent write operations, causing duplicate payments or orders",
+    "Retrying without random jitter, creating periodic harmonic spikes on recovering servers"
+  ],
+  "transferTopicId": "rel-circuit-breaker",
+  "transferPrompt": "How do retries coordinate with circuit breakers so repeated failed attempts do not exhaust thread pools?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "reliability",
+    "retries",
+    "backoff",
+    "jitter"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

@@ -1,0 +1,41 @@
+{
+  "id": "obs-distributed-tracing",
+  "title": "Distributed Tracing with OpenTelemetry",
+  "category": "observability",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "api-grpc-services"
+  ],
+  "learningObjectives": [
+    "Propagate W3C Traceparent headers across HTTP, gRPC, and message queues",
+    "Model Spans, Traces, Attributes, and Events according to OpenTelemetry standards",
+    "Configure head-based and tail-based trace sampling to control storage costs"
+  ],
+  "keyTradeoffs": [
+    "100% trace sampling cost vs probabilistic sampling missing critical rare errors",
+    "Automatic framework instrumentation vs manual domain-specific span instrumentation"
+  ],
+  "commonPitfalls": [
+    "Breaking context propagation in asynchronous background promises or thread pools",
+    "Adding high-cardinality PII (like customer email addresses) to trace attributes"
+  ],
+  "transferTopicId": "obs-structured-logging",
+  "transferPrompt": "How do you inject trace IDs and span IDs into structured log records for unified log-trace correlation?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "observability",
+    "opentelemetry",
+    "tracing",
+    "monitoring"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

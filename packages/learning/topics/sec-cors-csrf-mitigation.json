@@ -1,0 +1,41 @@
+{
+  "id": "sec-cors-csrf-mitigation",
+  "title": "Web Security: Strict CORS, CSRF & Content Security Policy",
+  "category": "security",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "auth-email-password"
+  ],
+  "learningObjectives": [
+    "Configure strict Cross-Origin Resource Sharing (CORS) allow-lists with origin validation",
+    "Prevent Cross-Site Request Forgery (CSRF) using `SameSite=Strict` cookies and double-submit tokens",
+    "Deploy strict Content Security Policy (CSP) headers without breaking modern frontend apps"
+  ],
+  "keyTradeoffs": [
+    "Using `SameSite=Strict` cookies vs `SameSite=Lax` for external inbound link navigation",
+    "CSP `unsafe-inline` convenience vs nonce-based strict script execution"
+  ],
+  "commonPitfalls": [
+    "Reflecting the client request `Origin` header dynamically in `Access-Control-Allow-Origin: *` with credentials",
+    "Relying solely on CORS to protect against CSRF attacks"
+  ],
+  "transferTopicId": "sec-sql-xss-prevention",
+  "transferPrompt": "How does CSP mitigate the blast radius if an XSS vulnerability occurs in your frontend?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "security",
+    "cors",
+    "csrf",
+    "csp"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

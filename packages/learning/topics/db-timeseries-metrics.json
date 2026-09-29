@@ -1,0 +1,41 @@
+{
+  "id": "db-timeseries-metrics",
+  "title": "Time-Series Metrics & Analytics Storage",
+  "category": "data and storage",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Design rollups, downsampling, and automated data retention policies",
+    "Structure high-cardinality tag and measurement indexes",
+    "Evaluate storage engines: ClickHouse, TimescaleDB, and specialized TSDBs"
+  ],
+  "keyTradeoffs": [
+    "Columnar compression efficiency vs row-based point-lookup performance",
+    "Pre-aggregated summary tables vs real-time streaming calculation pipelines"
+  ],
+  "commonPitfalls": [
+    "Uncontrolled high cardinality dimensions (e.g. raw UUIDs as index tags)",
+    "Writing individual single-row inserts rather than micro-batched write streams"
+  ],
+  "transferTopicId": "obs-distributed-tracing",
+  "transferPrompt": "How does time-series metric storage differ in query patterns and indexing from distributed trace storage?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "database",
+    "timeseries",
+    "analytics",
+    "clickhouse"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

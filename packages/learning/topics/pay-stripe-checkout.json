@@ -1,0 +1,42 @@
+{
+  "id": "pay-stripe-checkout",
+  "title": "Subscription Billing & Stripe Webhook Integration",
+  "category": "payments",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "api-webhooks-delivery",
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Implement secure Stripe Checkout and Customer Portal redirects",
+    "Process asynchronous subscription lifecycle events via webhooks",
+    "Handle invoice payment failures, dunning emails, and grace periods"
+  ],
+  "keyTradeoffs": [
+    "Hosted checkout sessions vs custom in-app credit card elements (PCI compliance)",
+    "Immediate access grant vs waiting for webhook confirmation"
+  ],
+  "commonPitfalls": [
+    "Trusting client-side payment completion redirects without verifying signed webhooks",
+    "Failing to handle out-of-order webhook delivery (e.g. invoice created after subscription deleted)"
+  ],
+  "transferTopicId": "pay-ledger-double-entry",
+  "transferPrompt": "How do you record external Stripe payment charges into an internal double-entry ledger?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "payments",
+    "stripe",
+    "billing",
+    "subscriptions"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

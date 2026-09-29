@@ -1,0 +1,41 @@
+{
+  "id": "obs-slos-alerting",
+  "title": "SLIs, SLOs & Error Budget Alerting",
+  "category": "observability",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "obs-structured-logging"
+  ],
+  "learningObjectives": [
+    "Define Service Level Indicators (SLIs) for latency (p95, p99) and availability",
+    "Establish meaningful Service Level Objectives (SLOs) and calculate 30-day error budgets",
+    "Implement multi-window multi-burn-rate alerting to eliminate page fatigue"
+  ],
+  "keyTradeoffs": [
+    "Aggressive alerting sensitivity vs false alarm on-call engineer burnout",
+    "Freezing product feature deployments when error budgets are exhausted"
+  ],
+  "commonPitfalls": [
+    "Alerting on noisy CPU utilization thresholds rather than direct user-impacting error rates",
+    "Measuring mean latency instead of high-percentile latency (p99/p99.9)"
+  ],
+  "transferTopicId": "rel-circuit-breaker",
+  "transferPrompt": "When SLO burn rate spikes due to an external API degradation, how does a circuit breaker protect your error budget?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "observability",
+    "sre",
+    "slos",
+    "alerting"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

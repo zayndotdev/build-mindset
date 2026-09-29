@@ -1,0 +1,41 @@
+{
+  "id": "api-grpc-services",
+  "title": "gRPC Microservice Communication & Protobufs",
+  "category": "APIs",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Define binary message contracts using Protocol Buffers (proto3)",
+    "Leverage HTTP/2 multiplexing, bidirectional streaming, and header compression",
+    "Implement deadline propagation and context cancellation across microservices"
+  ],
+  "keyTradeoffs": [
+    "Binary serialization speed and type safety vs human-readable JSON debuggability",
+    "Browser client compatibility via gRPC-Web vs standard REST gateways"
+  ],
+  "commonPitfalls": [
+    "Reusing or renumbering proto field tags, breaking backwards compatibility",
+    "Neglecting to set and propagate client call timeouts across call chains"
+  ],
+  "transferTopicId": "obs-distributed-tracing",
+  "transferPrompt": "How do you propagate W3C Trace Context and correlation IDs across gRPC metadata boundaries?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "api",
+    "grpc",
+    "protobuf",
+    "microservices"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

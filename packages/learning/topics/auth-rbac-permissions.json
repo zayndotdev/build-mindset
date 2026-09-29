@@ -1,0 +1,42 @@
+{
+  "id": "auth-rbac-permissions",
+  "title": "Role-Based Access Control & Permissions Engine",
+  "category": "authentication and authorization",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "auth-email-password",
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Model Users, Roles, Permissions, and Resource Scopes",
+    "Design caching and evaluation strategies for sub-millisecond authorization checks",
+    "Handle hierarchical roles and tenant isolation in multi-tenant SaaS"
+  ],
+  "keyTradeoffs": [
+    "RBAC vs ABAC (Attribute-Based Access Control)",
+    "Evaluating permissions in database queries vs application memory"
+  ],
+  "commonPitfalls": [
+    "Hardcoding permission checks by role name instead of granular permission slug",
+    "N+1 query cascades when checking row-level permissions on lists"
+  ],
+  "transferTopicId": "auth-oauth-sso",
+  "transferPrompt": "How would you synchronize user roles and claims from an external IdP (like Okta) into your RBAC schema?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "auth",
+    "rbac",
+    "permissions",
+    "security"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

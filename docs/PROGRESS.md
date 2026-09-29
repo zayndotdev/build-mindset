@@ -3,9 +3,9 @@
 > Real-time tracker for the overnight autonomous build run.
 > Updated after every task.
 
-**Current Phase**: Phase 4: Learning Engine & Topic Curriculum  
-**Last Commit**: `2d29054`  
-**Next Action**: Author remaining curriculum topics with metadata (marked referenceStatus: unauthored and blocked from graded selection), verify persona eval harness against all 4 levels, and connect review queue.  
+**Current Phase**: Phase 5: Voice Pipeline  
+**Last Commit**: `615f5ae` (Phase 4 changes staging)  
+**Next Action**: Implement audio transcription endpoint (POST /api/v1/voice/transcribe) supporting Groq Whisper and mock audio adapter fallback, original transcript preservation, and Web TTS audio player states.  
 **Known Issues**: Docker not installed locally on Windows host (runs natively; Docker verified in CI).
 
 ---
@@ -50,18 +50,18 @@
 - [x] `docs/reports/phase3-report.md`
 
 ### Phase 4: Learning Engine (Socratic Core)
-- [ ] Socratic state machine (4 steps standard, Quick mode with mini-transfer)
-- [ ] Hint ladder with hard caps (max 2 hints per step)
-- [ ] Separate Answer Quality (1-4) vs. Independence Score (4 -> 3 -> 2 -> 0 on skip)
-- [ ] Grader engine evaluated against reference key points and model answers
-- [ ] 4 fully authored curriculum topics
-- [ ] Remaining topics authored as `referenceStatus: "unauthored"` (blocked from graded selection)
-- [ ] Recap step & transfer challenge
-- [ ] English feedback report generation (grammar, fluency, conciseness)
-- [ ] SM-2 spaced repetition scheduling algorithm & queue
-- [ ] Evaluation harness with 4 scripted personas (Senior, Mid, Rambler, Novice)
-- [ ] Tests for grading accuracy, state machine transitions, and SM-2 calculations
-- [ ] `docs/reports/phase4-report.md`
+- [x] Socratic state machine (4 steps standard, Quick mode with mini-transfer)
+- [x] Hint ladder with hard caps (max 2 hints per step)
+- [x] Separate Answer Quality (1-4) vs. Independence Score (4 -> 3 -> 2 -> 0 on skip)
+- [x] Grader engine evaluated against reference key points and model answers
+- [x] 4 fully authored curriculum topics
+- [x] Remaining topics authored as `referenceStatus: "unauthored"` (blocked from graded selection)
+- [x] Recap step & transfer challenge
+- [x] English feedback report generation (grammar, fluency, conciseness)
+- [x] SM-2 spaced repetition scheduling algorithm & queue
+- [x] Evaluation harness with 4 scripted personas (Senior, Mid, Rambler, Novice)
+- [x] Tests for grading accuracy, state machine transitions, and SM-2 calculations
+- [x] `docs/reports/phase4-report.md`
 
 ### Phase 5: Voice Pipeline
 - [ ] Voice audio upload & transcription endpoint (`POST /voice/transcribe` via Groq Whisper with mock fallback)

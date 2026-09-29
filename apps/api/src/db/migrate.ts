@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS topic (
   tags TEXT NOT NULL,
   is_custom INTEGER NOT NULL DEFAULT 0,
   is_active INTEGER NOT NULL DEFAULT 1,
+  reference_status TEXT NOT NULL DEFAULT 'authored',
   steps_data TEXT NOT NULL,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL

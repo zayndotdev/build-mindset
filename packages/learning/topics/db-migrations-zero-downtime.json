@@ -1,0 +1,41 @@
+{
+  "id": "db-migrations-zero-downtime",
+  "title": "Zero-Downtime Database Schema Migrations",
+  "category": "data and storage",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Apply Expand and Contract (Parallel Run) migration pattern",
+    "Safely rename and split database columns in active production systems",
+    "Add NOT NULL constraints and foreign keys without locking large tables"
+  ],
+  "keyTradeoffs": [
+    "Dual-writing in application code vs database triggers during transition phases",
+    "Immediate column deletion vs gradual deprecation lifecycle"
+  ],
+  "commonPitfalls": [
+    "Running ALTER TABLE ADD COLUMN with volatile defaults on millions of rows",
+    "Deploying new application code before verifying backwards-compatible database schema"
+  ],
+  "transferTopicId": "db-sharding-partitioning",
+  "transferPrompt": "How do schema migrations differ when tables are horizontally sharded across multiple database clusters?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "database",
+    "migrations",
+    "devops",
+    "zero-downtime"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

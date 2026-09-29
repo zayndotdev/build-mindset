@@ -1,0 +1,41 @@
+{
+  "id": "obs-structured-logging",
+  "title": "Centralized Structured Logging & Correlation IDs",
+  "category": "observability",
+  "difficulty": "beginner",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Emit JSON logs with standardized keys: timestamp, level, reqId, err, and service",
+    "Propagate correlation IDs through all downstream network calls and async jobs",
+    "Redact sensitive credentials, auth headers, and PII automatically in log serializers"
+  ],
+  "keyTradeoffs": [
+    "Synchronous console logging vs asynchronous buffered batch log shipping (Pino/Winston)",
+    "Verbose debug logging cost vs production diagnostic visibility"
+  ],
+  "commonPitfalls": [
+    "Logging raw request bodies containing plaintext passphrases or unmasked credit card numbers",
+    "Emitting unstructured multi-line text strings that break automated log parsers"
+  ],
+  "transferTopicId": "obs-slos-alerting",
+  "transferPrompt": "How are structured log metrics aggregated to calculate service error rates and alert on outages?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "observability",
+    "logging",
+    "pino",
+    "security"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

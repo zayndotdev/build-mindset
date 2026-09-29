@@ -1,0 +1,41 @@
+{
+  "id": "scale-cdn-edge-caching",
+  "title": "Global CDN Edge Caching & Dynamic Acceleration",
+  "category": "scalability",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "scale-load-balancing"
+  ],
+  "learningObjectives": [
+    "Configure `Cache-Control`, `s-maxage`, `stale-while-revalidate`, and ETag headers",
+    "Accelerate dynamic API endpoints using TCP connection reuse and edge TLS termination",
+    "Design targeted cache purging via surrogate keys (Cache-Tags)"
+  ],
+  "keyTradeoffs": [
+    "Aggressive edge caching of semi-dynamic content vs real-time data freshness",
+    "Purging cache by exact URL vs wildcard/tag-based invalidation"
+  ],
+  "commonPitfalls": [
+    "Accidentally caching authenticated responses with `Set-Cookie` headers at the public CDN edge",
+    "Missing `Vary: Accept-Encoding` or `Vary: Origin`, causing CORS or compression corruption"
+  ],
+  "transferTopicId": "sec-cors-csrf-mitigation",
+  "transferPrompt": "How do CDN edge rules enforce Content Security Policies and WAF security rules?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "scalability",
+    "cdn",
+    "caching",
+    "performance"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

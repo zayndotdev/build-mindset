@@ -39,6 +39,7 @@
   ],
   "isCustom": false,
   "isActive": true,
+  "referenceStatus": "authored",
   "steps": {
     "1": {
       "coachQuestion": "You're asked to build a RAG system so users can ask questions about a document corpus. What questions would you ask before designing it?",

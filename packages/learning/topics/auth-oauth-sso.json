@@ -1,0 +1,42 @@
+{
+  "id": "auth-oauth-sso",
+  "title": "OAuth 2.0 & OIDC SSO Integration",
+  "category": "authentication and authorization",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "auth-email-password"
+  ],
+  "learningObjectives": [
+    "Understand Authorization Code Grant with PKCE",
+    "Design account linking between local and social providers",
+    "Handle token expiration, refresh tokens, and revocation"
+  ],
+  "keyTradeoffs": [
+    "PKCE vs Client Secret for single-page applications",
+    "Immediate user creation vs explicit email matching confirmation"
+  ],
+  "commonPitfalls": [
+    "Failing to validate the state parameter (CSRF vulnerability)",
+    "Storing provider access tokens in local storage",
+    "Overwriting existing local credentials during social login"
+  ],
+  "transferTopicId": "auth-mfa-totp",
+  "transferPrompt": "How would you add multi-factor authentication (MFA) on top of an existing OAuth flow?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "auth",
+    "oauth",
+    "oidc",
+    "sso"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

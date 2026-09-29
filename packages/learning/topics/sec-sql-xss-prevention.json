@@ -1,0 +1,42 @@
+{
+  "id": "sec-sql-xss-prevention",
+  "title": "Injection Prevention & Defense-in-Depth Sanitization",
+  "category": "security",
+  "difficulty": "beginner",
+  "prerequisites": [
+    "api-restful-design",
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Eliminate SQL Injection using parameterized prepared statements via ORMs and query builders",
+    "Prevent Stored and Reflected XSS through contextual HTML/attribute escaping",
+    "Sanitize dangerous user inputs (e.g. SVG file uploads, markdown HTML tags)"
+  ],
+  "keyTradeoffs": [
+    "Raw SQL query control vs parameterized query builder type safety",
+    "Stripping HTML tags completely vs allowing an audited whitelist of rich-text tags"
+  ],
+  "commonPitfalls": [
+    "Concatenating dynamic user input into SQL queries or table/column identifier strings",
+    "Using `dangerouslySetInnerHTML` in React without running DOMPurify sanitization"
+  ],
+  "transferTopicId": "sec-cors-csrf-mitigation",
+  "transferPrompt": "How do defense-in-depth measures like CSP protect users when input sanitization fails?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "security",
+    "sqli",
+    "xss",
+    "sanitization"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

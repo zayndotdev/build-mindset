@@ -1,0 +1,41 @@
+{
+  "id": "rel-disaster-recovery",
+  "title": "Multi-Region Failover & Disaster Recovery",
+  "category": "reliability and failure handling",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "db-sharding-partitioning"
+  ],
+  "learningObjectives": [
+    "Define Recovery Point Objective (RPO) and Recovery Time Objective (RTO)",
+    "Design Active-Passive and Active-Active multi-region replication architectures",
+    "Implement DNS failover and health probing with automated split-brain prevention"
+  ],
+  "keyTradeoffs": [
+    "Active-Active write latency across continents vs Active-Passive failover lag",
+    "Multi-region infrastructure hosting costs vs business downtime impact"
+  ],
+  "commonPitfalls": [
+    "Split-brain scenarios where both regions accept conflicting writes simultaneously",
+    "Never testing disaster recovery failover procedures until a real outage occurs"
+  ],
+  "transferTopicId": "scale-load-balancing",
+  "transferPrompt": "How does global anycast routing direct traffic away from an unhealthy data center?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "reliability",
+    "disaster-recovery",
+    "failover",
+    "multiregion"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

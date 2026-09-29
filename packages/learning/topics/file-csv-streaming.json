@@ -1,0 +1,41 @@
+{
+  "id": "file-csv-streaming",
+  "title": "Large CSV File Export & Streaming Processing",
+  "category": "file handling",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Stream million-row database exports without buffering entire datasets into memory",
+    "Manage HTTP chunked transfer encoding and browser backpressure",
+    "Sanitize spreadsheet formulas to prevent CSV Injection (Formula Injection) attacks"
+  ],
+  "keyTradeoffs": [
+    "Real-time streaming HTTP downloads vs asynchronous background generation with download link",
+    "Cursor-based pagination vs database streaming cursors"
+  ],
+  "commonPitfalls": [
+    "Loading entire million-row query results into Node.js heap memory, causing Out-Of-Memory crashes",
+    "Allowing cells starting with `=`, `+`, `-`, or `@` without escaping, executing code in Excel"
+  ],
+  "transferTopicId": "jobs-async-queues",
+  "transferPrompt": "When file exports exceed 500MB, how do you offload generation to background queue workers?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "files",
+    "csv",
+    "streaming",
+    "memory-management"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

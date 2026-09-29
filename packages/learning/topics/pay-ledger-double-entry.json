@@ -1,0 +1,41 @@
+{
+  "id": "pay-ledger-double-entry",
+  "title": "Double-Entry Accounting Ledger System",
+  "category": "payments",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Model immutable Journal Entries with balanced Debits and Credits",
+    "Enforce atomic balance constraints across multiple asset, liability, and equity accounts",
+    "Design append-only ledger tables with cryptographic hash chaining (auditability)"
+  ],
+  "keyTradeoffs": [
+    "Real-time account balance calculation vs cached running balance tables",
+    "Strict database serializable isolation vs optimistic concurrency locking"
+  ],
+  "commonPitfalls": [
+    "Using floating-point numbers instead of integer minor units (cents) or fixed-point decimals",
+    "Allowing UPDATE or DELETE operations on ledger transaction rows"
+  ],
+  "transferTopicId": "pay-refund-reconciliation",
+  "transferPrompt": "How do ledger entries record reversals and chargebacks while preserving immutable transaction history?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "payments",
+    "ledger",
+    "accounting",
+    "fintech"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

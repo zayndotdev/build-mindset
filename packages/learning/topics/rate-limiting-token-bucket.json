@@ -1,0 +1,41 @@
+{
+  "id": "rate-limiting-token-bucket",
+  "title": "Distributed Token Bucket & Leaky Bucket Rate Limiting",
+  "category": "rate limiting",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Understand Token Bucket, Leaky Bucket, and Sliding Window Counter algorithms",
+    "Implement atomic distributed rate limiting using Redis Lua scripts",
+    "Return standard IETF draft RateLimit headers (`RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`)"
+  ],
+  "keyTradeoffs": [
+    "Fixed window memory efficiency vs sliding window boundary burst protection",
+    "Local in-process rate limiting vs central distributed Redis evaluation"
+  ],
+  "commonPitfalls": [
+    "Non-atomic get-and-increment operations in Redis that cause race conditions under high concurrency",
+    "Failing to include `Retry-After` headers on HTTP 429 Too Many Requests responses"
+  ],
+  "transferTopicId": "rate-limiting-tier-quotas",
+  "transferPrompt": "How do you layer monthly subscription quota limits on top of second-by-second burst rate limiting?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "ratelimiting",
+    "redis",
+    "algorithms",
+    "security"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

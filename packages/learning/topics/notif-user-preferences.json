@@ -1,0 +1,41 @@
+{
+  "id": "notif-user-preferences",
+  "title": "Notification Preference Center & Frequency Caps",
+  "category": "notifications",
+  "difficulty": "beginner",
+  "prerequisites": [
+    "db-relational-schema"
+  ],
+  "learningObjectives": [
+    "Model granular category, channel, and frequency preference rules",
+    "Implement rate-limiting and deduplication frequency caps (anti-spam)",
+    "Honor regulatory unsubscribe mandates (CAN-SPAM, GDPR) via one-click signed tokens"
+  ],
+  "keyTradeoffs": [
+    "Opt-in default vs opt-out default for non-transactional messages",
+    "Evaluating preferences in worker queues vs filtering at the event producer"
+  ],
+  "commonPitfalls": [
+    "Sending marketing emails to users who explicitly unsubscribed, triggering legal penalties",
+    "Flooding a user with 50 duplicate push notifications when a single batch event fires"
+  ],
+  "transferTopicId": "notif-multi-channel",
+  "transferPrompt": "How would you test and verify preference compliance in automated integration tests?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "notifications",
+    "preferences",
+    "gdpr",
+    "compliance"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

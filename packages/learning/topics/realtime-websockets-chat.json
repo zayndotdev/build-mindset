@@ -1,0 +1,41 @@
+{
+  "id": "realtime-websockets-chat",
+  "title": "Scalable WebSockets Chat Architecture",
+  "category": "real-time features",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "auth-session-jwt"
+  ],
+  "learningObjectives": [
+    "Establish authenticated persistent WebSocket connections",
+    "Scale WebSocket connection servers across a horizontal cluster using Redis Pub/Sub",
+    "Implement heartbeat pings, exponential reconnects, and message delivery receipts"
+  ],
+  "keyTradeoffs": [
+    "WebSockets vs Server-Sent Events (SSE) for bidirectional vs unidirectional streaming",
+    "Ephemeral in-memory message passing vs persistent database chat transcripts"
+  ],
+  "commonPitfalls": [
+    "Storing user socket connections on a single server without cross-server pub/sub broadcast",
+    "Failing to authenticate connection upgrades before accepting WebSocket handshakes"
+  ],
+  "transferTopicId": "realtime-presence-system",
+  "transferPrompt": "How do you layer real-time online/offline presence tracking on top of active WebSocket connections?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "realtime",
+    "websockets",
+    "chat",
+    "scalability"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

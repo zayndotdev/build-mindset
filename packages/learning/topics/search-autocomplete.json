@@ -1,0 +1,41 @@
+{
+  "id": "search-autocomplete",
+  "title": "Typeahead & Autocomplete Search Engine",
+  "category": "search",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "search-elasticsearch"
+  ],
+  "learningObjectives": [
+    "Design prefix trees (Trie) and n-gram indexes for sub-50ms query latency",
+    "Implement popularity and recency ranking algorithms",
+    "Cache top search prefixes in Redis edge caches"
+  ],
+  "keyTradeoffs": [
+    "Edge CDN caching of common prefixes vs personalized query suggestions",
+    "Pre-computed completion dictionaries vs dynamic inverted index querying"
+  ],
+  "commonPitfalls": [
+    "Triggering backend network requests on every keystroke without client-side debouncing",
+    "Case-sensitivity and accent mismatching in prefix lookups"
+  ],
+  "transferTopicId": "cache-redis-patterns",
+  "transferPrompt": "How can Redis Sorted Sets (ZSET) be used to store and rank autocomplete completions?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "search",
+    "autocomplete",
+    "typeahead",
+    "trie"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

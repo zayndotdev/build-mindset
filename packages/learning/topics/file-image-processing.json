@@ -1,0 +1,41 @@
+{
+  "id": "file-image-processing",
+  "title": "On-Demand Image Processing & CDN Delivery",
+  "category": "file handling",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "file-s3-direct-upload"
+  ],
+  "learningObjectives": [
+    "Implement on-demand image resizing, cropping, and WebP/AVIF format conversion",
+    "Cache transformed variants on global CDN edge nodes",
+    "Protect dynamic transform endpoints with HMAC signature validation (anti-DDoS)"
+  ],
+  "keyTradeoffs": [
+    "Pre-generating all size variants at upload time vs on-demand edge generation",
+    "Self-hosted Sharp/Libvips service vs cloud provider image services (Cloudinary)"
+  ],
+  "commonPitfalls": [
+    "Unsigned transform URLs allowing attackers to exhaust CPU and storage with arbitrary size permutations",
+    "Missing cache-control headers on immutable processed image assets"
+  ],
+  "transferTopicId": "file-csv-streaming",
+  "transferPrompt": "How does high-throughput binary image streaming differ from streaming large CSV text exports?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 15,
+  "tags": [
+    "files",
+    "images",
+    "cdn",
+    "performance"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

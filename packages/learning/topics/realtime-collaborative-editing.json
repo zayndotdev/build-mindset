@@ -1,0 +1,41 @@
+{
+  "id": "realtime-collaborative-editing",
+  "title": "Operational Transformation & CRDT Collaboration",
+  "category": "real-time features",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "realtime-websockets-chat"
+  ],
+  "learningObjectives": [
+    "Compare Conflict-free Replicated Data Types (CRDTs) with Operational Transformation (OT)",
+    "Resolve concurrent conflicting edits without a single centralized locking authority",
+    "Structure document state trees and local optimistic mutation playback"
+  ],
+  "keyTradeoffs": [
+    "CRDT metadata memory overhead vs OT central server coordination requirements",
+    "Character-by-character synchronization vs block-level document updates"
+  ],
+  "commonPitfalls": [
+    "Assuming client clocks are synchronized when ordering concurrent edits",
+    "Unbounded tombstone growth in memory for deleted document nodes in CRDT structures"
+  ],
+  "transferTopicId": "db-nosql-document",
+  "transferPrompt": "How do you persist collaborative document states into a database while preserving undo/redo history?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "realtime",
+    "crdt",
+    "collaboration",
+    "distributed-systems"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

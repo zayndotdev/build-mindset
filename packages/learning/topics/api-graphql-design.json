@@ -1,0 +1,41 @@
+{
+  "id": "api-graphql-design",
+  "title": "GraphQL API Design & Schema Federation",
+  "category": "APIs",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Solve the N+1 problem with DataLoader batching and caching",
+    "Design schema federation across autonomous microservice teams",
+    "Enforce query complexity and depth limits to prevent denial-of-service"
+  ],
+  "keyTradeoffs": [
+    "Client flexibility in field selection vs backend query optimization and CDN caching",
+    "Code-first vs schema-first development workflows"
+  ],
+  "commonPitfalls": [
+    "Exposing unbounded recursive relations that allow malicious nested queries",
+    "Missing rate limiting because all requests hit a single `/graphql` POST endpoint"
+  ],
+  "transferTopicId": "api-restful-design",
+  "transferPrompt": "When is a simple REST or RPC endpoint preferable over expanding a federated GraphQL graph?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "api",
+    "graphql",
+    "federation",
+    "microservices"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

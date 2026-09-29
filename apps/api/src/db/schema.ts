@@ -66,6 +66,7 @@ export const topics = sqliteTable('topic', {
   tags: text('tags', { mode: 'json' }).$type<string[]>().notNull(),
   isCustom: integer('is_custom', { mode: 'boolean' }).notNull().default(false),
   isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
+  referenceStatus: text('reference_status').notNull().default('authored'),
   stepsData: text('steps_data', { mode: 'json' }).notNull(),
   createdAt: text('created_at').notNull(),
   updatedAt: text('updated_at').notNull(),

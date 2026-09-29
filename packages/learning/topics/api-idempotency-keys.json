@@ -1,0 +1,41 @@
+{
+  "id": "api-idempotency-keys",
+  "title": "Idempotent API Architecture & Deduplication",
+  "category": "APIs",
+  "difficulty": "intermediate",
+  "prerequisites": [
+    "api-restful-design"
+  ],
+  "learningObjectives": [
+    "Implement the Idempotency-Key header pattern for mutating POST requests",
+    "Manage atomic reservation, processing locks, and cached response storage",
+    "Handle concurrent identical requests with HTTP 409 Conflict or lock waits"
+  ],
+  "keyTradeoffs": [
+    "Database transactional locking vs Redis distributed locks for in-flight requests",
+    "Storing full response body payloads vs returning idempotent status pointers"
+  ],
+  "commonPitfalls": [
+    "Caching idempotent responses before verifying that the underlying transaction succeeded",
+    "Failing to scope idempotency keys to individual authenticated users/tenants"
+  ],
+  "transferTopicId": "pay-stripe-checkout",
+  "transferPrompt": "How does payment processing rely on idempotency keys to prevent accidental double-charging during network blips?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 20,
+  "tags": [
+    "api",
+    "idempotency",
+    "reliability",
+    "transactions"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

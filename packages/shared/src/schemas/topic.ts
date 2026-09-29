@@ -40,6 +40,7 @@ export const TopicSchema = z.object({
   tags: z.array(z.string()),
   isCustom: z.boolean().default(false),
   isActive: z.boolean().default(true),
-  steps: z.record(z.string(), TopicStepDataSchema),
+  referenceStatus: z.enum(['authored', 'unauthored']).default('authored'),
+  steps: z.record(z.string(), TopicStepDataSchema).default({}),
 });
 export type Topic = z.infer<typeof TopicSchema>;

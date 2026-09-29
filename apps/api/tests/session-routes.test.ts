@@ -111,6 +111,24 @@ describe('Chat Core & SSE Streaming Session Routes (Phase 3)', () => {
     expect(getBody.messages[0].role).toBe('coach');
   });
 
+  it('rejects starting a graded session with an unauthored topic', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/v1/sessions',
+      headers: { cookie: sessionCookie },
+      payload: {
+        topicId: 'auth-oauth-sso',
+        level: 'working',
+        sessionMode: 'standard',
+      },
+    });
+
+    expect(res.statusCode).toBe(400);
+    const body = res.json();
+    expect(body.error.code).toBe('TOPIC_UNAUTHORED');
+    expect(body.error.message).toContain('unauthored reference data');
+  });
+
   it('submits an answer and receives Server-Sent Events (SSE) stream', async () => {
     // 1. Create session
     const startRes = await app.inject({

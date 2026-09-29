@@ -1,0 +1,41 @@
+{
+  "id": "jobs-event-driven-pubsub",
+  "title": "Event-Driven Pub/Sub & Stream Processing",
+  "category": "async/background jobs",
+  "difficulty": "advanced",
+  "prerequisites": [
+    "jobs-async-queues"
+  ],
+  "learningObjectives": [
+    "Design event schemas with backward and forward compatibility",
+    "Differentiate point-to-point queues from broadcast publish/subscribe models",
+    "Manage consumer groups, partition offsets, and message ordering semantics"
+  ],
+  "keyTradeoffs": [
+    "Partition-key ordering guarantees vs total throughput parallelism",
+    "Event sourcing full state derivation vs lightweight change data capture (CDC)"
+  ],
+  "commonPitfalls": [
+    "Publishing events before the database transaction has successfully committed (dual-write hazard)",
+    "Consumers failing to handle out-of-order event delivery"
+  ],
+  "transferTopicId": "realtime-websockets-chat",
+  "transferPrompt": "How does a pub/sub cluster fan out messages across distributed WebSocket gateway nodes?",
+  "standardSteps": [
+    1,
+    5,
+    8,
+    9
+  ],
+  "estimatedMinutes": 25,
+  "tags": [
+    "events",
+    "pubsub",
+    "kafka",
+    "architecture"
+  ],
+  "isCustom": false,
+  "isActive": true,
+  "referenceStatus": "unauthored",
+  "steps": {}
+}

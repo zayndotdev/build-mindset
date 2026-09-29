@@ -86,6 +86,15 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
       });
     }
 
+    if (topic.referenceStatus === 'unauthored') {
+      return reply.status(400).send({
+        error: {
+          code: 'TOPIC_UNAUTHORED',
+          message: `Topic ${topicId} has unauthored reference data and cannot be selected for graded sessions.`,
+        },
+      });
+    }
+
     const session = await sessionRepo.createSession({
       topicId,
       level,
