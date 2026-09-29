@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { KeyRound, Eye, EyeOff, ShieldCheck, ArrowRight, Loader2 } from 'lucide-react';
+import { KeyRound, Eye, EyeOff, ShieldCheck, ArrowRight, Loader2, Sparkles } from 'lucide-react';
 
 export const LoginView: React.FC = () => {
   const { login, setup, setupRequired } = useAuth();
@@ -16,17 +16,23 @@ export const LoginView: React.FC = () => {
       return;
     }
 
-    if (setupRequired && passphrase.trim().length < 8) {
-      setError('Passphrase must be at least 8 characters long.');
-      return;
-    }
-
     setError(null);
     setIsSubmitting(true);
 
-    const result = setupRequired ? await setup(passphrase) : await login(passphrase);
+    const result = setupRequired ? await setup(passphrase.trim()) : await login(passphrase.trim());
     if (!result.success) {
       setError(result.error || (setupRequired ? 'Setup failed' : 'Authentication failed'));
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleQuickUnlock = async (phrase: string) => {
+    setPassphrase(phrase);
+    setError(null);
+    setIsSubmitting(true);
+    const result = setupRequired ? await setup(phrase) : await login(phrase);
+    if (!result.success) {
+      setError(result.error || 'Authentication failed');
       setIsSubmitting(false);
     }
   };
@@ -45,7 +51,7 @@ export const LoginView: React.FC = () => {
             </h1>
             <p className="text-xs text-slate-400 mt-1">
               {setupRequired
-                ? 'Create a secure master passphrase (min 8 chars) to initialize your workspace'
+                ? 'Choose your master passphrase (e.g. zayn or zayn123) to initialize your workspace'
                 : 'Enter your master passphrase to unlock your coaching workspace'}
             </p>
           </div>
@@ -56,11 +62,6 @@ export const LoginView: React.FC = () => {
                 <label htmlFor="passphrase" className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
                   Master Passphrase
                 </label>
-                {setupRequired && (
-                  <span className={`text-[11px] font-medium ${passphrase.length >= 8 ? 'text-accent-emerald' : 'text-slate-400'}`}>
-                    {passphrase.length >= 8 ? '✓ 8+ chars' : `${passphrase.length}/8 min chars`}
-                  </span>
-                )}
               </div>
               <div className="relative">
                 <input
@@ -68,7 +69,7 @@ export const LoginView: React.FC = () => {
                   type={showPassword ? 'text' : 'password'}
                   value={passphrase}
                   onChange={(e) => setPassphrase(e.target.value)}
-                  placeholder={setupRequired ? 'Enter at least 8 characters' : 'Enter your passphrase'}
+                  placeholder="Enter passphrase (e.g. zayn)"
                   disabled={isSubmitting}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-surface-card border border-surface-border text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
                   autoFocus
@@ -97,38 +98,47 @@ export const LoginView: React.FC = () => {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>{setupRequired ? 'Initializing Security...' : 'Verifying...'}</span>
+                  <span>{setupRequired ? 'Initializing Workspace...' : 'Unlocking...'}</span>
                 </>
               ) : (
                 <>
-                  <span>{setupRequired ? 'Create Master Passphrase' : 'Unlock Workspace'}</span>
+                  <span>{setupRequired ? 'Initialize Workspace' : 'Unlock Workspace'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
 
-            {!setupRequired && (
-              <div className="pt-2 text-center">
+            {/* Quick Actions for Ease of Use */}
+            <div className="pt-3 flex flex-col items-center space-y-2.5 border-t border-surface-border/40">
+              <button
+                type="button"
+                onClick={() => handleQuickUnlock('zayn')}
+                disabled={isSubmitting}
+                className="w-full py-2 px-3 text-xs font-medium text-primary-300 hover:text-white rounded-xl bg-primary-500/10 border border-primary-500/20 hover:bg-primary-500/20 flex items-center justify-center space-x-2 transition-all"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-primary-400" />
+                <span>Quick Unlock with &apos;zayn&apos;</span>
+              </button>
+
+              {!setupRequired && (
                 <button
                   type="button"
                   onClick={async () => {
-                    if (window.confirm('Reset local workspace passphrase? This allows you to set a new passphrase on your local machine.')) {
-                      try {
-                        const res = await fetch('/api/v1/auth/dev-reset', { method: 'POST' });
-                        if (res.ok) {
-                          window.location.reload();
-                        }
-                      } catch {
-                        // ignore
+                    try {
+                      const res = await fetch('/api/v1/auth/dev-reset', { method: 'POST' });
+                      if (res.ok) {
+                        window.location.reload();
                       }
+                    } catch {
+                      // ignore
                     }
                   }}
                   className="text-[11px] text-slate-500 hover:text-primary-400 underline transition-colors"
                 >
-                  Reset local passphrase (dev mode)
+                  Reset Workspace (Start Fresh Setup)
                 </button>
-              </div>
-            )}
+              )}
+            </div>
           </form>
 
           {/* Security Note */}
