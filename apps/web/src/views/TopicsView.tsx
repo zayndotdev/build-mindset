@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layers, ChevronRight, Play, X, Sparkles, Clock, Compass, Lock, BookOpen } from 'lucide-react';
+import { Layers, ChevronRight, Play, X, Sparkles, Clock, Compass, Lock, BookOpen, Search } from 'lucide-react';
 import { ActiveSessionView } from './ActiveSessionView';
 
 interface TopicCard {
@@ -63,6 +63,7 @@ const FALLBACK_TOPICS: TopicCard[] = [
 
 export const TopicsView: React.FC = () => {
   const [topics, setTopics] = useState<TopicCard[]>(FALLBACK_TOPICS);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<'all' | 'authored' | 'unauthored'>('all');
   const [selectedTopic, setSelectedTopic] = useState<TopicCard | null>(null);
@@ -112,7 +113,12 @@ export const TopicsView: React.FC = () => {
       statusFilter === 'all' ||
       (statusFilter === 'authored' && t.referenceStatus === 'authored') ||
       (statusFilter === 'unauthored' && t.referenceStatus === 'unauthored');
-    return matchesDifficulty && matchesStatus;
+    const matchesSearch =
+      !searchQuery.trim() ||
+      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.tags?.some((tag) => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    return matchesDifficulty && matchesStatus && matchesSearch;
   });
 
   const authoredCount = topics.filter((t) => t.referenceStatus === 'authored').length;
@@ -137,6 +143,28 @@ export const TopicsView: React.FC = () => {
           <p className="text-xs text-slate-400 mt-0.5">
             {authoredCount} verified rubrics ready for graded socratic practice • {topics.length - authoredCount} cataloged in spec roadmap
           </p>
+        </div>
+      </div>
+
+      {/* Search & Filter Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search topics by title, tag, or category..."
+            className="w-full pl-10 pr-14 py-2.5 rounded-xl bg-surface-card border border-surface-border text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400 hover:text-white"
+            >
+              Clear
+            </button>
+          )}
         </div>
 
         {/* Filters */}

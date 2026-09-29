@@ -14,8 +14,31 @@ export type AppDatabase = SqliteRemoteDatabase<typeof schema> & {
   $client: NativeSqlite;
 };
 
+function resolveDatabasePath(rawPath: string): string {
+  if (rawPath === ':memory:' || rawPath.startsWith(':memory:')) {
+    return rawPath;
+  }
+  const cleanPath = rawPath.replace(/^file:/, '');
+  if (path.isAbsolute(cleanPath)) {
+    return cleanPath;
+  }
+
+  // Find monorepo root
+  let curr = process.cwd();
+  for (let i = 0; i < 6; i++) {
+    if (fs.existsSync(path.join(curr, 'pnpm-workspace.yaml')) || fs.existsSync(path.join(curr, '.git'))) {
+      return path.resolve(curr, cleanPath);
+    }
+    const parent = path.dirname(curr);
+    if (parent === curr) break;
+    curr = parent;
+  }
+  return path.resolve(process.cwd(), cleanPath);
+}
+
 export function createDbClient(dbPath?: string): AppDatabase {
-  const resolvedPath = dbPath ?? getEnv().DATABASE_URL;
+  const rawPath = dbPath ?? getEnv().DATABASE_URL;
+  const resolvedPath = resolveDatabasePath(rawPath);
 
   let sqlite: NativeSqlite;
 
@@ -23,12 +46,11 @@ export function createDbClient(dbPath?: string): AppDatabase {
     sqlite = new DatabaseSync(':memory:');
   } else {
     // Ensure parent directory exists for file-based database
-    const absolutePath = path.resolve(process.cwd(), resolvedPath);
-    const dir = path.dirname(absolutePath);
+    const dir = path.dirname(resolvedPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    sqlite = new DatabaseSync(absolutePath);
+    sqlite = new DatabaseSync(resolvedPath);
   }
 
   // WAL mode for concurrency, busy timeout, and enforce foreign keys

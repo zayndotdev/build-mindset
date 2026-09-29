@@ -21,7 +21,7 @@ export class GeminiAdapter extends BaseAdapter {
 
   private baseUrl: string = 'https://generativelanguage.googleapis.com/v1beta';
 
-  constructor(apiKey?: string, defaultModel: string = 'gemini-2.5-flash') {
+  constructor(apiKey?: string, defaultModel: string = 'gemini-3.8-flash') {
     super(defaultModel, apiKey);
   }
 
@@ -68,6 +68,10 @@ export class GeminiAdapter extends BaseAdapter {
       if (!res.ok) {
         const errorBody = await res.json().catch(() => ({}));
         const errMessage = (errorBody as { error?: { message?: string } })?.error?.message || res.statusText;
+        if (model === 'gemini-3.8-flash' && (res.status === 404 || res.status === 503 || errMessage.toLowerCase().includes('demand') || errMessage.toLowerCase().includes('not found'))) {
+          console.warn('[GeminiAdapter] gemini-3.8-flash unavailable or in high demand; falling back to gemini-2.5-flash');
+          return this.generate({ ...options, model: 'gemini-2.5-flash' });
+        }
         throw this.normalizeError(errMessage, res.status);
       }
 
@@ -131,6 +135,11 @@ export class GeminiAdapter extends BaseAdapter {
 
     if (!res.ok) {
       const errText = await res.text().catch(() => res.statusText);
+      if (model === 'gemini-3.8-flash' && (res.status === 404 || res.status === 503 || errText.toLowerCase().includes('demand') || errText.toLowerCase().includes('not found'))) {
+        console.warn('[GeminiAdapter] gemini-3.8-flash stream unavailable; falling back to gemini-2.5-flash');
+        yield* this.stream({ ...options, model: 'gemini-2.5-flash' });
+        return;
+      }
       throw this.normalizeError(errText, res.status);
     }
 

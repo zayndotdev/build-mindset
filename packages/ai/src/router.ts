@@ -30,7 +30,7 @@ export class AIRouter {
   private priority: ProviderId[] = ['gemini', 'groq', 'mistral', 'cohere'];
 
   private pinnedGraderId: ProviderId = 'gemini';
-  private pinnedGraderModel: string = 'gemini-2.5-flash';
+  private pinnedGraderModel: string = 'gemini-3.8-flash';
   private rubricVersion: string = 'v1.0';
 
   private circuitBreakerThreshold: number;

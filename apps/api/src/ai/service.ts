@@ -42,7 +42,7 @@ export class AIService {
 
     const priority: ProviderId[] = [];
     let pinnedGraderId: ProviderId = 'gemini';
-    let pinnedGraderModel = 'gemini-2.5-flash';
+    let pinnedGraderModel = 'gemini-3.8-flash';
 
     this.adapters.clear();
 
@@ -53,10 +53,19 @@ export class AIService {
         pinnedGraderModel = record.model;
       }
 
-      const decryptedKey = await this.providerRepo.getDecryptedKey(
+      let decryptedKey = await this.providerRepo.getDecryptedKey(
         record.id,
         this.env.ENCRYPTION_KEY
       );
+
+      // Hydrate from process.env if not in DB (only when not in test mode)
+      if (!decryptedKey && !this.useMockAI && process.env.NODE_ENV !== 'test') {
+        const envVal = process.env[`${record.id.toUpperCase()}_API_KEY`];
+        if (envVal && envVal.trim().length > 0) {
+          decryptedKey = envVal.trim();
+          await this.providerRepo.updateApiKey(record.id, decryptedKey, this.env.ENCRYPTION_KEY).catch(() => {});
+        }
+      }
 
       const adapter = this.createAdapter(record.id, record.model, decryptedKey);
       this.adapters.set(record.id, adapter);
@@ -83,8 +92,16 @@ export class AIService {
       return { success: false, models: [], error: `Provider ${id} not found` };
     }
 
-    const apiKey =
+    let apiKey =
       overrideKey ?? (await this.providerRepo.getDecryptedKey(id, this.env.ENCRYPTION_KEY));
+
+    if (!apiKey && !this.useMockAI && process.env.NODE_ENV !== 'test') {
+      const envVal = process.env[`${id.toUpperCase()}_API_KEY`];
+      if (envVal && envVal.trim().length > 0) {
+        apiKey = envVal.trim();
+        await this.providerRepo.updateApiKey(id, apiKey, this.env.ENCRYPTION_KEY).catch(() => {});
+      }
+    }
 
     if (!apiKey && !this.useMockAI) {
       return { success: false, models: [], error: 'API key is missing' };

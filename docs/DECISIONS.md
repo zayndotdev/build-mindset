@@ -160,10 +160,12 @@
   a single focused question applying the same thinking to a related scenario.
   No full recap or English report in Quick Mode (keep it fast).
 
-### D-018: Gemini SDK — Use `@google/genai`
-- **Date:** 2026-09-29
-- **Context:** v0.1 referenced `@google/generative-ai` which is a legacy
-  package. Google has unified their SDKs under `@google/genai`.
+### D-018: Direct REST Adapters for AI Providers (Zero Vendor SDK Bloat)
+- **Date:** 2026-09-30
+- **Context:** v0.1 referenced `@google/generative-ai` and considered `@google/genai`. However, multi-provider integration across Gemini, Groq, Mistral, and Cohere benefited from a unified, zero-dependency HTTP client.
+- **Decision:** Use lightweight direct REST/SSE adapters using Node 24 native `fetch` across all providers, with `gemini-3.8-flash` as the default Gemini model.
+- **ADR:** [ADR-009](adr/009-rest-adapters-vs-provider-sdks.md)
+
 ### D-019: Native node:sqlite Driver & WebAssembly Argon2id
 - **Date:** 2026-09-29
 - **Context:** `better-sqlite3` and `@node-rs/argon2` native addons caused compilation
@@ -180,6 +182,25 @@
   2. Native production server health verification script (`scripts/verify-health.ts`) validating `/healthz` and `/readyz` against active SQLite WAL storage.
   3. Production web app compilation (`tsc -b && vite build`) validating the complete PWA bundle and service worker.
   4. Explicit manual verification checklist (`docs/MORNING_CHECKLIST.md`) for real device testing (Android Chrome / iOS Safari) with microphone and PWA installation permissions when the user wakes up.
+
+### D-021: Reconciliation of 2-Hint Cap, 0-4 Quality/Independence Scale, and SM-2 Composite
+- **Date:** 2026-09-30
+- **Context:** D-013 originally described a 4-level hint ladder (`0 hints = 4, 1 = 3, 2 = 2, 3 = 1, 4+ = 0`), while Section 6.3 of the Master Build Prompt mandated a hard cap of 2 hints per step (`MAX_HINTS_PER_STEP = 2`). Additionally, the LLM grading rubric initially spanned 1–4, while D-013 specified a 0–4 scale.
+- **Decision:** Fully reconcile the scoring systems:
+  1. **Quality Scale (0–4)**:
+     - `4` (Mastery): Core points covered with trade-offs and edge cases.
+     - `3` (Proficient): Core points covered correctly. Passing threshold.
+     - `2` (Developing): Partial understanding; misses critical requirements.
+     - `1` (Incomplete): Vague, off-topic, or major technical misconceptions.
+     - `0` (Non-responsive/Skipped): Completely irrelevant, contradictory, or step skipped by learner.
+  2. **Independence Scale (0–4) with 2-Hint Hard Cap**:
+     - `0 hints used` = `4` (Unassisted mastery).
+     - `1 hint used` = `3` (Minor assistance / conceptual framing nudge).
+     - `2 hints used` = `2` (Substantial assistance / architectural breakdown).
+     - `Step skipped` = `0` (Zero independence).
+     - Hint requests $> 2$ are blocked in code with `MAX_HINTS_REACHED` (400).
+  3. **Composite for SM-2 Scheduling**:
+     - Calculated as `min(quality, independence)` per D-013, ensuring assisted or low-quality answers decay the review interval and are revisited promptly.
 
 ---
 

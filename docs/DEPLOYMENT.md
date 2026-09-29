@@ -186,35 +186,37 @@ sudo tailscale serve status
 
 ## 4. Setting Up Nightly Encrypted Off-VM Backups
 
-To ensure data durability against VM hardware failures or accidental deletion, schedule a nightly backup job that creates an AES-256-GCM encrypted snapshot and copies it off the VM (e.g. to object storage or your local computer):
+To ensure complete disaster recovery against Oracle VM hardware failure, disk corruption, or Always Free account reclamation, Mindset includes an automated off-VM backup runner (`scripts/scheduled-backup.sh`).
 
-1. Create a backup script at `/opt/mindset/scripts/nightly-backup.sh`:
+> [!CAUTION]
+> **CRITICAL MASTER KEY INVARIANT:**
+> The master encryption key (`MASTER_KEY_HEX` / `ENCRYPTION_KEY`) **must be stored separately from the VM**.
+> - Save `MASTER_KEY_HEX` in an offline password manager (1Password, Bitwarden, KeePassXC).
+> - Never store the master key in the same offsite storage bucket as the backup archives.
+> - If the VM is lost and the master key only existed on the VM, your off-VM backups are permanently undecryptable!
+
+### Step 1: Configure Off-VM Destination in `.env`
+Mindset supports multiple off-VM transports (`rclone`, `s3`, `gcs`, `oci`, `scp`):
+
+```env
+# Choose transport: rclone | s3 | gcs | oci | scp | copy
+OFFSITE_BACKUP_TYPE=s3
+OFFSITE_BACKUP_TARGET=s3://my-mindset-backup-bucket/daily/
+RETENTION_DAYS=14
+```
+
+### Step 2: Test the Scheduled Backup Script
 ```bash
-#!/bin/bash
-set -e
-
-TIMESTAMP=$(date +%Y%m%d_%H%M%S)
-BACKUP_FILE="/opt/mindset/backups/backup_${TIMESTAMP}.mbkp"
-
-# Generate encrypted backup
 cd /opt/mindset
-pnpm tsx scripts/backup.ts "$BACKUP_FILE"
-
-# Optional: Upload to off-VM location (e.g. rclone, AWS S3, or GCS)
-# rclone copy "$BACKUP_FILE" remote:mindset-backups/
-
-# Keep only last 14 local backups
-find /opt/mindset/backups -name "*.mbkp" -type f -mtime +14 -delete
+chmod +x scripts/scheduled-backup.sh
+./scripts/scheduled-backup.sh
 ```
 
-2. Make executable and add to crontab:
-```bash
-chmod +x /opt/mindset/scripts/nightly-backup.sh
-crontab -e
-```
-Add line:
+### Step 3: Schedule via Crontab or Systemd Timer
+Add to root or app user crontab (`crontab -e`):
 ```cron
-0 3 * * * /opt/mindset/scripts/nightly-backup.sh >> /var/log/mindset-backup.log 2>&1
+# Run daily at 03:00 UTC, piping output to log
+0 3 * * * /opt/mindset/scripts/scheduled-backup.sh >> /var/log/mindset-backup.log 2>&1
 ```
 
 ---

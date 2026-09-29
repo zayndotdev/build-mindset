@@ -26,7 +26,7 @@ export class ProviderRepository {
       priority: number;
       isGradingPrimary: boolean;
     }> = [
-      { id: 'gemini', model: 'gemini-2.5-flash', priority: 1, isGradingPrimary: true },
+      { id: 'gemini', model: 'gemini-3.8-flash', priority: 1, isGradingPrimary: true },
       { id: 'groq', model: 'llama-3.3-70b-versatile', priority: 2, isGradingPrimary: false },
       { id: 'mistral', model: 'mistral-small-latest', priority: 3, isGradingPrimary: false },
       { id: 'cohere', model: 'command-r7b-12-2024', priority: 4, isGradingPrimary: false },

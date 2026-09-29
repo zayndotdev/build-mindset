@@ -91,6 +91,19 @@ Offset   Size      Field               Description
 ```
 - Any unauthorized modification to the archive triggers an authenticated decryption failure (`GCM authentication tag mismatch`), preventing corrupted or tampered database restoration.
 
+### Master Key Isolation & Off-VM Backup Invariant (CRITICAL)
+> [!CAUTION]
+> **The master encryption key (`MASTER_KEY_HEX` / `ENCRYPTION_KEY`) must NEVER be stored only on the host VM, and must NEVER be stored in the same repository or storage bucket as the backup archives.**
+
+1. **Disaster Recovery Isolation**:
+   - If the hosting VM suffers catastrophic failure, filesystem corruption, or tenancy reclamation (e.g., Oracle Cloud Always Free idle reclamation), the off-VM `.mbkp` archives are completely useless if the master key was only on that VM's disk.
+   - You MUST record `MASTER_KEY_HEX` in a secure, independent password manager (e.g., Bitwarden, 1Password, KeePassXC, or HashiCorp Vault) immediately upon provisioning.
+2. **Breach Containment**:
+   - Storing the key alongside the backups on the offsite target negates encryption at rest: an attacker gaining access to the bucket could decrypt the entire coaching history and API credentials.
+3. **Automated Scheduled Off-VM Backups**:
+   - Mindset provides automated scheduled backup runners (`scripts/scheduled-backup.sh` and `scripts/scheduled-backup.ts`) supporting off-VM copying via S3-compatible object storage, Rclone, OCI Object Storage, or SSH/SCP.
+   - Automated retention policies prune local files after 14 days while preserving off-VM snapshots.
+
 ---
 
 ## 6. Prompt Injection & Boundary Controls

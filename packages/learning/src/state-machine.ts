@@ -166,7 +166,7 @@ export class SocraticStateMachine {
    */
   public skipStep(): StepEvaluationResult {
     const stepNumber = this.getCurrentStepNumber();
-    const qualityScore = 1 as QualityScore;
+    const qualityScore = 0 as QualityScore;
     const independenceScore = 0 as IndependenceScore;
     const compositeScore = calculateCompositeScore(qualityScore, independenceScore);
 
@@ -177,7 +177,7 @@ export class SocraticStateMachine {
       independenceScore,
       compositeScore,
       rubric: {
-        qualityScore: 1,
+        qualityScore: 0,
         coveredKeyPoints: [],
         missingKeyPoints: ['Step skipped by learner'],
         feedback: 'Step skipped. Model answer provided for review.',

@@ -13,13 +13,13 @@ describe('AIRouter Multi-Provider Fallback & Pinned Grader', () => {
     router = new AIRouter({
       priority: ['gemini', 'groq', 'mistral'],
       pinnedGraderId: 'gemini',
-      pinnedGraderModel: 'gemini-2.5-flash',
+      pinnedGraderModel: 'gemini-3.8-flash',
       rubricVersion: 'v1.0',
       circuitBreakerThreshold: 3,
       circuitBreakerResetMs: 100,
     });
 
-    p1 = new MockAdapter('gemini', 'Mock Gemini', 'gemini-2.5-flash');
+    p1 = new MockAdapter('gemini', 'Mock Gemini', 'gemini-3.8-flash');
     p2 = new MockAdapter('groq', 'Mock Groq', 'llama-3.3-70b-versatile');
     p3 = new MockAdapter('mistral', 'Mock Mistral', 'mistral-small-latest');
 
@@ -113,7 +113,7 @@ describe('AIRouter Multi-Provider Fallback & Pinned Grader', () => {
 
     expect(result.providerId).toBe('gemini');
     expect(provenance.graderId).toBe('gemini');
-    expect(provenance.model).toBe('gemini-2.5-flash');
+    expect(provenance.model).toBe('gemini-3.8-flash');
     expect(provenance.rubricVersion).toBe('v1.0');
     expect(provenance.isFallbackGrade).toBe(false);
   });

@@ -23,7 +23,7 @@ Phase 2 delivers the complete, resilient multi-provider AI infrastructure for th
   - Automated fallback progression upon 429s, 5xx server errors, or timeouts.
   - Transparent failover recording `isFallback: true` and latency metrics.
 - **Pinned Grader with Provenance Tracking**:
-  - `generateWithPinnedGrader()` anchors Socratic grading to a pinned provider (default: Gemini) and model (`gemini-2.5-flash`) with rubric version tracking (`v1.0`).
+  - `generateWithPinnedGrader()` anchors Socratic grading to a pinned provider (default: Gemini) and model (`gemini-3.8-flash`) with rubric version tracking (`v1.0`).
   - If the pinned grader trips its circuit or is resting, fallback grading executes and records `isFallbackGrade: true` in the evaluation provenance.
 - **Structured Output & Automated Repair** (`packages/ai/src/structured.ts`):
   - Extracts JSON payload, strips markdown fences, validates against Zod schemas.

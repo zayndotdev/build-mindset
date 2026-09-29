@@ -22,8 +22,10 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
   // GET /api/v1/auth/status — Checks whether first-run setup is required
   app.get('/status', async (_request: FastifyRequest, reply: FastifyReply) => {
     const credential = await authRepo.getCredential();
+    const setupRequired = !credential;
     return reply.send({
-      setupRequired: !credential,
+      setupRequired,
+      data: { setupRequired },
     });
   });
 
@@ -198,6 +200,25 @@ export async function authRoutes(app: FastifyInstance): Promise<void> {
     });
 
     return reply.send({ success: true, message: 'All sessions invalidated' });
+  });
+
+  // POST /api/v1/auth/dev-reset — Development-only helper to reset credentials if forgotten
+  app.post('/dev-reset', async (_request: FastifyRequest, reply: FastifyReply) => {
+    if (env.NODE_ENV !== 'development') {
+      return reply.status(403).send({
+        error: {
+          code: 'FORBIDDEN',
+          message: 'Development reset is only available in development mode',
+        },
+      });
+    }
+
+    await authRepo.resetCredentials();
+    reply.clearCookie(SESSION_COOKIE_NAME, { path: '/' });
+    return reply.send({
+      success: true,
+      message: 'Workspace credentials reset. You can now perform first-run setup.',
+    });
   });
 
   // Handler for /me and /session

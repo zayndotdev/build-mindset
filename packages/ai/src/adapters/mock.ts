@@ -91,8 +91,10 @@ export class MockAdapter extends BaseAdapter {
                 independenceScore: 4,
                 compositeScore: 3,
                 coveredKeyPoints: ['Argon2id hashing', '16-byte random salt'],
-                missedKeyPoints: ['Timing attacks'],
-                feedback: 'Good architectural reasoning.',
+                missingKeyPoints: ['Timing attacks'],
+                feedback: 'Good architectural reasoning and tradeoff identification.',
+                suggestedFollowup: 'How would you handle database indexing and key rotation?',
+                isPass: true,
               })
             : 'Mock response answering your system design question.');
 

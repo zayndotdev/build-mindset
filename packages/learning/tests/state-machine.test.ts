@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SocraticStateMachine } from '../src/state-machine';
+import { buildGraderSystemPrompt } from '../src/prompts';
 import type { Topic } from '@mindset/shared';
 
 const mockTopic: Topic = {
@@ -110,7 +111,7 @@ describe('SocraticStateMachine (Learning Engine Core)', () => {
 
     expect(stepResult.qualityScore).toBe(4);
     expect(stepResult.independenceScore).toBe(3); // 1 hint used -> 3
-    expect(stepResult.compositeScore).toBe(3.7); // 4 * 0.7 + 3 * 0.3 = 2.8 + 0.9 = 3.7
+    expect(stepResult.compositeScore).toBe(3); // min(quality, independence) = min(4, 3) = 3 per D-013 / D-021
     expect(stepResult.isStepPass).toBe(true);
 
     // Advanced to step 2 with fresh hint budget
@@ -122,9 +123,9 @@ describe('SocraticStateMachine (Learning Engine Core)', () => {
 
   it('skips step with independence score = 0 and advances', () => {
     const skipResult = sm.skipStep();
-    expect(skipResult.qualityScore).toBe(1);
+    expect(skipResult.qualityScore).toBe(0);
     expect(skipResult.independenceScore).toBe(0);
-    expect(skipResult.compositeScore).toBe(0.7); // 1 * 0.7 + 0 * 0.3 = 0.7
+    expect(skipResult.compositeScore).toBe(0); // min(0, 0) = 0 per D-013 / D-021
     expect(sm.getCurrentStepNumber()).toBe(2);
   });
 
@@ -199,5 +200,123 @@ describe('SocraticStateMachine (Learning Engine Core)', () => {
 
     expect(quickSm.isFinished()).toBe(true);
     expect(quickSm.getState()).toBe('SESSION_COMPLETED');
+  });
+
+  it('proves the engine uses topic-specific standardSteps and steps[n].keyPoints (not generic step names)', () => {
+    const customTopic: Topic = {
+      id: 'custom-distributed-db',
+      title: 'Distributed Database Partitioning',
+      category: 'database',
+      difficulty: 'advanced',
+      prerequisites: [],
+      learningObjectives: ['Learn sharding'],
+      keyTradeoffs: ['Consistent hashing vs Range partitioning'],
+      commonPitfalls: ['Hotspots'],
+      transferTopicId: 'transfer-partitioning',
+      transferPrompt: 'How would you rebalance shards dynamically?',
+      standardSteps: [1, 5, 8, 9],
+      estimatedMinutes: 15,
+      tags: ['database'],
+      isCustom: false,
+      isActive: true,
+      steps: {
+        '1': {
+          coachQuestion: 'What partitioning key would you choose for high-throughput writes?',
+          keyPoints: {
+            junior: [{ point: 'Evaluate partition key cardinality', isCore: true }],
+            mid: [{ point: 'Evaluate write distribution and hotspot risk', isCore: true }],
+            senior: [{ point: 'Evaluate write distribution and hotspot risk', isCore: true }],
+          },
+          modelAnswer: {
+            junior: 'Choose high cardinality key',
+            mid: 'Choose high cardinality key',
+            senior: 'Choose high cardinality key',
+          },
+        },
+        '5': {
+          coachQuestion: 'How will cross-shard transactions be coordinated?',
+          keyPoints: {
+            junior: [{ point: 'Two-phase commit (2PC) or Saga pattern', isCore: true }],
+            mid: [{ point: 'Two-phase commit (2PC) or Saga pattern', isCore: true }],
+            senior: [{ point: 'Two-phase commit (2PC) or Saga pattern', isCore: true }],
+          },
+          modelAnswer: {
+            junior: 'Use Saga or 2PC',
+            mid: 'Use Saga or 2PC',
+            senior: 'Use Saga or 2PC',
+          },
+        },
+        '8': {
+          coachQuestion: 'What happens during network partitions between shard leaders?',
+          keyPoints: {
+            junior: [{ point: 'Raft consensus quorum requirements', isCore: true }],
+            mid: [{ point: 'Raft consensus quorum requirements', isCore: true }],
+            senior: [{ point: 'Raft consensus quorum requirements', isCore: true }],
+          },
+          modelAnswer: {
+            junior: 'Quorum split-brain prevention',
+            mid: 'Quorum split-brain prevention',
+            senior: 'Quorum split-brain prevention',
+          },
+        },
+        '9': {
+          coachQuestion: 'Design the read path for scatter-gather queries.',
+          keyPoints: {
+            junior: [{ point: 'Scatter-gather query coordinator with fanout timeout', isCore: true }],
+            mid: [{ point: 'Scatter-gather query coordinator with fanout timeout', isCore: true }],
+            senior: [{ point: 'Scatter-gather query coordinator with fanout timeout', isCore: true }],
+          },
+          modelAnswer: {
+            junior: 'Scatter gather router',
+            mid: 'Scatter gather router',
+            senior: 'Scatter gather router',
+          },
+        },
+      },
+    };
+
+    const engine = new SocraticStateMachine({
+      sessionId: 'sess-custom-steps',
+      topic: customTopic,
+      level: 'working',
+      sessionMode: 'standard',
+    });
+
+    // 1. Proves stepsToRun strictly uses standardSteps [1, 5, 8, 9] (not generic [1, 2, 3, 4])
+    expect(engine.stepsToRun).toEqual([1, 5, 8, 9]);
+
+    // 2. Step 1 uses topic-specific question and key points
+    expect(engine.getCurrentStepNumber()).toBe(1);
+    const step1Data = engine.getCurrentStepData();
+    expect(step1Data?.coachQuestion).toBe('What partitioning key would you choose for high-throughput writes?');
+    expect(step1Data?.keyPoints.mid[0].point).toBe('Evaluate write distribution and hotspot risk');
+
+    // Verify grader prompt incorporates the topic's specific question & key points (not generic step labels)
+    const prompt1 = buildGraderSystemPrompt(customTopic, step1Data!, 'working');
+    expect(prompt1).toContain('TOPIC: Distributed Database Partitioning');
+    expect(prompt1).toContain('QUESTION: What partitioning key would you choose for high-throughput writes?');
+    expect(prompt1).toContain('- Evaluate write distribution and hotspot risk');
+    expect(prompt1).not.toContain('Step 1: Clarifying Requirements');
+
+    // Advance to next step
+    engine.submitAnswer('I choose a UUID hash', {
+      qualityScore: 3,
+      coveredKeyPoints: ['Evaluate write distribution and hotspot risk'],
+      missingKeyPoints: [],
+      feedback: 'Good.',
+      suggestedFollowup: '',
+      isPass: true,
+    });
+
+    // 3. Proves next step is Step 5 (from standardSteps[1]), NOT Step 2
+    expect(engine.getCurrentStepNumber()).toBe(5);
+    const step5Data = engine.getCurrentStepData();
+    expect(step5Data?.coachQuestion).toBe('How will cross-shard transactions be coordinated?');
+    expect(step5Data?.keyPoints.mid[0].point).toBe('Two-phase commit (2PC) or Saga pattern');
+
+    const prompt5 = buildGraderSystemPrompt(customTopic, step5Data!, 'working');
+    expect(prompt5).toContain('QUESTION: How will cross-shard transactions be coordinated?');
+    expect(prompt5).toContain('- Two-phase commit (2PC) or Saga pattern');
+    expect(prompt5).not.toContain('Step 2: Data Model');
   });
 });

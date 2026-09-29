@@ -52,16 +52,23 @@ export const LoginView: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="passphrase" className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
-                Master Passphrase
-              </label>
+              <div className="flex justify-between items-center mb-1.5">
+                <label htmlFor="passphrase" className="block text-xs font-semibold uppercase tracking-wider text-slate-400">
+                  Master Passphrase
+                </label>
+                {setupRequired && (
+                  <span className={`text-[11px] font-medium ${passphrase.length >= 8 ? 'text-accent-emerald' : 'text-slate-400'}`}>
+                    {passphrase.length >= 8 ? '✓ 8+ chars' : `${passphrase.length}/8 min chars`}
+                  </span>
+                )}
+              </div>
               <div className="relative">
                 <input
                   id="passphrase"
                   type={showPassword ? 'text' : 'password'}
                   value={passphrase}
                   onChange={(e) => setPassphrase(e.target.value)}
-                  placeholder="Enter your passphrase"
+                  placeholder={setupRequired ? 'Enter at least 8 characters' : 'Enter your passphrase'}
                   disabled={isSubmitting}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-surface-card border border-surface-border text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500 transition-all"
                   autoFocus
@@ -99,6 +106,29 @@ export const LoginView: React.FC = () => {
                 </>
               )}
             </button>
+
+            {!setupRequired && (
+              <div className="pt-2 text-center">
+                <button
+                  type="button"
+                  onClick={async () => {
+                    if (window.confirm('Reset local workspace passphrase? This allows you to set a new passphrase on your local machine.')) {
+                      try {
+                        const res = await fetch('/api/v1/auth/dev-reset', { method: 'POST' });
+                        if (res.ok) {
+                          window.location.reload();
+                        }
+                      } catch {
+                        // ignore
+                      }
+                    }
+                  }}
+                  className="text-[11px] text-slate-500 hover:text-primary-400 underline transition-colors"
+                >
+                  Reset local passphrase (dev mode)
+                </button>
+              </div>
+            )}
           </form>
 
           {/* Security Note */}

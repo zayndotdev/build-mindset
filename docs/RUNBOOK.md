@@ -88,27 +88,39 @@ curl http://127.0.0.1:3000/readyz
 
 ## 3. Disaster Recovery & Restoring Backups
 
-If the database becomes corrupted, accidentally truncated, or migrated to a new host:
+If the database becomes corrupted, accidentally truncated, or if an entire new VM is provisioned after total host failure:
 
-1. **Locate the latest valid backup**:
+> [!IMPORTANT]
+> **Master Key Requirement**: If the original VM was lost or re-provisioned, retrieve `MASTER_KEY_HEX` from your offline password manager (1Password, Bitwarden). It was never stored on the lost VM disk.
+
+1. **Retrieve the latest backup from off-VM storage** (if restoring onto a new or rebuilt VM):
+   ```bash
+   # From S3:
+   aws s3 cp s3://my-mindset-backup-bucket/daily/latest.mbkp /opt/mindset/backups/
+   # Or via rclone:
+   rclone copy remote:mindset-backups/latest.mbkp /opt/mindset/backups/
+   ```
+
+2. **Locate the latest valid backup**:
    ```bash
    ls -lt /opt/mindset/backups/*.mbkp | head -n 5
    ```
-2. **Stop the active service**:
+3. **Stop the active service**:
    ```bash
    sudo systemctl stop mindset
    ```
-3. **Execute the encrypted restore CLI**:
+4. **Execute the encrypted restore CLI**:
    ```bash
    cd /opt/mindset
-   pnpm tsx scripts/restore.ts /opt/mindset/backups/backup_20260930_030000.mbkp /opt/mindset/data/mindset.db
+   export MASTER_KEY_HEX="<your-master-key-from-password-manager>"
+   pnpm tsx scripts/restore.ts /opt/mindset/backups/latest.mbkp /opt/mindset/data/mindset.db
    ```
-   *The restore engine verifies the `MBKP` magic bytes, decrypts via AES-256-GCM using `ENCRYPTION_KEY`, validates the 16-byte authentication tag, and replaces the database file.*
-4. **Restart the service**:
+   *The restore engine verifies the `MBKP` magic bytes, decrypts via AES-256-GCM using `MASTER_KEY_HEX`, validates the 16-byte authentication tag, and replaces the database file.*
+5. **Restart the service**:
    ```bash
    sudo systemctl start mindset
    ```
-5. **Verify health**:
+6. **Verify health**:
    ```bash
    curl http://127.0.0.1:3000/readyz
    # Expected: {"status":"ok","db":"connected"}

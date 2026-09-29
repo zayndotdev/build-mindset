@@ -31,7 +31,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
       if (statusRes.ok) {
         const statusData = await statusRes.json();
-        if (statusData.data?.setupRequired) {
+        if (statusData.setupRequired ?? statusData.data?.setupRequired) {
           setSetupRequired(true);
           setIsAuthenticated(false);
           setUser(null);

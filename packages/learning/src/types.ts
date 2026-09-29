@@ -15,11 +15,11 @@ export type SessionState =
 export type SessionLevel = 'foundation' | 'working' | 'advanced';
 export type SessionMode = 'standard' | 'quick';
 
-export type QualityScore = 1 | 2 | 3 | 4;
-export type IndependenceScore = 0 | 2 | 3 | 4;
+export type QualityScore = 0 | 1 | 2 | 3 | 4;
+export type IndependenceScore = 0 | 1 | 2 | 3 | 4;
 
 export const RubricEvaluationSchema = z.object({
-  qualityScore: z.number().int().min(1).max(4),
+  qualityScore: z.number().int().min(0).max(4),
   coveredKeyPoints: z.array(z.string()),
   missingKeyPoints: z.array(z.string()),
   feedback: z.string(),

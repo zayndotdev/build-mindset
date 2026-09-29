@@ -415,22 +415,26 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                 setStreamingText(accumulatedCoachText);
               } else if (currentEvent === 'done') {
                 // Finalize coach response in messages
-                if (accumulatedCoachText) {
-                  const newCoachMsgId = `coach-${Date.now()}`;
-                  setMessages((prev) => [
-                    ...prev,
-                    {
-                      id: newCoachMsgId,
-                      role: 'coach',
-                      content: accumulatedCoachText,
-                      stepNumber: parsed.currentStep,
-                      gradeResult: gradeEventData,
-                    },
-                  ]);
+                const finalContent =
+                  accumulatedCoachText ||
+                  gradeEventData?.rubric?.suggestedFollowup ||
+                  gradeEventData?.rubric?.feedback ||
+                  'Let us proceed to the next step.';
 
-                  if (autoTtsEnabled) {
-                    speakText(accumulatedCoachText, newCoachMsgId);
-                  }
+                const newCoachMsgId = `coach-${Date.now()}`;
+                setMessages((prev) => [
+                  ...prev,
+                  {
+                    id: newCoachMsgId,
+                    role: 'coach',
+                    content: finalContent,
+                    stepNumber: parsed.currentStep,
+                    gradeResult: gradeEventData,
+                  },
+                ]);
+
+                if (autoTtsEnabled) {
+                  speakText(finalContent, newCoachMsgId);
                 }
 
                 setCurrentStep(parsed.currentStep);

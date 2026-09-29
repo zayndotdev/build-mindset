@@ -14,6 +14,12 @@ const MainContent: React.FC = () => {
   const { isAuthenticated, isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('coach');
 
+  React.useEffect(() => {
+    if (!isAuthenticated) {
+      setActiveTab('coach');
+    }
+  }, [isAuthenticated]);
+
   if (isLoading) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center space-y-3">

@@ -38,16 +38,17 @@ ${corePoints || '- (General engineering rigor)'}
 BONUS KEY POINTS (Demonstrates mastery for score 4):
 ${bonusPoints || '- None'}
 
-SCORING RUBRIC (Quality Score 1-4):
+SCORING RUBRIC (Quality Score 0-4):
 - 4 (Mastery): Covers all core points and at least one bonus point with clear architectural trade-offs.
 - 3 (Proficient): Covers the main core points correctly and identifies key requirements.
 - 2 (Developing): Mentions some relevant concepts but misses critical core requirements or failure modes.
-- 1 (Incomplete): Off-topic, vague, or incorrect.
+- 1 (Incomplete): Off-topic, vague, or substantially flawed understanding.
+- 0 (Off-topic/Incorrect): Completely non-responsive, incoherent, or contradictory.
 
 OUTPUT REQUIREMENTS:
 You MUST respond with a valid JSON object matching this schema:
 {
-  "qualityScore": number (1-4),
+  "qualityScore": number (0-4),
   "coveredKeyPoints": string[] (exact list of key points addressed),
   "missingKeyPoints": string[] (core key points that were omitted),
   "feedback": string (concise explanation of what was good and what was missing, max 2 sentences),

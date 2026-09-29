@@ -86,3 +86,15 @@
 - [x] Mobile hardware verification checklist (`docs/MORNING_CHECKLIST.md`)
 - [x] `docs/MORNING_REPORT.md` (executive summary, test counts, evidence, status)
 - [x] `docs/reports/phase7-report.md`
+
+### Post-Run Corrections Pass [COMPLETE]
+- [x] Replace every `gemini-2.5` default with `gemini-3.8-flash`
+- [x] Authored ADR-009 (`docs/adr/009-rest-adapters-vs-provider-sdks.md`) explaining the direct REST adapter choice per D-018
+- [x] Proved via dedicated unit test that the engine uses each topic's `standardSteps` and `steps[n].keyPoints`
+- [x] Reconciled 2-hint cap with 0–4 scale and composite `min(quality, independence)` formula per D-013 & Decision D-021
+- [x] Executed real Playwright mobile E2E suite at 390x844 (12 scenarios, 12 PNG screenshots saved in `docs/screenshots/`)
+- [x] Scheduled off-VM encrypted backup script (`scripts/scheduled-backup.sh` & `scripts/scheduled-backup.ts`)
+- [x] Documented mandatory separate master key storage in `SECURITY.md`, `DEPLOYMENT.md`, and `RUNBOOK.md`
+- [x] Rewrote `docs/MORNING_REPORT.md` with verified/mock-only/unverified table and correct test inventory (93 tests passing across 16 files, do not tag v1.0.0)
+- [x] Populated provider keys into gitignored `.env` without exposing secrets
+

@@ -73,4 +73,10 @@ export class AuthRepository {
   async deleteAllSessions(): Promise<void> {
     await this.db.delete(sessionsAuth).run();
   }
+
+  async resetCredentials(): Promise<void> {
+    await this.deleteAllSessions();
+    await this.db.delete(credentials).run();
+    await this.db.delete(users).run();
+  }
 }

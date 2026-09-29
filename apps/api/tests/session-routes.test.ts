@@ -254,6 +254,6 @@ describe('Chat Core & SSE Streaming Session Routes (Phase 3)', () => {
 
     const step = sessionDetail.json().steps[0];
     expect(step.independenceScore).toBe(0);
-    expect(step.qualityScore).toBe(1);
+    expect(step.qualityScore).toBe(0);
   });
 });

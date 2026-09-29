@@ -17,12 +17,11 @@ export function calculateIndependenceScore(hintsUsed: number, isSkipped = false)
 }
 
 /**
- * Calculates the composite score weighting: 70% Quality + 30% Independence.
- * Returns score rounded to 2 decimal places.
+ * Calculates the composite score: min(quality, independence) per D-013.
+ * Used for SM-2 spaced repetition scheduling so assisted answers are reviewed sooner.
  */
 export function calculateCompositeScore(quality: number, independence: number): number {
-  const composite = quality * 0.7 + independence * 0.3;
-  return Math.round(composite * 100) / 100;
+  return Math.min(quality, independence);
 }
 
 /**
