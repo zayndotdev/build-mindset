@@ -113,3 +113,51 @@ export async function generateStructured<T>(
     );
   }
 }
+
+export async function parseStructuredOutput<T>(
+  raw: string,
+  schema: z.ZodType<T>,
+  router?: AIRouter,
+  providerId?: ProviderId
+): Promise<T> {
+  const cleaned = cleanJsonOutput(raw);
+  try {
+    const parsed = JSON.parse(cleaned);
+    return schema.parse(parsed);
+  } catch (initialErr) {
+    if (!router) {
+      throw new MalformedOutputError(
+        providerId ?? 'gemini',
+        `Failed to parse JSON output: ${(initialErr as Error).message}`,
+        raw
+      );
+    }
+
+    try {
+      const repairResult = await router.generate({
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a JSON repair specialist. Output ONLY the corrected valid JSON, with no markdown fences.',
+          },
+          {
+            role: 'user',
+            content: `Fix the following malformed JSON according to this structure:\n${raw}`,
+          },
+        ],
+        temperature: 0.1,
+        responseFormat: 'json',
+      });
+
+      const cleanedRepair = cleanJsonOutput(repairResult.content);
+      const parsedRepair = JSON.parse(cleanedRepair);
+      return schema.parse(parsedRepair);
+    } catch {
+      throw new MalformedOutputError(
+        providerId ?? 'gemini',
+        `Failed to parse or repair structured output: ${(initialErr as Error).message}`,
+        raw
+      );
+    }
+  }
+}

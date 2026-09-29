@@ -31,8 +31,13 @@ export async function seedDatabase(db = getDb()): Promise<void> {
   console.log('[Seed] Default provider configs verified.');
 
   // 2. Seed all topics from packages/learning/topics
-  const topicsDir = path.resolve(process.cwd(), '../../packages/learning/topics');
-  if (fs.existsSync(topicsDir)) {
+  const candidateDirs = [
+    path.resolve(process.cwd(), 'packages/learning/topics'),
+    path.resolve(process.cwd(), '../packages/learning/topics'),
+    path.resolve(process.cwd(), '../../packages/learning/topics'),
+  ];
+  const topicsDir = candidateDirs.find((d) => fs.existsSync(d));
+  if (topicsDir && fs.existsSync(topicsDir)) {
     const files = fs.readdirSync(topicsDir).filter((f) => f.endsWith('.json'));
     for (const file of files) {
       try {

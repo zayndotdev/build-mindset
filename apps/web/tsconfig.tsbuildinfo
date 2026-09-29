@@ -1,1 +1,0 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/components/header.tsx","./src/components/navigation.tsx","./src/components/offlinebanner.tsx","./src/context/authcontext.tsx","./src/views/coachview.tsx","./src/views/loginview.tsx","./src/views/progressview.tsx","./src/views/settingsview.tsx","./src/views/topicsview.tsx"],"version":"5.9.3"}

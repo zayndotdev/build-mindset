@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { FastifyInstance } from 'fastify';
 import { buildApp } from '../src/app';
 import { createDbClient } from '../src/db/client';
+import { runMigrations } from '../src/db/migrate';
 import { hashPassphrase } from '../src/auth/service';
 import { AuthRepository } from '../src/db/repositories/auth.repository';
 
@@ -10,52 +11,7 @@ describe('Fastify Server & Route Integration Tests', () => {
 
   beforeEach(async () => {
     const testDb = createDbClient(':memory:');
-
-    // Run table creation on in-memory SQLite
-    const sqlite = testDb.$client;
-    sqlite.exec(`
-      CREATE TABLE IF NOT EXISTS user (
-        id TEXT PRIMARY KEY,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS credential (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-        passphrase_hash TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      );
-      CREATE TABLE IF NOT EXISTS session_auth (
-        id TEXT PRIMARY KEY,
-        user_id TEXT NOT NULL REFERENCES user(id) ON DELETE CASCADE,
-        hashed_token TEXT NOT NULL UNIQUE,
-        expires_at TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        user_agent TEXT,
-        ip_address TEXT
-      );
-      CREATE TABLE IF NOT EXISTS topic (
-        id TEXT PRIMARY KEY,
-        title TEXT NOT NULL,
-        category TEXT NOT NULL,
-        difficulty TEXT NOT NULL,
-        standard_steps TEXT NOT NULL,
-        prerequisites TEXT NOT NULL DEFAULT '[]',
-        learning_objectives TEXT NOT NULL,
-        key_tradeoffs TEXT NOT NULL,
-        common_pitfalls TEXT NOT NULL,
-        transfer_topic_id TEXT NOT NULL,
-        transfer_prompt TEXT NOT NULL,
-        estimated_minutes INTEGER NOT NULL,
-        tags TEXT NOT NULL,
-        is_custom INTEGER NOT NULL DEFAULT 0,
-        is_active INTEGER NOT NULL DEFAULT 1,
-        steps_data TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        updated_at TEXT NOT NULL
-      );
-    `);
+    runMigrations(testDb);
 
     // Seed test user with known passphrase
     const authRepo = new AuthRepository(testDb);
@@ -262,11 +218,7 @@ describe('Fastify Server & Route Integration Tests', () => {
 
     // 3. Test on fresh unseeded DB: setupRequired is true, setup succeeds
     const freshDb = createDbClient(':memory:');
-    freshDb.$client.exec(`
-      CREATE TABLE IF NOT EXISTS user (id TEXT PRIMARY KEY, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS credential (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES user(id), passphrase_hash TEXT NOT NULL, created_at TEXT NOT NULL, updated_at TEXT NOT NULL);
-      CREATE TABLE IF NOT EXISTS session_auth (id TEXT PRIMARY KEY, user_id TEXT NOT NULL REFERENCES user(id), hashed_token TEXT NOT NULL UNIQUE, expires_at TEXT NOT NULL, created_at TEXT NOT NULL, user_agent TEXT, ip_address TEXT);
-    `);
+    runMigrations(freshDb);
 
     const freshApp = buildApp({ db: freshDb, logger: false });
     await freshApp.ready();

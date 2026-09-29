@@ -101,9 +101,16 @@ export class AuthenticationError extends AIError {
 }
 
 export class MalformedOutputError extends AIError {
-  constructor(providerId: ProviderId, message: string = 'Model returned malformed or invalid JSON') {
+  public readonly raw?: string;
+
+  constructor(
+    providerId: ProviderId,
+    message: string = 'Model returned malformed or invalid JSON',
+    raw?: string
+  ) {
     super(message, providerId, 'MALFORMED_OUTPUT', true);
     this.name = 'MalformedOutputError';
+    this.raw = raw;
   }
 }
 

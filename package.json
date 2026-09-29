@@ -7,7 +7,7 @@
     "dev": "pnpm --parallel --filter \"@mindset/*\" dev",
     "dev:api": "pnpm --filter @mindset/api dev",
     "dev:web": "pnpm --filter @mindset/web dev",
-    "build": "pnpm --filter @mindset/shared build && pnpm --filter @mindset/api build && pnpm --filter @mindset/web build",
+    "build": "pnpm --filter @mindset/shared build && pnpm --filter @mindset/ai build && pnpm --filter @mindset/learning build && pnpm --filter @mindset/api build && pnpm --filter @mindset/web build",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

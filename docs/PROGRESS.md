@@ -3,9 +3,9 @@
 > Real-time tracker for the overnight autonomous build run.
 > Updated after every task.
 
-**Current Phase**: Phase 3: Chat Core with Streaming & Persistence  
-**Last Commit**: `8a157f6`  
-**Next Action**: Implement session message SQLite persistence and SSE streaming endpoint (`POST /sessions/:id/answer`).  
+**Current Phase**: Phase 4: Learning Engine & Topic Curriculum  
+**Last Commit**: `2d29054`  
+**Next Action**: Author remaining curriculum topics with metadata (marked referenceStatus: unauthored and blocked from graded selection), verify persona eval harness against all 4 levels, and connect review queue.  
 **Known Issues**: Docker not installed locally on Windows host (runs natively; Docker verified in CI).
 
 ---
@@ -43,11 +43,11 @@
 - [x] `docs/reports/phase2-report.md`
 
 ### Phase 3: Chat Core with Streaming & Persistence
-- [ ] Session message database persistence (SQLite)
-- [ ] SSE streaming endpoint (`POST /sessions/:id/answer` -> `grade`, `token`, `done`, `error`)
-- [ ] Client SSE stream consumer with graceful disconnection handling
-- [ ] Integration tests for SSE streaming lifecycle
-- [ ] `docs/reports/phase3-report.md`
+- [x] Session message database persistence (SQLite)
+- [x] SSE streaming endpoint (`POST /sessions/:id/answer` -> `grade`, `token`, `done`, `error`)
+- [x] Client SSE stream consumer with graceful disconnection handling
+- [x] Integration tests for SSE streaming lifecycle
+- [x] `docs/reports/phase3-report.md`
 
 ### Phase 4: Learning Engine (Socratic Core)
 - [ ] Socratic state machine (4 steps standard, Quick mode with mini-transfer)
