@@ -17,8 +17,12 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onSelectTab }
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-surface-border/80 px-2 py-1.5 sm:py-2">
-      <div className="max-w-md mx-auto flex items-center justify-around">
+    <nav
+      className="fixed bottom-0 left-0 right-0 z-40 glass-panel border-t border-surface-border/80 px-2 py-1.5 sm:py-2"
+      role="navigation"
+      aria-label="Bottom Navigation"
+    >
+      <div className="max-w-md mx-auto flex items-center justify-around" role="tablist" aria-label="Main Views">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -26,8 +30,11 @@ export const Navigation: React.FC<NavigationProps> = ({ activeTab, onSelectTab }
           return (
             <button
               key={tab.id}
+              role="tab"
+              aria-selected={isActive}
+              aria-label={`${tab.label} View`}
               onClick={() => onSelectTab(tab.id)}
-              className={`flex flex-col items-center justify-center flex-1 py-1 rounded-xl transition-all duration-200 relative ${
+              className={`flex flex-col items-center justify-center flex-1 py-1.5 rounded-xl transition-all duration-200 relative min-h-[44px] ${
                 isActive
                   ? 'text-primary-400 font-semibold'
                   : 'text-slate-400 hover:text-slate-200 font-medium'

@@ -15,6 +15,8 @@ import { providerRoutes } from './routes/provider.routes';
 import { sessionRoutes } from './routes/session.routes';
 import { topicRoutes } from './routes/topic.routes';
 import { voiceRoutes } from './routes/voice.routes';
+import { progressRoutes } from './routes/progress.routes';
+import { reviewRoutes } from './routes/review.routes';
 import { healthRoutes } from './routes/health.routes';
 import fastifyStatic from '@fastify/static';
 import { randomUUID } from 'node:crypto';
@@ -151,6 +153,8 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
   app.register(topicRoutes, { prefix: '/api/v1/topics' });
   app.register(sessionRoutes, { prefix: '/api/v1/sessions' });
   app.register(voiceRoutes, { prefix: '/api/v1/voice' });
+  app.register(progressRoutes, { prefix: '/api/v1/progress' });
+  app.register(reviewRoutes, { prefix: '/api/v1/reviews' });
 
   // Serve static PWA assets in production if built
   const candidatePaths = [

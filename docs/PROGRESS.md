@@ -70,16 +70,16 @@
 - [x] Mocked media audio tests
 - [x] `docs/reports/phase5-report.md`
 
-### Phase 6: Progress, Review, History, Accessibility & Performance [IN PROGRESS]
-- [ ] Skill radar chart (quality scores only)
-- [ ] Independence score trend line
-- [ ] SM-2 Spaced review due queue UI & interaction
-- [ ] Past session history list & search
-- [ ] a11y audit pass (ARIA, focus management, semantic HTML)
-- [ ] Mobile responsive layout pass (tested at 390x844 viewport)
-- [ ] `docs/reports/phase6-report.md`
+### Phase 6: Progress, Review, History, Accessibility & Performance
+- [x] Skill radar chart (quality scores only)
+- [x] Independence score trend line
+- [x] SM-2 Spaced review due queue UI & interaction
+- [x] Past session history list & search
+- [x] a11y audit pass (ARIA, focus management, semantic HTML)
+- [x] Mobile responsive layout pass (tested at 390x844 viewport)
+- [x] `docs/reports/phase6-report.md`
 
-### Phase 7: Audit, Backup/Restore, Verification & Wrap-up
+### Phase 7: Audit, Backup/Restore, Verification & Wrap-up [IN PROGRESS]
 - [ ] Security self-audit (auth, headers, tokens, encryption)
 - [ ] Automated backup & restore scripts with live restore test
 - [ ] Playwright E2E tests at 390x844 (setup, login, standard session, hints, fallback, offline)
