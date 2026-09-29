@@ -7,6 +7,8 @@ import {
   PinnedGraderProvenance,
   RateLimitError,
   ProviderUnavailableError,
+  AudioTranscriptionOptions,
+  AudioTranscriptionResult,
 } from './types';
 import { CircuitBreaker } from './circuit-breaker';
 import { QuotaTracker } from './quota-tracker';
@@ -307,4 +309,52 @@ export class AIRouter {
 
     return statuses;
   }
+
+  public async transcribe(options: AudioTranscriptionOptions): Promise<AudioTranscriptionResult> {
+    const candidateProviders: LLMProvider[] = [];
+
+    // Prioritize Groq, then others in priority order, then any other registered provider
+    for (const id of ['groq', ...this.priority]) {
+      const p = this.providers.get(id as ProviderId);
+      if (p && p.capabilities.audioTranscription && typeof p.transcribe === 'function' && !candidateProviders.includes(p)) {
+        candidateProviders.push(p);
+      }
+    }
+
+    for (const p of this.providers.values()) {
+      if (p.capabilities.audioTranscription && typeof p.transcribe === 'function' && !candidateProviders.includes(p)) {
+        candidateProviders.push(p);
+      }
+    }
+
+    if (candidateProviders.length === 0) {
+      throw new ProviderUnavailableError('groq', 'No audio transcription provider is registered or configured');
+    }
+
+    let lastError: unknown = null;
+
+    for (const provider of candidateProviders) {
+      const cb = this.circuitBreakers.get(provider.id);
+      if (this.quotaTracker.isResting(provider.id)) {
+        continue;
+      }
+
+      try {
+        if (cb) {
+          return await cb.execute(async () => {
+            return await provider.transcribe!(options);
+          });
+        }
+        return await provider.transcribe!(options);
+      } catch (err: unknown) {
+        lastError = err;
+        if (err instanceof RateLimitError) {
+          this.quotaTracker.recordRateLimit(provider.id, err.retryAfterMs);
+        }
+      }
+    }
+
+    throw (lastError as Error) || new ProviderUnavailableError('groq', 'All audio transcription providers failed');
+  }
 }
+

@@ -6,6 +6,8 @@ import {
   StreamChunk,
   ProviderCapabilities,
   AuthenticationError,
+  AudioTranscriptionOptions,
+  AudioTranscriptionResult,
 } from '../types';
 
 export class GroqAdapter extends BaseAdapter {
@@ -175,4 +177,63 @@ export class GroqAdapter extends BaseAdapter {
       throw this.normalizeError(err);
     }
   }
+
+  public async transcribe(options: AudioTranscriptionOptions): Promise<AudioTranscriptionResult> {
+    if (!this.hasApiKey()) {
+      throw new AuthenticationError(this.id, 'Groq API key is not configured');
+    }
+
+    const mimeType = options.mimeType || 'audio/webm';
+    const extension = mimeType.includes('wav')
+      ? 'wav'
+      : mimeType.includes('mp4') || mimeType.includes('m4a')
+      ? 'm4a'
+      : mimeType.includes('ogg')
+      ? 'ogg'
+      : mimeType.includes('mp3') || mimeType.includes('mpeg')
+      ? 'mp3'
+      : 'webm';
+    const filename = options.filename || `recording.${extension}`;
+
+    const formData = new FormData();
+    const blob = new Blob([options.audio as any], { type: mimeType });
+    formData.append('file', blob, filename);
+    formData.append('model', 'whisper-large-v3-turbo');
+    if (options.language) {
+      formData.append('language', options.language);
+    }
+    if (options.prompt) {
+      formData.append('prompt', options.prompt);
+    }
+    formData.append('response_format', 'json');
+
+    try {
+      const res = await fetch(`${this.baseUrl}/audio/transcriptions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+        body: formData,
+        signal: options.signal,
+      });
+
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => ({}));
+        const errMessage = (errorBody as { error?: { message?: string } })?.error?.message || res.statusText;
+        throw this.normalizeError(errMessage, res.status);
+      }
+
+      const data = (await res.json()) as { text: string; duration?: number };
+      return {
+        text: (data.text || '').trim(),
+        language: options.language || 'en',
+        duration: data.duration,
+        providerId: this.id,
+        model: 'whisper-large-v3-turbo',
+      };
+    } catch (err) {
+      throw this.normalizeError(err);
+    }
+  }
 }
+

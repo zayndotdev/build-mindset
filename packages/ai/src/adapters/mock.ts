@@ -8,6 +8,8 @@ import {
   RateLimitError,
   TimeoutError,
   AuthenticationError,
+  AudioTranscriptionOptions,
+  AudioTranscriptionResult,
 } from '../types';
 
 export interface MockBehavior {
@@ -25,7 +27,7 @@ export class MockAdapter extends BaseAdapter {
   readonly capabilities: ProviderCapabilities = {
     streaming: true,
     structuredJson: true,
-    audioTranscription: false,
+    audioTranscription: true,
     audioSpeech: false,
     maxContextTokens: 128000,
   };
@@ -159,5 +161,34 @@ export class MockAdapter extends BaseAdapter {
         { id: 'mock-model-fast', name: 'Mock Fast Model', contextWindow: 64000 },
       ]
     );
+  }
+
+  public async transcribe(options: AudioTranscriptionOptions): Promise<AudioTranscriptionResult> {
+    this.callCount++;
+
+    if (this.behavior.mode === 'rate_limit') {
+      throw new RateLimitError(this.id, 'Mock audio rate limit exceeded', this.behavior.retryAfterMs ?? 1000);
+    }
+    if (this.behavior.mode === 'timeout') {
+      throw new TimeoutError(this.id, 'Mock audio transcription timeout');
+    }
+    if (this.behavior.mode === 'auth_error') {
+      throw new AuthenticationError(this.id, 'Mock audio invalid credentials');
+    }
+    if (this.behavior.delayMs) {
+      await new Promise((resolve) => setTimeout(resolve, this.behavior.delayMs));
+    }
+
+    const defaultMockText =
+      this.behavior.content ||
+      'I would implement Argon2id with a 16-byte random salt and constant-time comparison to prevent timing attacks.';
+
+    return {
+      text: defaultMockText,
+      language: options.language || 'en',
+      duration: 3.2,
+      providerId: this.id,
+      model: 'mock-whisper-v3',
+    };
   }
 }

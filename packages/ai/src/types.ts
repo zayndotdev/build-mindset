@@ -44,6 +44,23 @@ export interface ProviderCapabilities {
   maxContextTokens: number;
 }
 
+export interface AudioTranscriptionOptions {
+  audio: Uint8Array | Buffer;
+  mimeType?: string;
+  filename?: string;
+  language?: string;
+  prompt?: string;
+  signal?: AbortSignal;
+}
+
+export interface AudioTranscriptionResult {
+  text: string;
+  language?: string;
+  duration?: number;
+  providerId: ProviderId;
+  model: string;
+}
+
 export interface LLMProvider {
   readonly id: ProviderId;
   readonly name: string;
@@ -52,6 +69,7 @@ export interface LLMProvider {
   stream(options: GenerateOptions): AsyncIterable<StreamChunk>;
   listModels(): Promise<ModelInfo[]>;
   healthCheck(): Promise<{ ok: boolean; latencyMs: number; error?: string }>;
+  transcribe?(options: AudioTranscriptionOptions): Promise<AudioTranscriptionResult>;
 }
 
 export interface PinnedGraderProvenance {

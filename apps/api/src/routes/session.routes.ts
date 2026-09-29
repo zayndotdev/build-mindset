@@ -23,6 +23,8 @@ const CreateSessionSchema = z.object({
 
 const SubmitAnswerSchema = z.object({
   answer: z.string().min(1, 'Answer cannot be empty'),
+  modality: z.enum(['text', 'voice']).optional().default('text'),
+  voiceTranscriptOriginal: z.string().optional(),
 });
 
 // Cache active state machines in memory
@@ -203,11 +205,17 @@ export async function sessionRoutes(app: FastifyInstance): Promise<void> {
     };
 
     try {
+      const modality = parseResult.data.modality;
+      const voiceTranscriptOriginal =
+        parseResult.data.voiceTranscriptOriginal ?? (modality === 'voice' ? userAnswer : undefined);
+
       // 1. Record user message in DB
       await sessionRepo.addMessage({
         sessionId: id,
         role: 'user',
         content: userAnswer,
+        modality,
+        voiceTranscriptOriginal,
         stepNumber,
       });
 

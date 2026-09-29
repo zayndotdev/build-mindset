@@ -64,13 +64,13 @@
 - [x] `docs/reports/phase4-report.md`
 
 ### Phase 5: Voice Pipeline
-- [ ] Voice audio upload & transcription endpoint (`POST /voice/transcribe` via Groq Whisper with mock fallback)
-- [ ] TTS audio player states and controls in UI
-- [ ] Original audio transcript used for grading
-- [ ] Mocked media audio tests
-- [ ] `docs/reports/phase5-report.md`
+- [x] Voice audio upload & transcription endpoint (`POST /voice/transcribe` via Groq Whisper with mock fallback)
+- [x] TTS audio player states and controls in UI
+- [x] Original audio transcript used for grading
+- [x] Mocked media audio tests
+- [x] `docs/reports/phase5-report.md`
 
-### Phase 6: Progress, Review, History, Accessibility & Performance
+### Phase 6: Progress, Review, History, Accessibility & Performance [IN PROGRESS]
 - [ ] Skill radar chart (quality scores only)
 - [ ] Independence score trend line
 - [ ] SM-2 Spaced review due queue UI & interaction

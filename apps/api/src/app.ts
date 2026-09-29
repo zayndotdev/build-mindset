@@ -14,6 +14,7 @@ import { authRoutes } from './routes/auth.routes';
 import { providerRoutes } from './routes/provider.routes';
 import { sessionRoutes } from './routes/session.routes';
 import { topicRoutes } from './routes/topic.routes';
+import { voiceRoutes } from './routes/voice.routes';
 import { healthRoutes } from './routes/health.routes';
 import fastifyStatic from '@fastify/static';
 import { randomUUID } from 'node:crypto';
@@ -126,12 +127,30 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     }
   });
 
+  // Support binary audio payloads for voice transcription
+  app.addContentTypeParser(
+    [
+      'audio/webm',
+      'audio/wav',
+      'audio/ogg',
+      'audio/mp4',
+      'audio/mpeg',
+      'audio/x-m4a',
+      'application/octet-stream',
+    ],
+    { parseAs: 'buffer' },
+    (_req, body, done) => {
+      done(null, body);
+    }
+  );
+
   // Register route modules
   app.register(healthRoutes);
   app.register(authRoutes, { prefix: '/api/v1/auth' });
   app.register(providerRoutes, { prefix: '/api/v1/providers' });
   app.register(topicRoutes, { prefix: '/api/v1/topics' });
   app.register(sessionRoutes, { prefix: '/api/v1/sessions' });
+  app.register(voiceRoutes, { prefix: '/api/v1/voice' });
 
   // Serve static PWA assets in production if built
   const candidatePaths = [

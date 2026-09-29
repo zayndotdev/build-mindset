@@ -10,6 +10,10 @@ import {
   Loader2,
   ArrowRight,
   Mic,
+  Volume2,
+  VolumeX,
+  Radio,
+  Square,
 } from 'lucide-react';
 
 interface ActiveSessionViewProps {
@@ -54,6 +58,19 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState<boolean>(false);
   const [completedSessionData, setCompletedSessionData] = useState<any>(null);
+
+  // Voice Recording & Transcription State
+  const [recordingState, setRecordingState] = useState<'idle' | 'listening' | 'transcribing'>('idle');
+  const [voiceModalityUsed, setVoiceModalityUsed] = useState<boolean>(false);
+  const [originalTranscript, setOriginalTranscript] = useState<string>('');
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const speechRecognitionRef = useRef<any>(null);
+
+  // Text-to-Speech (TTS) State
+  const [ttsState, setTtsState] = useState<'idle' | 'speaking'>('idle');
+  const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
+  const [autoTtsEnabled, setAutoTtsEnabled] = useState<boolean>(false);
 
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
@@ -118,13 +135,213 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     };
   }, [topicId, level, sessionMode]);
 
+  // Stop speech synthesis playback
+  const stopSpeech = () => {
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+    }
+    setTtsState('idle');
+    setCurrentlySpeakingId(null);
+  };
+
+  // Speak message content using browser speechSynthesis
+  const speakText = (text: string, messageId: string) => {
+    if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
+
+    if (currentlySpeakingId === messageId && ttsState === 'speaking') {
+      stopSpeech();
+      return;
+    }
+
+    stopSpeech();
+
+    const cleanText = text
+      .replace(/💡 Hint \(Level \d\): /g, '')
+      .replace(/⏩ Step Skipped[\s\S]*?Model Answer:\n/g, '')
+      .replace(/[#*`_]/g, '');
+
+    const utterance = new SpeechSynthesisUtterance(cleanText);
+    utterance.rate = 1.0;
+
+    const voices = window.speechSynthesis.getVoices();
+    const enVoice = voices.find(
+      (v) =>
+        v.lang.startsWith('en') &&
+        (v.name.includes('Natural') ||
+          v.name.includes('Google') ||
+          v.name.includes('Samantha') ||
+          v.name.includes('David'))
+    );
+    if (enVoice) {
+      utterance.voice = enVoice;
+    }
+
+    utterance.onstart = () => {
+      setTtsState('speaking');
+      setCurrentlySpeakingId(messageId);
+    };
+
+    utterance.onend = () => {
+      setTtsState('idle');
+      setCurrentlySpeakingId(null);
+    };
+
+    utterance.onerror = () => {
+      setTtsState('idle');
+      setCurrentlySpeakingId(null);
+    };
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  // Cleanup audio & speech on unmount
+  useEffect(() => {
+    return () => {
+      stopSpeech();
+      if (speechRecognitionRef.current) {
+        try {
+          speechRecognitionRef.current.stop();
+        } catch {}
+      }
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        try {
+          mediaRecorderRef.current.stop();
+        } catch {}
+      }
+    };
+  }, []);
+
+  // Voice recording toggle handler (Browser STT primary, Groq Whisper fallback)
+  const toggleMicrophone = async () => {
+    // Barge-in: stop any running TTS
+    stopSpeech();
+
+    if (recordingState === 'listening') {
+      if (speechRecognitionRef.current) {
+        speechRecognitionRef.current.stop();
+      } else if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+      return;
+    }
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    if (SpeechRecognition) {
+      try {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+          setRecordingState('listening');
+        };
+
+        recognition.onresult = (event: any) => {
+          let transcript = '';
+          for (let i = event.resultIndex; i < event.results.length; ++i) {
+            transcript += event.results[i][0].transcript;
+          }
+          if (transcript.trim()) {
+            setUserAnswer(transcript.trim());
+            setOriginalTranscript(transcript.trim());
+            setVoiceModalityUsed(true);
+          }
+        };
+
+        recognition.onerror = () => {
+          setRecordingState('idle');
+        };
+
+        recognition.onend = () => {
+          setRecordingState('idle');
+        };
+
+        speechRecognitionRef.current = recognition;
+        recognition.start();
+        return;
+      } catch {
+        // Fallback to MediaRecorder below
+      }
+    }
+
+    // MediaRecorder fallback with Groq Whisper transcribe endpoint
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      setErrorMessage('Audio recording is not supported in this browser.');
+      return;
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          audioChunksRef.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach((track) => track.stop());
+        setRecordingState('transcribing');
+
+        const audioBlob = new Blob(audioChunksRef.current, {
+          type: mediaRecorder.mimeType || 'audio/webm',
+        });
+
+        try {
+          const res = await fetch('/api/v1/voice/transcribe', {
+            method: 'POST',
+            headers: { 'Content-Type': audioBlob.type || 'audio/webm' },
+            credentials: 'include',
+            body: audioBlob,
+          });
+
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            throw new Error(err.error?.message || 'Voice transcription failed');
+          }
+
+          const data = await res.json();
+          if (data.text) {
+            setUserAnswer(data.text);
+            setOriginalTranscript(data.text);
+            setVoiceModalityUsed(true);
+          }
+        } catch (err: any) {
+          setErrorMessage(err.message || 'Voice transcription failed');
+        } finally {
+          setRecordingState('idle');
+        }
+      };
+
+      mediaRecorder.start();
+      setRecordingState('listening');
+    } catch (err: any) {
+      setErrorMessage(err.message || 'Microphone access denied or unavailable');
+      setRecordingState('idle');
+    }
+  };
+
   // Submit Answer via SSE Stream
   const handleSubmitAnswer = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!userAnswer.trim() || isStreaming || !sessionId || isCompleted) return;
 
+    // Barge-in: stop any running TTS
+    stopSpeech();
+
     const answerToSubmit = userAnswer.trim();
+    const isVoice = voiceModalityUsed;
+    const rawVoice = originalTranscript || answerToSubmit;
+
     setUserAnswer('');
+    setVoiceModalityUsed(false);
+    setOriginalTranscript('');
     setErrorMessage(null);
     setLatestGrade(null);
 
@@ -148,7 +365,11 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           Accept: 'text/event-stream',
         },
         credentials: 'include',
-        body: JSON.stringify({ answer: answerToSubmit }),
+        body: JSON.stringify({
+          answer: answerToSubmit,
+          modality: isVoice ? 'voice' : 'text',
+          voiceTranscriptOriginal: isVoice ? rawVoice : undefined,
+        }),
       });
 
       if (!res.ok) {
@@ -195,16 +416,21 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
               } else if (currentEvent === 'done') {
                 // Finalize coach response in messages
                 if (accumulatedCoachText) {
+                  const newCoachMsgId = `coach-${Date.now()}`;
                   setMessages((prev) => [
                     ...prev,
                     {
-                      id: `coach-${Date.now()}`,
+                      id: newCoachMsgId,
                       role: 'coach',
                       content: accumulatedCoachText,
                       stepNumber: parsed.currentStep,
                       gradeResult: gradeEventData,
                     },
                   ]);
+
+                  if (autoTtsEnabled) {
+                    speakText(accumulatedCoachText, newCoachMsgId);
+                  }
                 }
 
                 setCurrentStep(parsed.currentStep);
@@ -371,6 +597,24 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
             <span>{hintsRemaining}/2 Hints</span>
           </button>
 
+          {/* Auto TTS Toggle */}
+          <button
+            onClick={() => {
+              const nextVal = !autoTtsEnabled;
+              setAutoTtsEnabled(nextVal);
+              if (!nextVal) stopSpeech();
+            }}
+            className={`inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
+              autoTtsEnabled
+                ? 'bg-primary-600/20 border-primary-500 text-primary-300'
+                : 'bg-surface-card border-surface-border text-slate-400 hover:text-white'
+            }`}
+            title={autoTtsEnabled ? 'Auto-TTS Voice Output: ON' : 'Auto-TTS Voice Output: OFF'}
+          >
+            {autoTtsEnabled ? <Volume2 className="w-3.5 h-3.5" /> : <VolumeX className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline">Voice</span>
+          </button>
+
           {/* Exit Session Button */}
           <button
             onClick={() => {
@@ -418,6 +662,30 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
               {/* Message Body */}
               <div className="whitespace-pre-wrap">{msg.content}</div>
+
+              {/* TTS Audio Player Control for Coach Messages */}
+              {msg.role === 'coach' && (
+                <div className="mt-2.5 pt-2 border-t border-surface-border/50 flex items-center justify-between text-[11px]">
+                  <button
+                    type="button"
+                    onClick={() => speakText(msg.content, msg.id)}
+                    className="inline-flex items-center space-x-1.5 text-slate-400 hover:text-primary-300 transition-colors"
+                    title={currentlySpeakingId === msg.id && ttsState === 'speaking' ? 'Stop listening' : 'Listen with TTS'}
+                  >
+                    {currentlySpeakingId === msg.id && ttsState === 'speaking' ? (
+                      <>
+                        <Square className="w-3.5 h-3.5 text-accent-cyan fill-current animate-pulse" />
+                        <span className="text-accent-cyan font-medium">Stop Audio</span>
+                      </>
+                    ) : (
+                      <>
+                        <Volume2 className="w-3.5 h-3.5" />
+                        <span>Listen</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              )}
 
               {/* Rubric Badge if evaluated */}
               {msg.gradeResult && (
@@ -525,33 +793,74 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
             </button>
           </div>
 
+          {/* Voice Recording / Transcribing Indicator Banner */}
+          {recordingState === 'listening' && (
+            <div className="flex items-center space-x-2 text-xs text-accent-rose bg-accent-rose/10 border border-accent-rose/30 px-3 py-1.5 rounded-xl mb-1.5 animate-pulse">
+              <Radio className="w-3.5 h-3.5 text-accent-rose animate-ping shrink-0" />
+              <span className="font-semibold">Recording speech... Click mic button when finished to transcribe.</span>
+            </div>
+          )}
+          {recordingState === 'transcribing' && (
+            <div className="flex items-center space-x-2 text-xs text-accent-cyan bg-accent-cyan/10 border border-accent-cyan/30 px-3 py-1.5 rounded-xl mb-1.5">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-accent-cyan shrink-0" />
+              <span>Transcribing audio with Whisper AI...</span>
+            </div>
+          )}
+
           <div className="relative flex items-center">
             <textarea
               value={userAnswer}
-              onChange={(e) => setUserAnswer(e.target.value)}
+              onChange={(e) => {
+                stopSpeech();
+                setUserAnswer(e.target.value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault();
                   handleSubmitAnswer();
                 }
               }}
-              disabled={isStreaming}
-              placeholder="State your architectural reasoning (e.g. data structures, algorithms, scaling risks)..."
+              disabled={isStreaming || recordingState === 'transcribing'}
+              placeholder={
+                recordingState === 'listening'
+                  ? 'Listening to speech... Speak clearly...'
+                  : 'State your architectural reasoning (e.g. data structures, algorithms, scaling risks)...'
+              }
               rows={2}
-              className="w-full pl-3.5 pr-24 py-2.5 rounded-2xl bg-surface-card border border-surface-border focus:border-primary-500/80 focus:ring-1 focus:ring-primary-500 text-white placeholder-slate-500 text-xs sm:text-sm resize-none transition-all shadow-inner"
+              className={`w-full pl-3.5 pr-24 py-2.5 rounded-2xl bg-surface-card border focus:ring-1 text-white placeholder-slate-500 text-xs sm:text-sm resize-none transition-all shadow-inner ${
+                recordingState === 'listening'
+                  ? 'border-accent-rose/60 focus:border-accent-rose focus:ring-accent-rose'
+                  : 'border-surface-border focus:border-primary-500/80 focus:ring-primary-500'
+              }`}
             />
 
             <div className="absolute right-2 flex items-center space-x-1">
-              <button
-                type="button"
-                className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
-                title="Voice input (mock microphone)"
-              >
-                <Mic className="w-4 h-4" />
-              </button>
+              {recordingState === 'listening' ? (
+                <button
+                  type="button"
+                  onClick={toggleMicrophone}
+                  className="p-1.5 bg-accent-rose/20 text-accent-rose border border-accent-rose/40 rounded-lg animate-pulse transition-colors"
+                  title="Recording active. Click to finish recording."
+                >
+                  <Radio className="w-4 h-4 text-accent-rose" />
+                </button>
+              ) : recordingState === 'transcribing' ? (
+                <div className="p-1.5 text-accent-cyan" title="Transcribing voice recording...">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={toggleMicrophone}
+                  className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
+                  title="Speak answer (Microphone)"
+                >
+                  <Mic className="w-4 h-4" />
+                </button>
+              )}
               <button
                 type="submit"
-                disabled={!userAnswer.trim() || isStreaming}
+                disabled={!userAnswer.trim() || isStreaming || recordingState !== 'idle'}
                 className="p-2 rounded-xl bg-primary-600 hover:bg-primary-500 disabled:opacity-40 text-white transition-all shadow-md shadow-primary-500/20"
                 title="Submit Answer"
               >
