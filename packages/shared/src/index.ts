@@ -1,4 +1,5 @@
 export * from './crypto/encryption';
+export * from './crypto/backup';
 export * from './schemas/auth';
 export * from './schemas/topic';
 export * from './schemas/session';

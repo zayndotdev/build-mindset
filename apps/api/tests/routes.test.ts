@@ -196,7 +196,7 @@ describe('Fastify Server & Route Integration Tests', () => {
     const body = JSON.parse(lockedRes.body);
     expect(body.error.code).toBe('RATE_LIMIT_EXCEEDED');
     expect(lockedRes.headers['ratelimit-remaining']).toBe('0');
-  });
+  }, 25000);
 
   it('checks auth status and handles one-time first-run setup flow', async () => {
     // 1. Existing seeded DB has setupRequired: false

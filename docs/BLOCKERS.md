@@ -6,4 +6,9 @@
 > - **Attempts**: What was tried and resulting errors
 > - **Hypotheses & Workaround**: Current hypothesis and bypass/fallback implemented
 
-*No active blockers currently.*
+## Status
+*No active code or build blockers.* All 16 test files pass (92 tests green), and native PWA build succeeds.
+
+### Items for Human Wake-up (Non-blocking):
+- **Real Hardware Voice & PWA Testing**: Automated testing validated Web Speech fallbacks and mock audio pipelines; physical microphone interaction on Android Chrome and iPhone Safari should be verified using `docs/MORNING_CHECKLIST.md`.
+- **Live Provider API Keys**: Add real provider keys in Settings > Providers UI (or `.env`) to replace mock fallbacks for live AI calls.

@@ -172,6 +172,15 @@
   and WebAssembly `hash-wasm` for Argon2id. Pin Node to `^24.0.0`.
 - **ADR:** [ADR-008](adr/008-sqlite-driver-and-argon2-wasm.md)
 
+### D-020: Autonomous Verification & E2E Testing via Native HTTP/PWA and Mobile Release Gates
+- **Date:** 2026-09-30
+- **Context:** During overnight autonomous Phase 7 execution on Windows x64, the automated browser subagent driver could not fetch browser binaries because Microsoft Azure CDN returned HTTP 404 for `playwright-1.57.0-win32_x64.zip`.
+- **Decision:** Do not block execution or abort the overnight run. Verify all system and client behaviors through a multi-tier testing pipeline:
+  1. Full Vitest integration test suite (16 test files, 92 tests passing) covering all API routes, SSE streaming, SQLite transactions, Argon2id auth, rate limiting, and encrypted backup/restore.
+  2. Native production server health verification script (`scripts/verify-health.ts`) validating `/healthz` and `/readyz` against active SQLite WAL storage.
+  3. Production web app compilation (`tsc -b && vite build`) validating the complete PWA bundle and service worker.
+  4. Explicit manual verification checklist (`docs/MORNING_CHECKLIST.md`) for real device testing (Android Chrome / iOS Safari) with microphone and PWA installation permissions when the user wakes up.
+
 ---
 
 ## Unanswered Questions (recorded for future phases)

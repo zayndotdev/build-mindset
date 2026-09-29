@@ -129,3 +129,59 @@ export function timingSafeEqualStrings(a: string, b: string): boolean {
 
   return timingSafeEqual(bufA, bufB);
 }
+
+/**
+ * Encrypts a binary buffer (e.g. SQLite database snapshot) using AES-256-GCM.
+ * Output format: [MAGIC 4B 'MBKP'][VERSION 1B 0x01][IV 12B][AUTH_TAG 16B][CIPHERTEXT NB]
+ */
+export function encryptBuffer(data: Buffer, hexKey: string): Buffer {
+  const key = parseKey(hexKey);
+  const iv = randomBytes(IV_LENGTH);
+
+  const cipher = createCipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  });
+
+  const ciphertext = Buffer.concat([cipher.update(data), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+
+  const magic = Buffer.from('MBKP', 'utf8');
+  const version = Buffer.from([0x01]);
+
+  return Buffer.concat([magic, version, iv, authTag, ciphertext]);
+}
+
+/**
+ * Decrypts an AES-256-GCM encrypted backup buffer.
+ * Validates magic header ('MBKP'), version (0x01), and cryptographic authentication tag.
+ */
+export function decryptBuffer(data: Buffer, hexKey: string): Buffer {
+  const key = parseKey(hexKey);
+
+  if (data.length < 33) {
+    throw new Error('Encrypted backup data too short to contain valid header');
+  }
+
+  const magic = data.subarray(0, 4).toString('utf8');
+  if (magic !== 'MBKP') {
+    throw new Error(`Invalid backup magic header. Expected 'MBKP', received '${magic}'.`);
+  }
+
+  const version = data[4];
+  if (version !== 0x01) {
+    throw new Error(`Unsupported backup format version: ${version}`);
+  }
+
+  const iv = data.subarray(5, 5 + IV_LENGTH);
+  const authTag = data.subarray(5 + IV_LENGTH, 5 + IV_LENGTH + AUTH_TAG_LENGTH);
+  const ciphertext = data.subarray(5 + IV_LENGTH + AUTH_TAG_LENGTH);
+
+  const decipher = createDecipheriv(ALGORITHM, key, iv, {
+    authTagLength: AUTH_TAG_LENGTH,
+  });
+
+  decipher.setAuthTag(authTag);
+
+  return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
+}
+
