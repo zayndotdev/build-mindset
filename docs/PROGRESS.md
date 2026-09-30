@@ -108,9 +108,15 @@
 - [x] Multi-Filter Toolbar: Status (All 50, Ready 4, Roadmap 46), Difficulty, Category, and live Search
 - [x] Socratic Roadmap Syllabus Modal explaining architectural objectives, trade-offs, and pitfall analyses
 - [x] Redesigned Coach Command Center (`CoachView.tsx`): 12-col hero, 4-metric activity suite, and verified track cards
-- [x] Fixed SVG Label Overflow in `SkillRadarChart.tsx` with generous bounding margins and 5-dimension competency breakdown
-- [x] 2-Column Responsive Dashboard in `ProgressView.tsx` (Radar + Breakdown alongside Independence Trend + Growth Areas)
-- [x] 2-Column Categorized Hub in `SettingsView.tsx` with live TTS speech test button and 1-click dev cache purge
-- [x] Dev-mode service worker and cache auto-cleanups in `index.html` and `main.tsx`
-- [x] Verified full build (`dist/` generated cleanly) and 93 tests passing across 16 test files (100% green)
+### Phase 9: Hands-Free Voice Dialogue, Turn Detection & Modality Selection [COMPLETE]
+- [x] Dual-Modality Selector in Topic Launch Modal (`TopicsView.tsx`): Voice Mode (Default & Active) vs. Text Mode
+- [x] Socratic Dialogue Automatic Speech Loop: Coach speaks questions, hints, and feedback automatically without manual "Listen" clicks
+- [x] Continuous Speech Recognition (`continuous = true`, `interimResults = true`, `lang = 'en-US'`) in `ActiveSessionView.tsx`
+- [x] Hands-Free Turn Detection (VAD): 2.0s silence timer automatically submits user answers once speech pauses
+- [x] Real-time visual turn indicator (Coach speaking vs. Coach listening with countdown and manual "Send Now" override)
+- [x] Dynamic In-Session Modality Switcher (`[ 🎙️ Voice Mode | 💬 Text Mode ]`) in active session header
+- [x] Full barge-in support: user typing or clicking mic immediately interrupts running coach audio
+- [x] Silent Keyboard Text Mode fallback: keyboard navigation, manual Listen option preserved
+- [x] 100% build clean & 93 tests passing across 16 test files (both `main` and `overnight` branches updated)
+
 
