@@ -10,7 +10,6 @@ import {
   Loader2,
   ArrowRight,
   Mic,
-  MicOff,
   Volume2,
   Radio,
   Square,
@@ -76,10 +75,9 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   const [turnState, setTurnState] = useState<
     'coach_speaking' | 'user_listening' | 'user_speaking' | 'submitting' | 'idle'
   >('idle');
-  const [silenceCountdown, setSilenceCountdown] = useState<number | null>(null);
   const silenceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const countdownIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const isListeningRef = useRef<boolean>(false);
+  const isSubmittingRef = useRef<boolean>(false);
   const recognitionInstanceRef = useRef<any>(null);
   const userAnswerRef = useRef<string>('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -184,8 +182,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
       setCurrentlySpeakingId(messageId);
       setTurnState('coach_speaking');
 
-      // Keep speech recognition armed so that if the user starts speaking,
-      // it interrupts the coach immediately (barge-in)
+      // Keep speech recognition ready so if user speaks, it interrupts the coach immediately (barge-in)
       if (modalityRef.current === 'voice') {
         tryStartBargeInRecognition();
       }
@@ -231,11 +228,6 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
       clearTimeout(silenceTimerRef.current);
       silenceTimerRef.current = null;
     }
-    if (countdownIntervalRef.current) {
-      clearInterval(countdownIntervalRef.current);
-      countdownIntervalRef.current = null;
-    }
-    setSilenceCountdown(null);
 
     if (recognitionInstanceRef.current) {
       try {
@@ -288,27 +280,16 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
           // Reset silence timer on speech
           if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
-          if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
 
-          if (text.length >= 8) {
-            setSilenceCountdown(2);
-            let rem = 2;
-            countdownIntervalRef.current = setInterval(() => {
-              rem -= 1;
-              if (rem > 0) {
-                setSilenceCountdown(rem);
-              } else {
-                setSilenceCountdown(null);
-                if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-              }
-            }, 1000);
-
+          if (text.length >= 4) {
             silenceTimerRef.current = setTimeout(() => {
-              if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
-              setSilenceCountdown(null);
-              stopListening();
-              handleSubmitAnswer(undefined, text);
-            }, 2000);
+              const currentText = (liveSpokenTextRef.current || text).trim();
+              if (modalityRef.current === 'voice' && currentText.length >= 4 && !isStreaming && !isSubmittingRef.current) {
+                isSubmittingRef.current = true;
+                stopListening();
+                handleSubmitAnswer(undefined, currentText);
+              }
+            }, 1200);
           }
         }
       };
@@ -323,6 +304,12 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
       recognition.onend = () => {
         isListeningRef.current = false;
+        const textToSubmit = (liveSpokenTextRef.current || '').trim();
+        if (modalityRef.current === 'voice' && textToSubmit.length >= 4 && !isStreaming && !isSubmittingRef.current) {
+          isSubmittingRef.current = true;
+          setTurnState('submitting');
+          handleSubmitAnswer(undefined, textToSubmit);
+        }
       };
 
       recognitionInstanceRef.current = recognition;
@@ -390,46 +377,23 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
               clearTimeout(silenceTimerRef.current);
               silenceTimerRef.current = null;
             }
-            if (countdownIntervalRef.current) {
-              clearInterval(countdownIntervalRef.current);
-              countdownIntervalRef.current = null;
-            }
 
-            // In Voice Mode, if the user has spoken substantive content (>= 8 chars), arm the 2.0s silence timer
-            if (modalityRef.current === 'voice' && combined.length >= 8) {
-              setSilenceCountdown(2);
-              let remaining = 2;
-              countdownIntervalRef.current = setInterval(() => {
-                remaining -= 1;
-                if (remaining > 0) {
-                  setSilenceCountdown(remaining);
-                } else {
-                  setSilenceCountdown(null);
-                  if (countdownIntervalRef.current) {
-                    clearInterval(countdownIntervalRef.current);
-                    countdownIntervalRef.current = null;
-                  }
-                }
-              }, 1000);
-
+            // In Voice Mode, if the user has spoken substantive content (>= 4 chars), arm the 1.2s silence timer
+            if (modalityRef.current === 'voice' && combined.length >= 4) {
               silenceTimerRef.current = setTimeout(() => {
-                // 2 seconds of silence detected -> auto-submit user turn!
-                if (countdownIntervalRef.current) {
-                  clearInterval(countdownIntervalRef.current);
-                  countdownIntervalRef.current = null;
+                const text = (liveSpokenTextRef.current || combined).trim();
+                if (modalityRef.current === 'voice' && text.length >= 4 && !isStreaming && !isSubmittingRef.current) {
+                  isSubmittingRef.current = true;
+                  stopListening();
+                  handleSubmitAnswer(undefined, text);
                 }
-                setSilenceCountdown(null);
-                stopListening();
-                handleSubmitAnswer(undefined, combined);
-              }, 2000);
+              }, 1200);
             }
           }
         };
 
         recognition.onerror = (event: any) => {
-          console.warn('Speech recognition error event:', event.error);
           if (event.error === 'no-speech') {
-            // User is thinking; stay listening
             return;
           }
           if (event.error === 'not-allowed') {
@@ -439,17 +403,38 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         };
 
         recognition.onend = () => {
-          // If still marked as listening in voice mode, restart to maintain hands-free loop
-          if (isListeningRef.current && modalityRef.current === 'voice' && !isStreaming) {
-            try {
-              recognition.start();
-            } catch {
-              isListeningRef.current = false;
-              setRecordingState('idle');
-              setTurnState('idle');
+          isListeningRef.current = false;
+          const textToSubmit = (liveSpokenTextRef.current || accumulatedFinal).trim();
+
+          // If the user has spoken substantive text, SUBMIT IT IMMEDIATELY!
+          if (modalityRef.current === 'voice' && textToSubmit.length >= 4 && !isStreaming && !isSubmittingRef.current) {
+            isSubmittingRef.current = true;
+            if (silenceTimerRef.current) {
+              clearTimeout(silenceTimerRef.current);
+              silenceTimerRef.current = null;
             }
+            setRecordingState('idle');
+            setTurnState('submitting');
+            handleSubmitAnswer(undefined, textToSubmit);
+            return;
+          }
+
+          // If no substantive text was spoken yet, keep listening in voice mode
+          if (modalityRef.current === 'voice' && !isStreaming && !isCompleted && !isSubmittingRef.current) {
+            setTimeout(() => {
+              if (modalityRef.current === 'voice' && !isStreaming && !isCompleted && !isSubmittingRef.current) {
+                try {
+                  recognition.start();
+                  isListeningRef.current = true;
+                  setRecordingState('listening');
+                  setTurnState('user_listening');
+                } catch {
+                  setRecordingState('idle');
+                  setTurnState('idle');
+                }
+              }
+            }, 100);
           } else {
-            isListeningRef.current = false;
             setRecordingState('idle');
             setTurnState('idle');
           }
@@ -640,9 +625,12 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         : userAnswer
     ).trim();
 
-    if (!answerToSubmit || isStreaming || !sessionId || isCompleted) return;
+    if (!answerToSubmit || isStreaming || !sessionId || isCompleted) {
+      isSubmittingRef.current = false;
+      return;
+    }
 
-    // Barge-in: stop any running speech or recording
+    isSubmittingRef.current = true;
     stopSpeech();
     stopListening();
 
@@ -761,7 +749,9 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                   if (modalityRef.current === 'voice') {
                     speakText(finalContent, newCoachMsgId, () => {
                       if (modalityRef.current === 'voice') {
-                        startListening();
+                        setTimeout(() => {
+                          startListening();
+                        }, 200);
                       }
                     });
                   } else {
@@ -782,6 +772,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
       setTurnState('idle');
     } finally {
       setIsStreaming(false);
+      isSubmittingRef.current = false;
     }
   };
 
@@ -900,7 +891,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-8.5rem)] max-w-xl mx-auto pb-4">
+    <div className="flex flex-col h-[calc(100vh-8.5rem)] max-w-xl mx-auto pb-2">
       {/* Session Top Bar */}
       <div className="bg-surface rounded-2xl p-4 border border-surface-border mb-3 flex items-center justify-between shadow-card">
         <div className="flex items-center space-x-3">
@@ -908,7 +899,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
             S{currentStep}
           </div>
           <div>
-            <h3 className="text-sm font-bold text-text-primary truncate max-w-[170px] sm:max-w-xs">
+            <h3 className="text-sm font-bold text-text-primary truncate max-w-[150px] sm:max-w-xs">
               {topicTitle}
             </h3>
             <div className="flex items-center space-x-2 mt-0.5 text-[11px] text-text-muted">
@@ -919,13 +910,13 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           </div>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-1.5 sm:space-x-2">
           {/* Prominent Modality Switcher Toggle */}
           <div className="flex items-center bg-surface-subtle p-0.5 rounded-xl border border-surface-border text-xs">
             <button
               type="button"
               onClick={() => handleSwitchModality('voice')}
-              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg font-bold transition-all ${
+              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg font-bold transition-all ${
                 modality === 'voice'
                   ? 'bg-primary text-white shadow-xs'
                   : 'text-text-secondary hover:text-text-primary'
@@ -941,7 +932,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
             <button
               type="button"
               onClick={() => handleSwitchModality('text')}
-              className={`flex items-center space-x-1.5 px-2.5 py-1 rounded-lg font-bold transition-all ${
+              className={`flex items-center space-x-1 px-2.5 py-1 rounded-lg font-bold transition-all ${
                 modality === 'text'
                   ? 'bg-primary text-white shadow-xs'
                   : 'text-text-secondary hover:text-text-primary'
@@ -957,7 +948,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           <button
             onClick={handleRequestHint}
             disabled={hintsRemaining <= 0 || isStreaming || isCompleted}
-            className={`inline-flex items-center space-x-1 px-2.5 py-1 rounded-lg text-xs font-semibold border transition-all ${
+            className={`inline-flex items-center space-x-1 px-2 py-1 rounded-lg text-xs font-semibold border transition-all ${
               hintsRemaining > 0 && !isCompleted
                 ? 'bg-warning-subtle border-warning-border text-warning-text hover:bg-warning-subtle/80'
                 : 'bg-surface-subtle border-surface-border text-text-muted cursor-not-allowed opacity-60'
@@ -966,6 +957,16 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           >
             <Lightbulb className="w-3.5 h-3.5" />
             <span>{hintsRemaining}/2</span>
+          </button>
+
+          {/* Skip Step Button */}
+          <button
+            onClick={handleSkipStep}
+            disabled={isStreaming || isCompleted}
+            className="p-1.5 text-text-muted hover:text-warning-text rounded-lg hover:bg-surface-subtle transition-colors"
+            title="Skip Step (Reveals model answer)"
+          >
+            <SkipForward className="w-4 h-4" />
           </button>
 
           {/* Exit Session Button */}
@@ -1070,7 +1071,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         ))}
 
         {/* Live Spoken User Turn (Appears dynamically in the conversation thread on the RIGHT side) */}
-        {modality === 'voice' && (liveSpokenText.trim().length > 0 || recordingState === 'listening') && (
+        {modality === 'voice' && liveSpokenText.trim().length > 0 && (
           <div className="flex flex-col items-end animate-fade-in">
             <div className="max-w-[88%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed bg-primary text-white rounded-br-sm shadow-soft border border-white/20">
               <div className="flex items-center justify-between space-x-3 mb-1.5 opacity-85 text-[10px] font-bold uppercase tracking-wider">
@@ -1081,29 +1082,25 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                 <span>Step {currentStep}</span>
               </div>
               <div className="whitespace-pre-wrap leading-relaxed">
-                {liveSpokenText || (
-                  <span className="italic opacity-80">Listening to your voice... Speak your answer...</span>
-                )}
-                {liveSpokenText && (
-                  <span className="inline-block w-1.5 h-3.5 ml-1 bg-white/80 animate-pulse" />
-                )}
+                {liveSpokenText}
+                <span className="inline-block w-1.5 h-3.5 ml-1 bg-white/80 animate-pulse" />
               </div>
-              {silenceCountdown !== null && (
-                <div className="mt-2.5 pt-2 border-t border-white/20 text-[11px] text-white/90 flex items-center justify-between">
-                  <span className="font-medium">Auto-submitting in {silenceCountdown}s of silence...</span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const text = liveSpokenTextRef.current || liveSpokenText;
+              <div className="mt-2.5 pt-2 border-t border-white/20 text-[11px] text-white/90 flex items-center justify-between">
+                <span className="font-medium text-[10px]">Pause speaking to send automatically</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const text = (liveSpokenTextRef.current || liveSpokenText).trim();
+                    if (text) {
                       stopListening();
                       handleSubmitAnswer(undefined, text);
-                    }}
-                    className="text-[10px] bg-white text-primary px-2.5 py-0.5 rounded-full font-bold shadow-2xs hover:bg-white/90"
-                  >
-                    Send Now
-                  </button>
-                </div>
-              )}
+                    }
+                  }}
+                  className="text-[10px] bg-white text-primary px-2.5 py-0.5 rounded-full font-bold shadow-2xs hover:bg-white/90"
+                >
+                  Send Now
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -1183,143 +1180,50 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         </div>
       )}
 
-      {/* Voice Mode: Dedicated Voice HUD (NO text SMS box) */}
+      {/* Voice Mode: Sleek Minimal Status Pill (NO CHAT BOX / NO SMS BOX) */}
       {modality === 'voice' && !isCompleted && (
-        <div className="mt-3 bg-surface rounded-2xl p-3.5 border border-surface-border shadow-soft animate-fade-in">
-          <div className="flex items-center justify-between">
-            {/* Left: Turn Status & Visual Feedback */}
-            <div className="flex items-center space-x-3">
-              {ttsState === 'speaking' ? (
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-primary-subtle border border-primary-border flex items-center justify-center text-primary shadow-xs">
-                    <Volume2 className="w-5 h-5 animate-pulse" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-text-primary flex items-center space-x-1.5">
-                      <span>Coach Speaking</span>
-                      <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
-                    </div>
-                    <div className="text-[11px] text-text-muted">Speak or tap below to interrupt</div>
-                  </div>
-                </div>
-              ) : isStreaming ? (
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-primary-subtle border border-primary-border flex items-center justify-center text-primary shadow-xs">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-text-primary">Coach Evaluating...</div>
-                    <div className="text-[11px] text-text-muted">Analyzing architecture trade-offs</div>
-                  </div>
-                </div>
-              ) : recordingState === 'listening' ? (
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-danger-subtle border border-danger-border flex items-center justify-center text-danger shadow-xs animate-pulse">
-                    <Radio className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-danger-text flex items-center space-x-1.5">
-                      <span>{liveSpokenText ? 'Speaking...' : 'Listening...'}</span>
-                      <span className="w-2 h-2 rounded-full bg-danger animate-ping" />
-                    </div>
-                    <div className="text-[11px] text-text-muted">
-                      {silenceCountdown !== null
-                        ? `Auto-submitting in ${silenceCountdown}s...`
-                        : 'Pause 2s to submit, or tap Done Speaking'}
-                    </div>
-                  </div>
-                </div>
-              ) : (
-                <div className="flex items-center space-x-2.5">
-                  <div className="w-10 h-10 rounded-2xl bg-surface-subtle border border-surface-border flex items-center justify-center text-text-muted">
-                    <MicOff className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <div className="text-xs font-bold text-text-primary">Mic Paused</div>
-                    <div className="text-[11px] text-text-muted">Tap Start Speaking to answer</div>
-                  </div>
-                </div>
-              )}
+        <div className="mt-2.5 flex items-center justify-center animate-fade-in">
+          {ttsState === 'speaking' ? (
+            <button
+              type="button"
+              onClick={() => {
+                stopSpeech();
+                startListening();
+              }}
+              className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/30 text-primary text-xs font-bold hover:bg-primary/20 transition-all shadow-xs"
+              title="Click or speak to interrupt coach"
+            >
+              <Volume2 className="w-4 h-4 animate-pulse" />
+              <span>Coach Speaking... Tap to Interrupt</span>
+            </button>
+          ) : isStreaming ? (
+            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-surface border border-surface-border text-text-muted text-xs font-medium shadow-xs">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+              <span>Coach is thinking & evaluating...</span>
             </div>
-
-            {/* Right: Interactive Controls */}
-            <div className="flex items-center space-x-2">
-              {ttsState === 'speaking' ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    stopSpeech();
-                    startListening();
-                  }}
-                  className="px-3.5 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold shadow-primary transition-all flex items-center space-x-1.5"
-                >
-                  <Square className="w-3.5 h-3.5 fill-current" />
-                  <span>Interrupt</span>
-                </button>
-              ) : recordingState === 'listening' ? (
-                <>
-                  {liveSpokenText.trim().length > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const textToSubmit = liveSpokenTextRef.current || liveSpokenText;
-                        stopListening();
-                        handleSubmitAnswer(undefined, textToSubmit);
-                      }}
-                      className="px-3.5 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold shadow-primary transition-all flex items-center space-x-1.5"
-                    >
-                      <Send className="w-3.5 h-3.5" />
-                      <span>Done Speaking</span>
-                    </button>
-                  )}
-                  <button
-                    type="button"
-                    onClick={stopListening}
-                    className="p-2 rounded-xl border border-surface-border hover:bg-surface-subtle text-text-secondary transition-all"
-                    title="Pause Microphone"
-                  >
-                    <MicOff className="w-4 h-4" />
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  onClick={startListening}
-                  className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold shadow-primary transition-all flex items-center space-x-1.5"
-                >
-                  <Mic className="w-4 h-4" />
-                  <span>Start Speaking</span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={handleSkipStep}
-                disabled={isStreaming}
-                className="p-2 rounded-xl text-text-muted hover:text-warning-text transition-colors"
-                title="Skip Step"
-              >
-                <SkipForward className="w-4 h-4" />
-              </button>
+          ) : recordingState === 'listening' ? (
+            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 animate-pulse">
+              <Radio className="w-3.5 h-3.5 text-white" />
+              <span>{liveSpokenText ? 'Speaking... (Pause to send)' : 'Listening to you... Speak now'}</span>
             </div>
-          </div>
+          ) : (
+            <button
+              type="button"
+              onClick={startListening}
+              className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-primary text-white text-xs font-bold shadow-md shadow-primary/25 hover:bg-primary-hover transition-all"
+            >
+              <Mic className="w-4 h-4" />
+              <span>Tap to Speak</span>
+            </button>
+          )}
         </div>
       )}
 
-      {/* Text Mode: Standard Keyboard typing form (Only shown in Text Mode) */}
+      {/* Text Mode: Standard Keyboard typing form (ONLY shown when user explicitly selects Text Mode) */}
       {modality === 'text' && !isCompleted && (
         <form onSubmit={handleSubmitAnswer} className="mt-3">
           <div className="flex items-center justify-between text-[11px] text-text-muted px-1 mb-1">
             <span>Type your architectural response and press Enter to send</span>
-            <button
-              type="button"
-              onClick={handleSkipStep}
-              disabled={isStreaming}
-              className="text-text-muted hover:text-warning-text inline-flex items-center space-x-1 transition-colors"
-            >
-              <SkipForward className="w-3 h-3" />
-              <span>Skip Step</span>
-            </button>
           </div>
 
           <div className="relative flex items-center">
