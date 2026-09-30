@@ -9,181 +9,231 @@ export interface RadarDimension {
 
 interface SkillRadarChartProps {
   dimensions: RadarDimension[];
-  size?: number;
+  showBreakdown?: boolean;
 }
 
 export const SkillRadarChart: React.FC<SkillRadarChartProps> = ({
   dimensions,
-  size = 320,
+  showBreakdown = true,
 }) => {
-  const center = size / 2;
-  const radius = size * 0.36; // Leave space for labels
+  // Use a generous coordinate system so labels never clip on any screen size
+  const svgWidth = 520;
+  const svgHeight = 380;
+  const centerX = svgWidth / 2;
+  const centerY = svgHeight / 2;
+  const radius = 125; // Leaves ~135px on left/right for long text like "Synthesis & Communication"
   const totalAxes = dimensions.length;
 
-  // Grid levels (1 to 4)
+  // Grid levels (1.0, 2.0, 3.0, 4.0)
   const levels = [1, 2, 3, 4];
 
-  // Helper to get coordinates for a given index and value
+  // Helper to get coordinates for a given axis index and value
   const getCoordinates = (index: number, value: number) => {
     const angle = (Math.PI * 2 / totalAxes) * index - Math.PI / 2;
     const r = (value / 4.0) * radius;
     return {
-      x: center + r * Math.cos(angle),
-      y: center + r * Math.sin(angle),
+      x: centerX + r * Math.cos(angle),
+      y: centerY + r * Math.sin(angle),
     };
   };
 
-  // Helper for label coordinates (slightly outside the chart)
+  // Helper for label coordinates (positioned outside the outer ring with safe margins)
   const getLabelCoordinates = (index: number) => {
     const angle = (Math.PI * 2 / totalAxes) * index - Math.PI / 2;
-    const r = radius + 28;
+    const r = radius + 32;
     return {
-      x: center + r * Math.cos(angle),
-      y: center + r * Math.sin(angle),
+      x: centerX + r * Math.cos(angle),
+      y: centerY + r * Math.sin(angle),
       angle,
     };
   };
 
-  // Construct data polygon points string
+  // Data polygon points
   const dataPoints = dimensions
     .map((dim, i) => {
       const { x, y } = getCoordinates(i, Math.min(4.0, Math.max(0, dim.score)));
-      return `${x},${y}`;
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
     })
     .join(' ');
 
+  const getSeniorityTier = (score: number) => {
+    if (score >= 3.5) return { label: 'Staff / L6+', color: 'text-primary font-bold' };
+    if (score >= 3.0) return { label: 'Senior / L5', color: 'text-success-text font-bold' };
+    if (score >= 2.0) return { label: 'Mid-Level / L4', color: 'text-warning-text font-medium' };
+    return { label: 'Foundational', color: 'text-text-muted font-medium' };
+  };
+
   return (
-    <div className="flex flex-col items-center justify-center">
-      <svg
-        width={size}
-        height={size}
-        viewBox={`0 0 ${size} ${size}`}
-        className="overflow-visible select-none"
-        role="img"
-        aria-label="Engineering Competency Skill Radar Chart based on Answer Quality"
-      >
-        <title>Engineering Competency Radar (Quality Only)</title>
-        <desc>
-          Radar chart showing competency scores across {dimensions.map((d) => `${d.name}: ${d.score.toFixed(1)}`).join(', ')}
-        </desc>
+    <div className="w-full space-y-6">
+      {/* SVG Chart Container */}
+      <div className="w-full flex justify-center overflow-hidden">
+        <svg
+          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+          className="w-full max-w-[480px] h-auto select-none"
+          role="img"
+          aria-label="Engineering Competency Skill Radar Chart"
+        >
+          <defs>
+            <linearGradient id="skillRadarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="var(--color-primary)" stopOpacity="0.40" />
+              <stop offset="100%" stopColor="var(--color-primary-hover)" stopOpacity="0.10" />
+            </linearGradient>
+            <filter id="radarShadow" x="-15%" y="-15%" width="130%" height="130%">
+              <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="var(--color-primary)" floodOpacity="0.25" />
+            </filter>
+          </defs>
 
-        <defs>
-          <linearGradient id="radarGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.4" />
-            <stop offset="100%" stopColor="#10b981" stopOpacity="0.15" />
-          </linearGradient>
-          <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
+          {/* Concentric grid rings */}
+          {levels.map((lvl) => {
+            const gridPoints = dimensions
+              .map((_, i) => {
+                const { x, y } = getCoordinates(i, lvl);
+                return `${x.toFixed(1)},${y.toFixed(1)}`;
+              })
+              .join(' ');
 
-        {/* Concentric grid polygons */}
-        {levels.map((lvl) => {
-          const gridPoints = dimensions
-            .map((_, i) => {
-              const { x, y } = getCoordinates(i, lvl);
-              return `${x},${y}`;
-            })
-            .join(' ');
+            return (
+              <g key={`grid-level-${lvl}`}>
+                <polygon
+                  points={gridPoints}
+                  fill={lvl % 2 === 0 ? 'rgba(249, 115, 22, 0.02)' : 'none'}
+                  stroke="currentColor"
+                  strokeWidth={lvl === 4 ? '1.5' : '1'}
+                  className={lvl === 4 ? 'text-surface-border-strong' : 'text-surface-border'}
+                  strokeDasharray={lvl < 4 ? '3 3' : undefined}
+                />
+                {/* Level indicator tick on top axis */}
+                <text
+                  x={centerX + 6}
+                  y={centerY - (lvl / 4.0) * radius + 4}
+                  className="text-[10px] fill-text-muted font-mono font-medium"
+                >
+                  {lvl}.0
+                </text>
+              </g>
+            );
+          })}
 
-          return (
-            <g key={`grid-level-${lvl}`}>
-              <polygon
-                points={gridPoints}
-                fill="none"
+          {/* Radial axes from center to 4.0 ring */}
+          {dimensions.map((_, i) => {
+            const { x, y } = getCoordinates(i, 4.0);
+            return (
+              <line
+                key={`axis-${i}`}
+                x1={centerX}
+                y1={centerY}
+                x2={x}
+                y2={y}
                 stroke="currentColor"
-                strokeWidth={lvl === 4 ? '1.5' : '1'}
-                className={lvl === 4 ? 'text-slate-700' : 'text-slate-800/80'}
-                strokeDasharray={lvl < 4 ? '2 2' : undefined}
+                className="text-surface-border"
+                strokeWidth="1"
               />
-              {/* Level indicator tick on top axis */}
-              <text
-                x={center + 5}
-                y={center - (lvl / 4.0) * radius + 4}
-                className="text-[9px] fill-slate-500 font-mono"
+            );
+          })}
+
+          {/* Data filled polygon */}
+          <polygon
+            points={dataPoints}
+            fill="url(#skillRadarGrad)"
+            stroke="var(--color-primary)"
+            strokeWidth="2.5"
+            filter="url(#radarShadow)"
+          />
+
+          {/* Data vertices with inner points */}
+          {dimensions.map((dim, i) => {
+            const { x, y } = getCoordinates(i, Math.min(4.0, Math.max(0, dim.score)));
+            return (
+              <g key={`vertex-${dim.slug}`}>
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="6"
+                  fill="var(--color-primary)"
+                  fillOpacity="0.25"
+                />
+                <circle
+                  cx={x}
+                  cy={y}
+                  r="4"
+                  fill="var(--color-primary)"
+                  stroke="var(--color-surface)"
+                  strokeWidth="2"
+                />
+              </g>
+            );
+          })}
+
+          {/* Axis Labels (Positioned with safe bounding margins) */}
+          {dimensions.map((dim, i) => {
+            const { x, y } = getLabelCoordinates(i);
+            const isTop = y < centerY - 30;
+            const isBottom = y > centerY + 30;
+            const isLeft = x < centerX - 25;
+            const isRight = x > centerX + 25;
+
+            let textAnchor: 'middle' | 'end' | 'start' = 'middle';
+            if (isLeft) textAnchor = 'end';
+            else if (isRight) textAnchor = 'start';
+
+            return (
+              <g key={`label-${dim.slug}`}>
+                <text
+                  x={x}
+                  y={isTop ? y - 10 : isBottom ? y + 8 : y - 2}
+                  textAnchor={textAnchor}
+                  className="text-[12px] font-bold fill-text-primary"
+                >
+                  {dim.name}
+                </text>
+                <text
+                  x={x}
+                  y={isTop ? y + 6 : isBottom ? y + 24 : y + 14}
+                  textAnchor={textAnchor}
+                  className="text-[11px] font-mono font-bold fill-primary"
+                >
+                  {dim.score.toFixed(1)} / 4.0
+                </text>
+              </g>
+            );
+          })}
+        </svg>
+      </div>
+
+      {/* Competency Breakdown Cards */}
+      {showBreakdown && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
+          {dimensions.map((dim) => {
+            const percentage = Math.round((dim.score / 4.0) * 100);
+            const tier = getSeniorityTier(dim.score);
+
+            return (
+              <div
+                key={dim.slug}
+                className="p-3.5 rounded-xl bg-surface-subtle border border-surface-border flex flex-col justify-between space-y-2 hover:border-primary-border/60 transition-all"
               >
-                {lvl}.0
-              </text>
-            </g>
-          );
-        })}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-text-primary">{dim.name}</span>
+                  <span className="text-xs font-mono font-black text-primary">{dim.score.toFixed(1)} / 4.0</span>
+                </div>
 
-        {/* Radial axes from center */}
-        {dimensions.map((_, i) => {
-          const { x, y } = getCoordinates(i, 4.0);
-          return (
-            <line
-              key={`axis-${i}`}
-              x1={center}
-              y1={center}
-              x2={x}
-              y2={y}
-              stroke="currentColor"
-              className="text-slate-800"
-              strokeWidth="1"
-            />
-          );
-        })}
+                {/* Progress bar */}
+                <div className="w-full h-2 rounded-full bg-surface border border-surface-border overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-500"
+                    style={{ width: `${percentage}%` }}
+                  />
+                </div>
 
-        {/* Data polygon */}
-        <polygon
-          points={dataPoints}
-          fill="url(#radarGradient)"
-          stroke="#0ea5e9"
-          strokeWidth="2.5"
-          filter="url(#glow)"
-        />
-
-        {/* Data vertices */}
-        {dimensions.map((dim, i) => {
-          const { x, y } = getCoordinates(i, Math.min(4.0, Math.max(0, dim.score)));
-          return (
-            <g key={`vertex-${dim.slug}`}>
-              <circle
-                cx={x}
-                cy={y}
-                r="4.5"
-                className="fill-accent-cyan stroke-background stroke-2 shadow-sm"
-              />
-            </g>
-          );
-        })}
-
-        {/* Axis labels */}
-        {dimensions.map((dim, i) => {
-          const { x, y } = getLabelCoordinates(i);
-          const isTop = y < center - 30;
-          const isBottom = y > center + 30;
-          const isLeft = x < center - 20;
-          const isRight = x > center + 20;
-
-          let textAnchor: 'middle' | 'end' | 'start' = 'middle';
-          if (isLeft) textAnchor = 'end';
-          else if (isRight) textAnchor = 'start';
-
-          return (
-            <g key={`label-${dim.slug}`} className="transition-all">
-              <text
-                x={x}
-                y={isTop ? y - 8 : isBottom ? y + 10 : y}
-                textAnchor={textAnchor}
-                className="text-[11px] font-semibold fill-slate-200"
-              >
-                {dim.name}
-              </text>
-              <text
-                x={x}
-                y={isTop ? y + 4 : isBottom ? y + 22 : y + 14}
-                textAnchor={textAnchor}
-                className="text-[10px] font-mono font-medium fill-accent-cyan"
-              >
-                {dim.score.toFixed(1)} / 4.0
-              </text>
-            </g>
-          );
-        })}
-      </svg>
+                <div className="flex items-center justify-between text-[10px] text-text-muted">
+                  <span>Rating: <span className={tier.color}>{tier.label}</span></span>
+                  <span>{percentage}%</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 };

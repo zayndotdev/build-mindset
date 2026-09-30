@@ -98,50 +98,50 @@ export const ReviewQueue: React.FC = () => {
     <div className="space-y-4">
       {/* Review Stats Bar */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="glass-card p-3 rounded-xl border border-surface-border text-center">
-          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Due Today</div>
-          <div className="text-xl font-bold text-accent-cyan mt-0.5">{stats ? stats.dueToday : '0'}</div>
+        <div className="bg-surface p-3 rounded-xl border border-surface-border text-center shadow-xs">
+          <div className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Due Today</div>
+          <div className="text-xl font-bold text-tertiary mt-0.5">{stats ? stats.dueToday : '0'}</div>
         </div>
-        <div className="glass-card p-3 rounded-xl border border-surface-border text-center">
-          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Due This Week</div>
-          <div className="text-xl font-bold text-primary-400 mt-0.5">{stats ? stats.dueThisWeek : '0'}</div>
+        <div className="bg-surface p-3 rounded-xl border border-surface-border text-center shadow-xs">
+          <div className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Due This Week</div>
+          <div className="text-xl font-bold text-primary mt-0.5">{stats ? stats.dueThisWeek : '0'}</div>
         </div>
-        <div className="glass-card p-3 rounded-xl border border-surface-border text-center">
-          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Mastered</div>
-          <div className="text-xl font-bold text-accent-emerald mt-0.5">{stats ? stats.mastered : '0'}</div>
+        <div className="bg-surface p-3 rounded-xl border border-surface-border text-center shadow-xs">
+          <div className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Mastered</div>
+          <div className="text-xl font-bold text-success mt-0.5">{stats ? stats.mastered : '0'}</div>
         </div>
-        <div className="glass-card p-3 rounded-xl border border-surface-border text-center">
-          <div className="text-[10px] uppercase tracking-wider text-slate-400 font-semibold">Total Tracked</div>
-          <div className="text-xl font-bold text-slate-200 mt-0.5">{stats ? stats.totalTracked : '0'}</div>
+        <div className="bg-surface p-3 rounded-xl border border-surface-border text-center shadow-xs">
+          <div className="text-[10px] uppercase tracking-wider text-text-muted font-bold">Total Tracked</div>
+          <div className="text-xl font-bold text-text-primary mt-0.5">{stats ? stats.totalTracked : '0'}</div>
         </div>
       </div>
 
       {/* Due Review Cards */}
-      <div className="glass-card rounded-2xl p-5 border border-surface-border">
+      <div className="bg-surface rounded-2xl p-5 border border-surface-border shadow-card">
         <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center space-x-2">
-            <RotateCcw className="w-4 h-4 text-accent-cyan" />
-            <h3 className="text-sm font-semibold text-white">SM-2 Spaced Repetition Queue</h3>
+            <RotateCcw className="w-4 h-4 text-tertiary" />
+            <h3 className="text-sm font-bold text-text-primary">SM-2 Spaced Repetition Queue</h3>
           </div>
           <button
             onClick={fetchReviewsAndStats}
             aria-label="Refresh review queue"
-            className="p-1 rounded-lg text-slate-400 hover:text-white transition-colors"
+            className="p-1 rounded-lg text-text-muted hover:text-text-primary transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
           </button>
         </div>
 
         {isLoading ? (
-          <div className="py-8 flex flex-col items-center justify-center space-y-2 text-slate-400">
-            <Loader2 className="w-6 h-6 animate-spin text-primary-500" />
+          <div className="py-8 flex flex-col items-center justify-center space-y-2 text-text-muted">
+            <Loader2 className="w-6 h-6 animate-spin text-primary" />
             <span className="text-xs">Loading spaced review queue...</span>
           </div>
         ) : reviews.length === 0 ? (
-          <div className="p-6 rounded-xl bg-surface-card border border-surface-border/60 text-center space-y-2">
-            <CheckCircle2 className="w-8 h-8 text-accent-emerald mx-auto" />
-            <p className="text-sm font-medium text-white">All caught up!</p>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto">
+          <div className="p-6 rounded-xl bg-surface-subtle border border-surface-border text-center space-y-2">
+            <CheckCircle2 className="w-8 h-8 text-success mx-auto" />
+            <p className="text-sm font-bold text-text-primary">All caught up!</p>
+            <p className="text-xs text-text-secondary max-w-sm mx-auto">
               No spaced repetition reviews are due right now. Complete active sessions to schedule new recall drills.
             </p>
           </div>
@@ -150,28 +150,28 @@ export const ReviewQueue: React.FC = () => {
             {reviews.map((item) => (
               <div
                 key={item.id}
-                className="p-3.5 rounded-xl bg-surface-card border border-surface-border hover:border-surface-border/80 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                className="p-3.5 rounded-xl bg-surface border border-surface-border hover:border-primary-border transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs"
               >
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-xs font-semibold text-white">{item.topicTitle}</span>
-                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+                    <span className="text-xs font-bold text-text-primary">{item.topicTitle}</span>
+                    <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-surface-subtle text-text-secondary border border-surface-border">
                       Step {item.stepNumber}: {item.stepTitle}
                     </span>
                     {item.isDue ? (
-                      <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-accent-amber/10 text-accent-amber border border-accent-amber/20">
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-warning-subtle text-warning-text border border-warning-border">
                         Due Now
                       </span>
                     ) : (
-                      <span className="text-[9px] font-mono text-slate-500">
+                      <span className="text-[9px] font-mono text-text-muted">
                         Due in {item.intervalDays}d
                       </span>
                     )}
                   </div>
                   {item.stepPrompt && (
-                    <p className="text-xs text-slate-400 mt-1 line-clamp-1">{item.stepPrompt}</p>
+                    <p className="text-xs text-text-secondary mt-1 line-clamp-1">{item.stepPrompt}</p>
                   )}
-                  <div className="flex items-center space-x-3 text-[10px] text-slate-500 mt-1.5 font-mono">
+                  <div className="flex items-center space-x-3 text-[10px] text-text-muted mt-1.5 font-mono">
                     <span>Reps: {item.repetitions}</span>
                     <span>Interval: {item.intervalDays}d</span>
                     <span>EF: {item.easeFactor.toFixed(2)}</span>
@@ -184,7 +184,7 @@ export const ReviewQueue: React.FC = () => {
                     setShowAnswer(false);
                     setFeedbackMsg(null);
                   }}
-                  className="px-3.5 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-500 text-white text-xs font-medium transition-colors flex items-center justify-center space-x-1 shrink-0"
+                  className="px-3.5 py-1.5 rounded-lg bg-primary hover:bg-primary-hover text-white text-xs font-bold transition-colors flex items-center justify-center space-x-1 shrink-0 shadow-xs"
                 >
                   <span>Practice Drill</span>
                   <ChevronRight className="w-3.5 h-3.5" />
@@ -198,37 +198,37 @@ export const ReviewQueue: React.FC = () => {
       {/* Interactive Drill Modal */}
       {activeDrillItem && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-fade-in"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in"
           role="dialog"
           aria-modal="true"
           aria-labelledby="drill-title"
         >
-          <div className="glass-panel border border-surface-border rounded-2xl w-full max-w-lg p-6 space-y-5 shadow-2xl relative">
+          <div className="bg-surface border border-surface-border rounded-2xl w-full max-w-lg p-6 space-y-5 shadow-card relative">
             <button
               onClick={() => setActiveDrillItem(null)}
               aria-label="Close drill modal"
-              className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors"
+              className="absolute top-4 right-4 p-1.5 rounded-lg text-text-muted hover:text-text-primary transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div>
-              <div className="flex items-center space-x-2 text-xs text-primary-400 font-semibold uppercase tracking-wider">
+              <div className="flex items-center space-x-2 text-xs text-primary font-bold uppercase tracking-wider">
                 <Sparkles className="w-4 h-4" />
                 <span>Spaced Repetition Recall Drill</span>
               </div>
-              <h3 id="drill-title" className="text-lg font-bold text-white mt-1">
+              <h3 id="drill-title" className="text-lg font-bold text-text-primary mt-1">
                 {activeDrillItem.topicTitle} · Step {activeDrillItem.stepNumber}
               </h3>
-              <p className="text-xs text-slate-400">{activeDrillItem.stepTitle}</p>
+              <p className="text-xs text-text-secondary">{activeDrillItem.stepTitle}</p>
             </div>
 
             {/* Prompt Box */}
-            <div className="p-4 rounded-xl bg-surface-card border border-surface-border/80 space-y-2">
-              <span className="text-[10px] uppercase font-semibold text-slate-400 tracking-wider">
+            <div className="p-4 rounded-xl bg-surface-subtle border border-surface-border space-y-2">
+              <span className="text-[10px] uppercase font-bold text-text-muted tracking-wider">
                 Socratic Question
               </span>
-              <p className="text-sm text-slate-200 font-medium leading-relaxed">
+              <p className="text-sm text-text-primary font-medium leading-relaxed">
                 {activeDrillItem.stepPrompt || 'Explain the core architectural tradeoffs and edge cases for this step.'}
               </p>
             </div>
@@ -238,15 +238,15 @@ export const ReviewQueue: React.FC = () => {
               {!showAnswer ? (
                 <button
                   onClick={() => setShowAnswer(true)}
-                  className="w-full py-2.5 rounded-xl border border-dashed border-primary-500/40 text-primary-400 hover:bg-primary-500/5 text-xs font-semibold transition-colors flex items-center justify-center space-x-2"
+                  className="w-full py-2.5 rounded-xl border border-dashed border-primary text-primary hover:bg-primary-subtle text-xs font-bold transition-colors flex items-center justify-center space-x-2"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>Reveal Key Points & Self-Evaluation</span>
                 </button>
               ) : (
-                <div className="p-4 rounded-xl bg-primary-950/20 border border-primary-500/30 space-y-2 animate-fade-in">
-                  <div className="text-xs font-semibold text-primary-300">Target Architectural Concept</div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
+                <div className="p-4 rounded-xl bg-primary-subtle border border-primary-border space-y-2 animate-fade-in">
+                  <div className="text-xs font-bold text-primary-text">Target Architectural Concept</div>
+                  <p className="text-xs text-text-secondary leading-relaxed">
                     Verify whether your recall covered the essential tradeoffs: memory-hardness, algorithmic time bounds, graceful fallbacks, and concurrency race conditions.
                   </p>
                 </div>
@@ -255,15 +255,15 @@ export const ReviewQueue: React.FC = () => {
 
             {/* Self-Rating Feedback Buttons (SM-2 Quality 1-4) */}
             {showAnswer && (
-              <div className="space-y-2 pt-2 border-t border-surface-border/60 animate-fade-in">
-                <span className="text-[11px] font-semibold text-slate-300">
+              <div className="space-y-2 pt-2 border-t border-surface-border animate-fade-in">
+                <span className="text-[11px] font-bold text-text-secondary">
                   How well did you recall this concept?
                 </span>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   <button
                     disabled={isSubmitting}
                     onClick={() => handleRateRecall(1)}
-                    className="p-2.5 rounded-xl bg-accent-rose/10 hover:bg-accent-rose/20 text-accent-rose border border-accent-rose/20 text-center transition-colors disabled:opacity-50"
+                    className="p-2.5 rounded-xl bg-danger-subtle hover:bg-danger-border text-danger-text border border-danger-border text-center transition-colors disabled:opacity-50"
                   >
                     <div className="text-xs font-bold">1: Forgot</div>
                     <div className="text-[9px] opacity-80 mt-0.5">Reset to 1d</div>
@@ -271,7 +271,7 @@ export const ReviewQueue: React.FC = () => {
                   <button
                     disabled={isSubmitting}
                     onClick={() => handleRateRecall(2)}
-                    className="p-2.5 rounded-xl bg-accent-amber/10 hover:bg-accent-amber/20 text-accent-amber border border-accent-amber/20 text-center transition-colors disabled:opacity-50"
+                    className="p-2.5 rounded-xl bg-warning-subtle hover:bg-warning-border text-warning-text border border-warning-border text-center transition-colors disabled:opacity-50"
                   >
                     <div className="text-xs font-bold">2: Hard</div>
                     <div className="text-[9px] opacity-80 mt-0.5">Struggled</div>
@@ -279,7 +279,7 @@ export const ReviewQueue: React.FC = () => {
                   <button
                     disabled={isSubmitting}
                     onClick={() => handleRateRecall(3)}
-                    className="p-2.5 rounded-xl bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 border border-primary-500/20 text-center transition-colors disabled:opacity-50"
+                    className="p-2.5 rounded-xl bg-primary-subtle hover:bg-primary-border text-primary-text border border-primary-border text-center transition-colors disabled:opacity-50"
                   >
                     <div className="text-xs font-bold">3: Good</div>
                     <div className="text-[9px] opacity-80 mt-0.5">Solid recall</div>
@@ -287,7 +287,7 @@ export const ReviewQueue: React.FC = () => {
                   <button
                     disabled={isSubmitting}
                     onClick={() => handleRateRecall(4)}
-                    className="p-2.5 rounded-xl bg-accent-emerald/10 hover:bg-accent-emerald/20 text-accent-emerald border border-accent-emerald/20 text-center transition-colors disabled:opacity-50"
+                    className="p-2.5 rounded-xl bg-success-subtle hover:bg-success-border text-success-text border border-success-border text-center transition-colors disabled:opacity-50"
                   >
                     <div className="text-xs font-bold">4: Easy</div>
                     <div className="text-[9px] opacity-80 mt-0.5">Instant recall</div>
@@ -298,7 +298,7 @@ export const ReviewQueue: React.FC = () => {
 
             {/* Notification message */}
             {feedbackMsg && (
-              <div className="p-3 rounded-xl bg-accent-emerald/10 border border-accent-emerald/20 text-accent-emerald text-xs text-center font-medium animate-fade-in">
+              <div className="p-3 rounded-xl bg-success-subtle border border-success-border text-success-text text-xs text-center font-bold animate-fade-in">
                 {feedbackMsg}
               </div>
             )}

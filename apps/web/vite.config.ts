@@ -12,8 +12,8 @@ export default defineConfig({
         name: 'Mindset — Senior Eng & System Design Coaching',
         short_name: 'Mindset',
         description: 'Voice-first senior software engineering coaching application',
-        theme_color: '#0B0F19',
-        background_color: '#0B0F19',
+        theme_color: '#F97316',
+        background_color: '#F8FAFC',
         display: 'standalone',
         orientation: 'portrait',
         icons: [

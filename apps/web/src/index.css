@@ -4,19 +4,110 @@
 
 :root {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  color-scheme: dark;
+  color-scheme: light;
+
+  /* =========================================================================
+     SEMANTIC THEME TOKENS
+     Change --color-primary, --color-secondary, or --color-tertiary to retheme
+     the entire application instantly across all components, charts, and views.
+     ========================================================================= */
+
+  /* Primary Brand (Main Accent / Orange Theme) */
+  --color-primary: #F97316;
+  --color-primary-hover: #EA580C;
+  --color-primary-active: #C2410C;
+  --color-primary-subtle: #FFF7ED;
+  --color-primary-border: #FED7AA;
+  --color-primary-text: #C2410C;
+  --color-primary-light: #FFF7ED;
+  --color-primary-50: #FFF7ED;
+  --color-primary-100: #FFEDD5;
+  --color-primary-200: #FED7AA;
+
+  /* Secondary Brand (Slate / Structure / Action) */
+  --color-secondary: #475569;
+  --color-secondary-hover: #334155;
+  --color-secondary-active: #1E293B;
+  --color-secondary-subtle: #F1F5F9;
+  --color-secondary-border: #CBD5E1;
+  --color-secondary-text: #1E293B;
+  --color-secondary-light: #F1F5F9;
+
+  /* Tertiary Brand (Cyan / Exploratory Accent) */
+  --color-tertiary: #0284C7;
+  --color-tertiary-hover: #0369A1;
+  --color-tertiary-active: #075985;
+  --color-tertiary-subtle: #F0F9FF;
+  --color-tertiary-border: #BAE6FD;
+  --color-tertiary-text: #0369A1;
+
+  /* Success Semantic State */
+  --color-success: #10B981;
+  --color-success-hover: #059669;
+  --color-success-subtle: #ECFDF5;
+  --color-success-border: #A7F3D0;
+  --color-success-text: #047857;
+
+  /* Warning Semantic State */
+  --color-warning: #F59E0B;
+  --color-warning-hover: #D97706;
+  --color-warning-subtle: #FFFBEB;
+  --color-warning-border: #FDE68A;
+  --color-warning-text: #B45309;
+
+  /* Danger / Error Semantic State */
+  --color-danger: #EF4444;
+  --color-danger-hover: #DC2626;
+  --color-danger-subtle: #FEF2F2;
+  --color-danger-border: #FECACA;
+  --color-danger-text: #B91C1C;
+
+  /* Info Semantic State */
+  --color-info: #3B82F6;
+  --color-info-hover: #2563EB;
+  --color-info-subtle: #EFF6FF;
+  --color-info-border: #BFDBFE;
+  --color-info-text: #1D4ED8;
+
+  /* Backward compatibility aliases */
+  --color-emerald: var(--color-success);
+  --color-emerald-light: var(--color-success-subtle);
+  --color-emerald-border: var(--color-success-border);
+  --color-amber: var(--color-warning);
+  --color-amber-light: var(--color-warning-subtle);
+  --color-amber-border: var(--color-warning-border);
+  --color-rose: var(--color-danger);
+  --color-rose-light: var(--color-danger-subtle);
+  --color-rose-border: var(--color-danger-border);
+  --color-cyan: var(--color-tertiary);
+  --color-cyan-light: var(--color-tertiary-subtle);
+  --color-cyan-border: var(--color-tertiary-border);
+
+  /* Canvas & Surface Colors */
+  --color-bg: #F8FAFC;
+  --color-surface: #FFFFFF;
+  --color-surface-hover: #F8FAFC;
+  --color-surface-subtle: #F1F5F9;
+  --color-border: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+
+  /* Typography Colors */
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-muted: #94A3B8;
 }
 
 body {
   margin: 0;
   min-height: 100vh;
-  background-color: #0B0F19;
+  background-color: var(--color-bg);
   background-image: 
-    radial-gradient(at 10% 10%, rgba(99, 102, 241, 0.08) 0px, transparent 50%),
-    radial-gradient(at 90% 20%, rgba(6, 182, 212, 0.06) 0px, transparent 50%),
-    radial-gradient(at 50% 90%, rgba(16, 185, 129, 0.04) 0px, transparent 50%);
+    radial-gradient(at 15% 10%, rgba(249, 115, 22, 0.04) 0px, transparent 45%),
+    radial-gradient(at 85% 15%, rgba(251, 146, 60, 0.03) 0px, transparent 40%),
+    radial-gradient(at 50% 90%, rgba(249, 115, 22, 0.02) 0px, transparent 50%);
   background-attachment: fixed;
   overflow-x: hidden;
+  color: var(--color-text-primary);
 }
 
 /* Custom sleek scrollbar */
@@ -26,29 +117,33 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0B0F19;
+  background: var(--color-secondary-light);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #23324A;
+  background: var(--color-border-strong);
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #374763;
+  background: var(--color-text-muted);
 }
 
-/* Glassmorphism utility */
+/* Glassmorphism & Card Utilities driven by CSS Variables */
 .glass-panel {
-  background: rgba(22, 31, 48, 0.7);
+  background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .glass-card {
-  background: rgba(17, 24, 39, 0.75);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(35, 50, 74, 0.6);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+}
+
+.card-primary-glow {
+  box-shadow: 0 8px 24px -4px rgba(234, 88, 12, 0.14);
 }

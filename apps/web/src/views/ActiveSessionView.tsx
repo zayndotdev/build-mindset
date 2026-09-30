@@ -554,10 +554,10 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   if (isInitializing) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center space-y-4">
-        <Loader2 className="w-9 h-9 text-primary-500 animate-spin" />
+        <Loader2 className="w-9 h-9 text-primary animate-spin" />
         <div className="text-center">
-          <h3 className="text-base font-bold text-white">Preparing Socratic Session</h3>
-          <p className="text-xs text-slate-400 mt-1">
+          <h3 className="text-base font-bold text-text-primary">Preparing Socratic Session</h3>
+          <p className="text-xs text-text-secondary mt-1">
             Loading rubric key points & priming coach state machine...
           </p>
         </div>
@@ -568,19 +568,19 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   return (
     <div className="flex flex-col h-[calc(100vh-8.5rem)] max-w-xl mx-auto pb-4">
       {/* Session Top Bar */}
-      <div className="glass-card rounded-2xl p-4 border border-surface-border mb-3 flex items-center justify-between shadow-lg">
+      <div className="bg-surface rounded-2xl p-4 border border-surface-border mb-3 flex items-center justify-between shadow-card">
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-primary-600 to-accent-cyan flex items-center justify-center font-bold text-white text-xs">
+          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center font-bold text-white text-xs shadow-primary">
             S{currentStep}
           </div>
           <div>
-            <h3 className="text-sm font-bold text-white truncate max-w-[200px] sm:max-w-xs">
+            <h3 className="text-sm font-bold text-text-primary truncate max-w-[200px] sm:max-w-xs">
               {topicTitle}
             </h3>
-            <div className="flex items-center space-x-2 mt-0.5 text-[11px] text-slate-400">
+            <div className="flex items-center space-x-2 mt-0.5 text-[11px] text-text-muted">
               <span>Step {currentStep} of {totalSteps}</span>
               <span>•</span>
-              <span className="capitalize text-primary-400">{level}</span>
+              <span className="capitalize text-primary font-semibold">{level}</span>
             </div>
           </div>
         </div>
@@ -592,8 +592,8 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
             disabled={hintsRemaining <= 0 || isStreaming || isCompleted}
             className={`inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
               hintsRemaining > 0 && !isCompleted
-                ? 'bg-accent-amber/10 border-accent-amber/30 text-accent-amber hover:bg-accent-amber/20'
-                : 'bg-surface-card border-surface-border text-slate-500 cursor-not-allowed opacity-60'
+                ? 'bg-warning-subtle border-warning-border text-warning-text hover:bg-warning-subtle/80'
+                : 'bg-surface-subtle border-surface-border text-text-muted cursor-not-allowed opacity-60'
             }`}
             title={`Request Socratic Hint (${hintsRemaining} remaining)`}
           >
@@ -610,8 +610,8 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
             }}
             className={`inline-flex items-center space-x-1 px-2.5 py-1.5 rounded-lg text-xs font-semibold border transition-all ${
               autoTtsEnabled
-                ? 'bg-primary-600/20 border-primary-500 text-primary-300'
-                : 'bg-surface-card border-surface-border text-slate-400 hover:text-white'
+                ? 'bg-primary-subtle border-primary text-primary-text font-bold'
+                : 'bg-surface-subtle border-surface-border text-text-secondary hover:text-text-primary'
             }`}
             title={autoTtsEnabled ? 'Auto-TTS Voice Output: ON' : 'Auto-TTS Voice Output: OFF'}
           >
@@ -626,7 +626,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                 onExit();
               }
             }}
-            className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-surface-card transition-colors"
+            className="p-1.5 text-text-muted hover:text-text-primary rounded-lg hover:bg-surface-subtle transition-colors"
             title="Exit Session"
           >
             <XCircle className="w-5 h-5" />
@@ -636,7 +636,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
       {/* Error Banner */}
       {errorMessage && (
-        <div className="mb-3 p-3 rounded-xl bg-accent-rose/10 border border-accent-rose/20 text-accent-rose text-xs flex items-center space-x-2">
+        <div className="mb-3 p-3 rounded-xl bg-danger-subtle border border-danger-border text-danger-text text-xs flex items-center space-x-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
         </div>
@@ -650,16 +650,16 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
             className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}
           >
             <div
-              className={`max-w-[88%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed shadow-sm ${
+              className={`max-w-[88%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed shadow-soft ${
                 msg.role === 'user'
-                  ? 'bg-gradient-to-r from-primary-600 to-primary-500 text-white rounded-br-sm'
+                  ? 'bg-primary text-white rounded-br-sm'
                   : msg.role === 'system'
-                  ? 'bg-surface-card border border-accent-amber/30 text-slate-300 rounded-bl-sm font-mono text-xs'
-                  : 'glass-card border border-surface-border text-slate-200 rounded-bl-sm'
+                  ? 'bg-surface-subtle border border-warning-border text-text-secondary rounded-bl-sm font-mono text-xs'
+                  : 'bg-surface border border-surface-border text-text-primary rounded-bl-sm'
               }`}
             >
               {/* Role Header */}
-              <div className="flex items-center justify-between space-x-2 mb-1.5 opacity-75 text-[10px] font-semibold uppercase tracking-wider">
+              <div className="flex items-center justify-between space-x-2 mb-1.5 opacity-75 text-[10px] font-bold uppercase tracking-wider">
                 <span>{msg.role === 'user' ? 'You' : msg.role === 'system' ? 'Reference Model' : 'Socratic Coach'}</span>
                 <span>Step {msg.stepNumber}</span>
               </div>
@@ -669,17 +669,17 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
               {/* TTS Audio Player Control for Coach Messages */}
               {msg.role === 'coach' && (
-                <div className="mt-2.5 pt-2 border-t border-surface-border/50 flex items-center justify-between text-[11px]">
+                <div className="mt-2.5 pt-2 border-t border-surface-border flex items-center justify-between text-[11px]">
                   <button
                     type="button"
                     onClick={() => speakText(msg.content, msg.id)}
-                    className="inline-flex items-center space-x-1.5 text-slate-400 hover:text-primary-300 transition-colors"
+                    className="inline-flex items-center space-x-1.5 text-text-muted hover:text-primary transition-colors"
                     title={currentlySpeakingId === msg.id && ttsState === 'speaking' ? 'Stop listening' : 'Listen with TTS'}
                   >
                     {currentlySpeakingId === msg.id && ttsState === 'speaking' ? (
                       <>
-                        <Square className="w-3.5 h-3.5 text-accent-cyan fill-current animate-pulse" />
-                        <span className="text-accent-cyan font-medium">Stop Audio</span>
+                        <Square className="w-3.5 h-3.5 text-tertiary fill-current animate-pulse" />
+                        <span className="text-tertiary font-medium">Stop Audio</span>
                       </>
                     ) : (
                       <>
@@ -693,15 +693,15 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
               {/* Rubric Badge if evaluated */}
               {msg.gradeResult && (
-                <div className="mt-3 pt-2.5 border-t border-white/10 flex flex-wrap items-center gap-2">
-                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                <div className="mt-3 pt-2.5 border-t border-surface-border flex flex-wrap items-center gap-2">
+                  <span className={`px-2 py-0.5 rounded-full text-[11px] font-bold border ${
                     msg.gradeResult.qualityScore >= 3
-                      ? 'bg-accent-emerald/20 text-accent-emerald border border-accent-emerald/30'
-                      : 'bg-accent-amber/20 text-accent-amber border border-accent-amber/30'
+                      ? 'bg-success-subtle text-success-text border-success-border'
+                      : 'bg-warning-subtle text-warning-text border-warning-border'
                   }`}>
                     Quality: {msg.gradeResult.qualityScore}/4
                   </span>
-                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary-500/20 text-primary-300 border border-primary-500/30">
+                  <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-primary-subtle text-primary-text border border-primary-border">
                     Independence: {msg.gradeResult.independenceScore}/4
                   </span>
                 </div>
@@ -713,19 +713,19 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         {/* Live SSE Streaming Tokens Display */}
         {isStreaming && (
           <div className="flex flex-col items-start">
-            <div className="max-w-[88%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed glass-card border border-primary-500/40 text-slate-200 rounded-bl-sm animate-pulse-border">
-              <div className="flex items-center space-x-2 mb-1.5 text-primary-400 text-[10px] font-semibold uppercase tracking-wider">
+            <div className="max-w-[88%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed bg-surface border border-primary/40 text-text-primary rounded-bl-sm shadow-soft">
+              <div className="flex items-center space-x-2 mb-1.5 text-primary text-[10px] font-bold uppercase tracking-wider">
                 <Loader2 className="w-3 h-3 animate-spin" />
                 <span>Coach is analyzing & responding...</span>
               </div>
 
               {/* Instant Grade Preview */}
               {latestGrade && (
-                <div className="mb-2 p-2 rounded-lg bg-surface-card border border-surface-border flex items-center space-x-2 text-xs">
-                  <Award className="w-3.5 h-3.5 text-primary-400" />
-                  <span className="font-semibold text-white">Score: {latestGrade.qualityScore}/4</span>
-                  <span className="text-slate-500">•</span>
-                  <span className="text-slate-300">Independence: {latestGrade.independenceScore}/4</span>
+                <div className="mb-2 p-2 rounded-lg bg-surface-subtle border border-surface-border flex items-center space-x-2 text-xs">
+                  <Award className="w-3.5 h-3.5 text-primary" />
+                  <span className="font-bold text-text-primary">Score: {latestGrade.qualityScore}/4</span>
+                  <span className="text-text-muted">•</span>
+                  <span className="text-text-secondary">Independence: {latestGrade.independenceScore}/4</span>
                 </div>
               )}
 
@@ -741,28 +741,28 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
       {/* Completed Session Celebration Modal / Summary Card */}
       {isCompleted && (
-        <div className="glass-card rounded-2xl p-5 border border-accent-emerald/30 mt-3 shadow-xl bg-surface-card/95">
+        <div className="bg-surface rounded-2xl p-5 border border-success-border mt-3 shadow-card">
           <div className="flex items-center space-x-3 mb-3">
-            <div className="p-2 rounded-xl bg-accent-emerald/10 text-accent-emerald">
+            <div className="p-2 rounded-xl bg-success-subtle text-success">
               <CheckCircle2 className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-white">Session Completed!</h3>
-              <p className="text-xs text-slate-400">All design steps completed and scored.</p>
+              <h3 className="text-base font-bold text-text-primary">Session Completed!</h3>
+              <p className="text-xs text-text-secondary">All design steps completed and scored.</p>
             </div>
           </div>
 
           {completedSessionData?.skillScore && (
             <div className="grid grid-cols-2 gap-2.5 my-3 text-center">
-              <div className="p-2.5 rounded-xl bg-surface-card border border-surface-border">
-                <div className="text-[11px] text-slate-400 uppercase font-semibold">Answer Quality</div>
-                <div className="text-xl font-bold text-accent-emerald mt-0.5">
+              <div className="p-2.5 rounded-xl bg-surface-subtle border border-surface-border">
+                <div className="text-[11px] text-text-muted uppercase font-semibold">Answer Quality</div>
+                <div className="text-xl font-bold text-success-text mt-0.5">
                   {completedSessionData.skillScore.qualityScore} / 4.0
                 </div>
               </div>
-              <div className="p-2.5 rounded-xl bg-surface-card border border-surface-border">
-                <div className="text-[11px] text-slate-400 uppercase font-semibold">Independence</div>
-                <div className="text-xl font-bold text-primary-400 mt-0.5">
+              <div className="p-2.5 rounded-xl bg-surface-subtle border border-surface-border">
+                <div className="text-[11px] text-text-muted uppercase font-semibold">Independence</div>
+                <div className="text-xl font-bold text-primary-text mt-0.5">
                   {completedSessionData.skillScore.independenceScore} / 4.0
                 </div>
               </div>
@@ -772,7 +772,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           <div className="flex items-center justify-end space-x-2 pt-2">
             <button
               onClick={onExit}
-              className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-primary-600 hover:bg-primary-500 text-white text-xs font-semibold shadow-md transition-all"
+              className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-primary hover:bg-primary-hover text-white text-xs font-bold shadow-primary transition-all"
             >
               <span>Return to Curriculum</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -784,13 +784,13 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
       {/* Bottom Answer Input Form */}
       {!isCompleted && (
         <form onSubmit={handleSubmitAnswer} className="mt-3">
-          <div className="flex items-center justify-between text-[11px] text-slate-500 px-1 mb-1">
+          <div className="flex items-center justify-between text-[11px] text-text-muted px-1 mb-1">
             <span>Voice or text responses evaluated on depth and tradeoffs</span>
             <button
               type="button"
               onClick={handleSkipStep}
               disabled={isStreaming}
-              className="text-slate-400 hover:text-accent-amber inline-flex items-center space-x-1 transition-colors"
+              className="text-text-muted hover:text-warning-text inline-flex items-center space-x-1 transition-colors"
             >
               <SkipForward className="w-3 h-3" />
               <span>Skip Step</span>
@@ -799,14 +799,14 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
           {/* Voice Recording / Transcribing Indicator Banner */}
           {recordingState === 'listening' && (
-            <div className="flex items-center space-x-2 text-xs text-accent-rose bg-accent-rose/10 border border-accent-rose/30 px-3 py-1.5 rounded-xl mb-1.5 animate-pulse">
-              <Radio className="w-3.5 h-3.5 text-accent-rose animate-ping shrink-0" />
+            <div className="flex items-center space-x-2 text-xs text-danger-text bg-danger-subtle border border-danger-border px-3 py-1.5 rounded-xl mb-1.5 animate-pulse">
+              <Radio className="w-3.5 h-3.5 text-danger animate-ping shrink-0" />
               <span className="font-semibold">Recording speech... Click mic button when finished to transcribe.</span>
             </div>
           )}
           {recordingState === 'transcribing' && (
-            <div className="flex items-center space-x-2 text-xs text-accent-cyan bg-accent-cyan/10 border border-accent-cyan/30 px-3 py-1.5 rounded-xl mb-1.5">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-accent-cyan shrink-0" />
+            <div className="flex items-center space-x-2 text-xs text-tertiary-text bg-tertiary-subtle border border-tertiary-border px-3 py-1.5 rounded-xl mb-1.5">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-tertiary shrink-0" />
               <span>Transcribing audio with Whisper AI...</span>
             </div>
           )}
@@ -831,10 +831,10 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                   : 'State your architectural reasoning (e.g. data structures, algorithms, scaling risks)...'
               }
               rows={2}
-              className={`w-full pl-3.5 pr-24 py-2.5 rounded-2xl bg-surface-card border focus:ring-1 text-white placeholder-slate-500 text-xs sm:text-sm resize-none transition-all shadow-inner ${
+              className={`w-full pl-3.5 pr-24 py-2.5 rounded-2xl bg-surface border text-text-primary placeholder:text-text-muted text-xs sm:text-sm resize-none transition-all shadow-xs ${
                 recordingState === 'listening'
-                  ? 'border-accent-rose/60 focus:border-accent-rose focus:ring-accent-rose'
-                  : 'border-surface-border focus:border-primary-500/80 focus:ring-primary-500'
+                  ? 'border-danger focus:border-danger focus:ring-1 focus:ring-danger'
+                  : 'border-surface-border focus:border-primary focus:ring-1 focus:ring-primary'
               }`}
             />
 
@@ -843,20 +843,20 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                 <button
                   type="button"
                   onClick={toggleMicrophone}
-                  className="p-1.5 bg-accent-rose/20 text-accent-rose border border-accent-rose/40 rounded-lg animate-pulse transition-colors"
+                  className="p-1.5 bg-danger-subtle text-danger border border-danger-border rounded-lg animate-pulse transition-colors"
                   title="Recording active. Click to finish recording."
                 >
-                  <Radio className="w-4 h-4 text-accent-rose" />
+                  <Radio className="w-4 h-4 text-danger" />
                 </button>
               ) : recordingState === 'transcribing' ? (
-                <div className="p-1.5 text-accent-cyan" title="Transcribing voice recording...">
+                <div className="p-1.5 text-tertiary" title="Transcribing voice recording...">
                   <Loader2 className="w-4 h-4 animate-spin" />
                 </div>
               ) : (
                 <button
                   type="button"
                   onClick={toggleMicrophone}
-                  className="p-1.5 text-slate-400 hover:text-white rounded-lg transition-colors"
+                  className="p-1.5 text-text-muted hover:text-text-primary rounded-lg transition-colors"
                   title="Speak answer (Microphone)"
                 >
                   <Mic className="w-4 h-4" />
@@ -865,7 +865,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
               <button
                 type="submit"
                 disabled={!userAnswer.trim() || isStreaming || recordingState !== 'idle'}
-                className="p-2 rounded-xl bg-primary-600 hover:bg-primary-500 disabled:opacity-40 text-white transition-all shadow-md shadow-primary-500/20"
+                className="p-2 rounded-xl bg-primary hover:bg-primary-hover disabled:opacity-40 text-white transition-all shadow-primary"
                 title="Submit Answer"
               >
                 {isStreaming ? (

@@ -60,19 +60,21 @@ export const ProgressView: React.FC = () => {
   }, []);
 
   return (
-    <div className="space-y-6 pb-24">
+    <div className="space-y-6 pb-20 animate-fade-in">
       {/* Top Header & Sub-Navigation */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Competency Progress</h2>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Architectural mastery, Socratic independence trends, and spaced recall
+          <h1 className="text-2xl sm:text-3xl font-black text-text-primary tracking-tight">
+            Competency & Mastery
+          </h1>
+          <p className="text-xs sm:text-sm text-text-secondary mt-0.5">
+            Architectural rubric scores, Socratic independence progression, and spaced recall
           </p>
         </div>
 
         {/* Tab Controls */}
         <div
-          className="flex items-center p-1 rounded-xl bg-surface-card border border-surface-border self-start sm:self-auto"
+          className="flex items-center p-1 rounded-xl bg-surface-subtle border border-surface-border self-start sm:self-auto shadow-2xs"
           role="tablist"
           aria-label="Progress navigation tabs"
         >
@@ -80,45 +82,47 @@ export const ProgressView: React.FC = () => {
             role="tab"
             aria-selected={subTab === 'overview'}
             onClick={() => setSubTab('overview')}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
               subTab === 'overview'
-                ? 'bg-primary-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-surface text-primary shadow-xs border border-surface-border'
+                : 'text-text-secondary hover:text-text-primary'
             }`}
           >
             <div className="flex items-center space-x-1.5">
               <BarChart3 className="w-3.5 h-3.5" />
-              <span>Radar & Trend</span>
+              <span>Skill Radar & Metrics</span>
             </div>
           </button>
+
           <button
             role="tab"
             aria-selected={subTab === 'reviews'}
             onClick={() => setSubTab('reviews')}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
               subTab === 'reviews'
-                ? 'bg-primary-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-surface text-primary shadow-xs border border-surface-border'
+                : 'text-text-secondary hover:text-text-primary'
             }`}
           >
             <div className="flex items-center space-x-1.5">
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reviews</span>
+              <span>Spaced Reviews</span>
             </div>
           </button>
+
           <button
             role="tab"
             aria-selected={subTab === 'history'}
             onClick={() => setSubTab('history')}
-            className={`px-3 py-1 rounded-lg text-xs font-medium transition-all ${
+            className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
               subTab === 'history'
-                ? 'bg-primary-600 text-white shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-surface text-primary shadow-xs border border-surface-border'
+                : 'text-text-secondary hover:text-text-primary'
             }`}
           >
             <div className="flex items-center space-x-1.5">
               <History className="w-3.5 h-3.5" />
-              <span>History</span>
+              <span>Session History</span>
             </div>
           </button>
         </div>
@@ -128,136 +132,140 @@ export const ProgressView: React.FC = () => {
       {subTab === 'overview' && (
         <div className="space-y-6">
           {isLoading ? (
-            <div className="py-16 flex flex-col items-center justify-center space-y-2 text-slate-400">
-              <Loader2 className="w-6 h-6 animate-spin text-primary-500" />
-              <span className="text-xs font-medium">Calculating competency scores...</span>
+            <div className="py-20 flex flex-col items-center justify-center space-y-3 text-text-secondary bg-surface rounded-3xl border border-surface-border shadow-soft">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+              <span className="text-sm font-semibold">Analyzing Socratic Rubric Telemetry...</span>
             </div>
           ) : error ? (
-            <div className="p-5 rounded-2xl bg-accent-rose/10 border border-accent-rose/20 text-accent-rose text-xs space-y-2">
-              <p className="font-semibold">Unable to load progress data.</p>
+            <div className="p-6 rounded-2xl bg-danger-subtle border border-danger-border text-danger-text text-xs space-y-3">
+              <p className="font-bold text-sm">Unable to load progress data.</p>
+              <p>{error}</p>
               <button
                 onClick={fetchOverview}
-                className="px-3 py-1.5 rounded-lg bg-accent-rose/20 hover:bg-accent-rose/30 font-medium transition-colors"
+                className="px-4 py-2 rounded-xl bg-danger text-white font-bold transition-all shadow-xs"
               >
-                Retry
+                Retry Request
               </button>
             </div>
           ) : data ? (
-            <>
+            <div className="space-y-6">
               {/* Overall Readiness & Streak Hero Banner */}
-              <div className="glass-card rounded-2xl p-6 border border-surface-border">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                  <div>
+              <div className="bg-surface rounded-3xl p-6 sm:p-8 border border-surface-border shadow-soft">
+                <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                  <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      <span className="text-xs font-semibold uppercase tracking-wider text-primary-400">
-                        Overall Architecture Readiness
+                      <span className="text-xs font-black uppercase tracking-wider text-primary">
+                        Overall Engineering Readiness
                       </span>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20">
-                        Evaluated Quality
+                      <span className="text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full bg-primary-subtle text-primary-text border border-primary-border">
+                        L5 Senior Evaluated
                       </span>
                     </div>
 
-                    <div className="flex items-baseline space-x-2 mt-1">
-                      <span className="text-4xl font-extrabold text-white">
+                    <div className="flex items-baseline space-x-3">
+                      <span className="text-4xl sm:text-5xl font-black text-text-primary tracking-tight">
                         {data.overallReadiness.toFixed(1)}
                       </span>
-                      <span className="text-sm text-slate-400 font-normal">/ 4.0</span>
+                      <span className="text-base text-text-muted font-normal">/ 4.0</span>
                     </div>
 
-                    {/* Streak Badge */}
-                    <div className="flex items-center space-x-3 text-xs mt-2">
-                      <div className="flex items-center space-x-1 text-accent-amber font-semibold">
-                        <Flame className="w-4 h-4 fill-accent-amber" />
-                        <span>
-                          {data.streakDays} Day{data.streakDays !== 1 ? 's' : ''} Streak
-                        </span>
+                    <div className="flex flex-wrap items-center gap-4 text-xs pt-1">
+                      <div className="flex items-center space-x-1.5 text-primary font-bold">
+                        <Flame className="w-4 h-4 fill-primary text-primary" />
+                        <span>{data.streakDays} Day Practice Streak</span>
                       </div>
-                      <span className="text-slate-600">·</span>
-                      <span className="text-slate-400 font-medium">
-                        {data.completedSessionsCount} Completed Session
-                        {data.completedSessionsCount !== 1 ? 's' : ''}
+                      <span className="text-surface-border">•</span>
+                      <span className="text-text-secondary font-semibold">
+                        {data.completedSessionsCount} Completed Socratic Session{data.completedSessionsCount !== 1 ? 's' : ''}
                       </span>
                     </div>
                   </div>
 
-                  {/* Dual Metric Indicator (Quality vs Independence per D-016) */}
-                  <div className="bg-surface-card px-5 py-3 rounded-xl border border-surface-border flex items-center space-x-5">
-                    <div>
-                      <div className="text-[11px] text-slate-400 font-medium">Quality Score</div>
-                      <div className="text-sm font-bold text-accent-cyan mt-0.5">
-                        {data.avgQuality.toFixed(1)} <span className="text-[10px] text-slate-500 font-normal">/ 4.0</span>
+                  {/* Dual Metric KPI Badges */}
+                  <div className="grid grid-cols-2 gap-4 w-full lg:w-auto">
+                    <div className="p-4 rounded-2xl bg-surface-subtle border border-surface-border">
+                      <div className="text-[11px] font-bold text-text-secondary">Answer Quality</div>
+                      <div className="text-xl sm:text-2xl font-black text-text-primary mt-1">
+                        {data.avgQuality.toFixed(1)} <span className="text-xs text-text-muted font-normal">/ 4.0</span>
                       </div>
-                      <div className="text-[9px] text-slate-500 mt-0.5">Depth & Accuracy</div>
+                      <div className="text-[10px] text-text-muted mt-0.5">Depth, accuracy & trade-offs</div>
                     </div>
-                    <div className="w-px h-10 bg-surface-border" />
-                    <div>
-                      <div className="text-[11px] text-slate-400 font-medium">Independence</div>
-                      <div className="text-sm font-bold text-accent-emerald mt-0.5">
-                        {data.avgIndependence.toFixed(1)} <span className="text-[10px] text-slate-500 font-normal">/ 4.0</span>
+
+                    <div className="p-4 rounded-2xl bg-surface-subtle border border-surface-border">
+                      <div className="text-[11px] font-bold text-text-secondary">Independence</div>
+                      <div className="text-xl sm:text-2xl font-black text-success-text mt-1">
+                        {data.avgIndependence.toFixed(1)} <span className="text-xs text-text-muted font-normal">/ 4.0</span>
                       </div>
-                      <div className="text-[9px] text-slate-500 mt-0.5">Hint Minimization</div>
+                      <div className="text-[10px] text-text-muted mt-0.5">Hint ladder minimization</div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Skill Radar Chart Card */}
-              <div className="glass-card rounded-2xl p-6 border border-surface-border space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Skill Radar (Quality Scores Only)</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Evaluated on factual accuracy, depth, tradeoffs, and edge-case thinking against reference key points.
-                    </p>
-                  </div>
-                  <button
-                    onClick={fetchOverview}
-                    aria-label="Refresh progress metrics"
-                    className="p-1.5 rounded-lg text-slate-400 hover:text-white transition-colors"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-
-                <div className="py-2">
-                  <SkillRadarChart dimensions={data.dimensions} size={300} />
-                </div>
-              </div>
-
-              {/* Independence Trend */}
-              <div className="glass-card rounded-2xl p-5 border border-surface-border">
-                <IndependenceTrend trend={data.independenceTrend} />
-              </div>
-
-              {/* Weak Spots & Coaching Recommendations */}
-              {data.weakSpots && data.weakSpots.length > 0 && (
-                <div className="glass-card rounded-2xl p-5 border border-surface-border space-y-3">
-                  <div className="flex items-center space-x-2 text-accent-amber">
-                    <ShieldAlert className="w-4 h-4" />
-                    <h3 className="text-xs font-semibold uppercase tracking-wider">
-                      Identified Growth Areas
-                    </h3>
+              {/* 2-Column Responsive Dashboard Layout on Desktop */}
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                {/* Left Column (lg:col-span-7): Skill Radar & Breakdown */}
+                <div className="lg:col-span-7 bg-surface rounded-3xl p-6 sm:p-7 border border-surface-border shadow-soft space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-surface-border">
+                    <div>
+                      <h3 className="text-base font-extrabold text-text-primary tracking-tight">
+                        Competency Radar (Quality Scores)
+                      </h3>
+                      <p className="text-xs text-text-secondary mt-0.5">
+                        Factual accuracy, architectural depth, trade-off evaluations, and edge cases.
+                      </p>
+                    </div>
+                    <button
+                      onClick={fetchOverview}
+                      title="Refresh metrics"
+                      className="p-2 rounded-xl text-text-muted hover:text-primary hover:bg-primary-subtle border border-transparent hover:border-primary-border transition-all"
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                    </button>
                   </div>
 
-                  <div className="space-y-2">
-                    {data.weakSpots.map((ws, i) => (
-                      <div
-                        key={`weakspot-${i}`}
-                        className="p-3 rounded-xl bg-surface-card border border-surface-border/80 flex items-start justify-between gap-3"
-                      >
-                        <div className="space-y-0.5">
-                          <span className="text-xs font-semibold text-white">{ws.dimension}</span>
-                          <p className="text-xs text-slate-400">{ws.recommendation}</p>
-                        </div>
-                        <span className="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-accent-amber/10 text-accent-amber border border-accent-amber/20 shrink-0">
-                          {ws.score.toFixed(1)} / 4.0
-                        </span>
+                  {/* Render the redesigned radar chart */}
+                  <SkillRadarChart dimensions={data.dimensions} showBreakdown={true} />
+                </div>
+
+                {/* Right Column (lg:col-span-5): Independence Trend & Growth Areas */}
+                <div className="lg:col-span-5 space-y-6">
+                  {/* Independence Trend */}
+                  <div className="bg-surface rounded-3xl p-6 sm:p-7 border border-surface-border shadow-soft">
+                    <IndependenceTrend trend={data.independenceTrend} />
+                  </div>
+
+                  {/* Identified Growth Areas */}
+                  {data.weakSpots && data.weakSpots.length > 0 && (
+                    <div className="bg-surface rounded-3xl p-6 sm:p-7 border border-surface-border shadow-soft space-y-3">
+                      <div className="flex items-center space-x-2 text-warning-text pb-2 border-b border-surface-border">
+                        <ShieldAlert className="w-4 h-4 text-warning" />
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-text-primary">
+                          Coaching Focus & Growth Areas
+                        </h3>
                       </div>
-                    ))}
-                  </div>
+
+                      <div className="space-y-3">
+                        {data.weakSpots.map((ws, i) => (
+                          <div
+                            key={`weakspot-${i}`}
+                            className="p-4 rounded-xl bg-warning-subtle/50 border border-warning-border/60 flex items-start justify-between gap-3"
+                          >
+                            <div className="space-y-1">
+                              <span className="text-xs font-bold text-text-primary block">{ws.dimension}</span>
+                              <p className="text-xs text-text-secondary leading-relaxed">{ws.recommendation}</p>
+                            </div>
+                            <span className="text-xs font-mono font-bold px-2 py-0.5 rounded-full bg-warning-subtle text-warning-text border border-warning-border shrink-0">
+                              {ws.score.toFixed(1)} / 4.0
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-            </>
+              </div>
+            </div>
           ) : null}
         </div>
       )}

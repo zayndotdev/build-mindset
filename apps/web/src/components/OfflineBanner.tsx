@@ -20,8 +20,8 @@ export const OfflineBanner: React.FC = () => {
   if (!isOffline) return null;
 
   return (
-    <div className="bg-amber-500/10 border-b border-amber-500/30 px-4 py-2 text-center text-xs font-medium text-amber-300 flex items-center justify-center space-x-2">
-      <WifiOff className="w-3.5 h-3.5" />
+    <div className="bg-warning-subtle border-b border-warning-border px-4 py-2.5 text-center text-xs font-semibold text-warning-text flex items-center justify-center space-x-2 shadow-xs">
+      <WifiOff className="w-3.5 h-3.5 text-warning" />
       <span>You are currently offline. Review cards and cached session history remain available.</span>
     </div>
   );
