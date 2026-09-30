@@ -11,6 +11,8 @@ import {
   BookOpen,
   Search,
   ChevronLeft,
+  Mic,
+  MessageSquare,
 } from 'lucide-react';
 import { ActiveSessionView } from './ActiveSessionView';
 
@@ -82,6 +84,7 @@ export const TopicsView: React.FC = () => {
   const [selectedTopic, setSelectedTopic] = useState<TopicCard | null>(null);
   const [sessionLevel, setSessionLevel] = useState<'foundation' | 'working' | 'advanced'>('working');
   const [sessionMode, setSessionMode] = useState<'standard' | 'quick'>('standard');
+  const [sessionModality, setSessionModality] = useState<'voice' | 'text'>('voice');
   const [activeSessionTopic, setActiveSessionTopic] = useState<TopicCard | null>(null);
 
   // Pagination state
@@ -167,6 +170,7 @@ export const TopicsView: React.FC = () => {
         topicTitle={activeSessionTopic.title}
         level={sessionLevel}
         sessionMode={sessionMode}
+        initialModality={sessionModality}
         onExit={() => setActiveSessionTopic(null)}
       />
     );
@@ -590,6 +594,58 @@ export const TopicsView: React.FC = () => {
                         <span>Quick Drill</span>
                       </div>
                       <div className="text-[11px] text-text-muted mt-1">2 steps + mini feedback</div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Conversation Modality Selector (Voice by default) */}
+                <div className="mt-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold uppercase tracking-wider text-text-secondary">
+                      Conversation Modality
+                    </label>
+                    <span className="text-[10px] font-bold text-primary bg-primary-subtle px-2 py-0.5 rounded-full border border-primary-border">
+                      Voice by Default
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSessionModality('voice')}
+                      className={`p-3 rounded-xl text-left border transition-all ${
+                        sessionModality === 'voice'
+                          ? 'bg-primary-subtle border-primary text-primary-text shadow-2xs ring-1 ring-primary/40'
+                          : 'bg-surface-subtle border-surface-border text-text-secondary hover:text-text-primary'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-1.5 font-bold text-xs">
+                        <Mic className="w-3.5 h-3.5 text-primary" />
+                        <span>Voice Mode</span>
+                        <span className="text-[9px] bg-primary text-white px-1.5 py-0.2 rounded-full font-extrabold uppercase">
+                          Active
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-text-muted mt-1 leading-snug">
+                        Hands-free voice dialogue with coach speech & turn detection
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSessionModality('text')}
+                      className={`p-3 rounded-xl text-left border transition-all ${
+                        sessionModality === 'text'
+                          ? 'bg-primary-subtle border-primary text-primary-text shadow-2xs ring-1 ring-primary/40'
+                          : 'bg-surface-subtle border-surface-border text-text-secondary hover:text-text-primary'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-1.5 font-bold text-xs">
+                        <MessageSquare className="w-3.5 h-3.5 text-text-secondary" />
+                        <span>Text Mode</span>
+                      </div>
+                      <div className="text-[11px] text-text-muted mt-1 leading-snug">
+                        Silent reading & typed keyboard responses for quiet spaces
+                      </div>
                     </button>
                   </div>
                 </div>
