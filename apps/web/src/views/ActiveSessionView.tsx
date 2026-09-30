@@ -55,6 +55,8 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   const [hintsRemaining, setHintsRemaining] = useState<number>(2);
   const [messages, setMessages] = useState<MessageItem[]>([]);
   const [userAnswer, setUserAnswer] = useState<string>('');
+  const [liveSpokenText, setLiveSpokenText] = useState<string>('');
+  const liveSpokenTextRef = useRef<string>('');
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [streamingText, setStreamingText] = useState<string>('');
@@ -90,19 +92,28 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
   // Text-to-Speech (TTS) State
   const [ttsState, setTtsState] = useState<'idle' | 'speaking'>('idle');
+  const ttsStateRef = useRef<'idle' | 'speaking'>('idle');
   const [currentlySpeakingId, setCurrentlySpeakingId] = useState<string | null>(null);
 
   const transcriptEndRef = useRef<HTMLDivElement>(null);
 
-  // Keep userAnswerRef in sync
+  // Keep refs in sync
   useEffect(() => {
     userAnswerRef.current = userAnswer;
   }, [userAnswer]);
 
-  // Auto-scroll transcript on new messages or streaming tokens
+  useEffect(() => {
+    liveSpokenTextRef.current = liveSpokenText;
+  }, [liveSpokenText]);
+
+  useEffect(() => {
+    ttsStateRef.current = ttsState;
+  }, [ttsState]);
+
+  // Auto-scroll transcript on new messages, streaming tokens, or live spoken words
   useEffect(() => {
     transcriptEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, streamingText]);
+  }, [messages, streamingText, liveSpokenText]);
 
   // Stop speech synthesis playback
   const stopSpeech = () => {
@@ -112,6 +123,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
       } catch {}
     }
     setTtsState('idle');
+    ttsStateRef.current = 'idle';
     setCurrentlySpeakingId(null);
     if (turnState === 'coach_speaking') {
       setTurnState('idle');
@@ -168,12 +180,20 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
     utterance.onstart = () => {
       setTtsState('speaking');
+      ttsStateRef.current = 'speaking';
       setCurrentlySpeakingId(messageId);
       setTurnState('coach_speaking');
+
+      // Keep speech recognition armed so that if the user starts speaking,
+      // it interrupts the coach immediately (barge-in)
+      if (modalityRef.current === 'voice') {
+        tryStartBargeInRecognition();
+      }
     };
 
     utterance.onend = () => {
       setTtsState('idle');
+      ttsStateRef.current = 'idle';
       setCurrentlySpeakingId(null);
       if (turnState === 'coach_speaking') {
         setTurnState('idle');
@@ -185,6 +205,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
     utterance.onerror = () => {
       setTtsState('idle');
+      ttsStateRef.current = 'idle';
       setCurrentlySpeakingId(null);
       if (turnState === 'coach_speaking') {
         setTurnState('idle');
@@ -231,6 +252,84 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     setTurnState((prev) => (prev === 'user_listening' || prev === 'user_speaking' ? 'idle' : prev));
   };
 
+  // Arm recognition for barge-in while coach is speaking
+  const tryStartBargeInRecognition = () => {
+    if (isListeningRef.current) return;
+    const SpeechRecognition =
+      (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognition) return;
+
+    try {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event: any) => {
+        // User started speaking while coach was speaking -> INSTANT BARGE IN!
+        if (ttsStateRef.current === 'speaking') {
+          stopSpeech();
+        }
+
+        let interim = '';
+        let final = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          if (event.results[i].isFinal) {
+            final += event.results[i][0].transcript + ' ';
+          } else {
+            interim += event.results[i][0].transcript;
+          }
+        }
+        const text = (final + interim).trim();
+        if (text) {
+          setLiveSpokenText(text);
+          liveSpokenTextRef.current = text;
+          setTurnState('user_speaking');
+
+          // Reset silence timer on speech
+          if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current);
+          if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+
+          if (text.length >= 8) {
+            setSilenceCountdown(2);
+            let rem = 2;
+            countdownIntervalRef.current = setInterval(() => {
+              rem -= 1;
+              if (rem > 0) {
+                setSilenceCountdown(rem);
+              } else {
+                setSilenceCountdown(null);
+                if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+              }
+            }, 1000);
+
+            silenceTimerRef.current = setTimeout(() => {
+              if (countdownIntervalRef.current) clearInterval(countdownIntervalRef.current);
+              setSilenceCountdown(null);
+              stopListening();
+              handleSubmitAnswer(undefined, text);
+            }, 2000);
+          }
+        }
+      };
+
+      recognition.onstart = () => {
+        isListeningRef.current = true;
+      };
+
+      recognition.onerror = () => {
+        // Soft error during barge-in listening; ignore
+      };
+
+      recognition.onend = () => {
+        isListeningRef.current = false;
+      };
+
+      recognitionInstanceRef.current = recognition;
+      recognition.start();
+    } catch {}
+  };
+
   // Turn Detection: Start continuous listening with silence VAD
   const startListening = () => {
     if (isListeningRef.current || isStreaming || isCompleted) return;
@@ -257,6 +356,11 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         };
 
         recognition.onresult = (event: any) => {
+          // If coach is speaking and user speaks, barge in immediately!
+          if (ttsStateRef.current === 'speaking') {
+            stopSpeech();
+          }
+
           let currentInterim = '';
           for (let i = event.resultIndex; i < event.results.length; ++i) {
             if (event.results[i].isFinal) {
@@ -268,8 +372,15 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
           const combined = (accumulatedFinal + currentInterim).trim();
           if (combined) {
-            setUserAnswer(combined);
-            userAnswerRef.current = combined;
+            if (modalityRef.current === 'voice') {
+              // IN VOICE MODE: Render spoken words LIVE into the chat thread on the right side!
+              setLiveSpokenText(combined);
+              liveSpokenTextRef.current = combined;
+            } else {
+              setUserAnswer(combined);
+              userAnswerRef.current = combined;
+            }
+
             setOriginalTranscript(combined);
             setVoiceModalityUsed(true);
             setTurnState('user_speaking');
@@ -398,15 +509,16 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
           const data = await res.json();
           if (data.text) {
-            setUserAnswer(data.text);
-            userAnswerRef.current = data.text;
+            if (modalityRef.current === 'voice') {
+              setLiveSpokenText(data.text);
+              liveSpokenTextRef.current = data.text;
+              handleSubmitAnswer(undefined, data.text);
+            } else {
+              setUserAnswer(data.text);
+              userAnswerRef.current = data.text;
+            }
             setOriginalTranscript(data.text);
             setVoiceModalityUsed(true);
-
-            // Auto-submit in voice mode
-            if (modalityRef.current === 'voice') {
-              handleSubmitAnswer(undefined, data.text);
-            }
           }
         } catch (err: any) {
           setErrorMessage(err.message || 'Voice transcription failed');
@@ -426,24 +538,17 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
     }
   };
 
-  // Mic icon click handler: toggle between listening and stopping
-  const toggleMicrophone = () => {
-    if (recordingState === 'listening') {
-      stopListening();
-    } else {
-      startListening();
-    }
-  };
-
   // Modality switcher (Voice Mode vs Text Mode)
   const handleSwitchModality = (targetModality: 'voice' | 'text') => {
     stopSpeech();
     stopListening();
+    setLiveSpokenText('');
+    liveSpokenTextRef.current = '';
     setModality(targetModality);
     modalityRef.current = targetModality;
     if (targetModality === 'voice') {
       setVoiceModalityUsed(true);
-      // If idle and messages exist, coach can listen
+      // If idle and messages exist, coach starts listening
       if (!isStreaming && !isCompleted && messages.length > 0) {
         startListening();
       }
@@ -527,7 +632,14 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
   // Submit Answer via SSE Stream
   const handleSubmitAnswer = async (e?: React.FormEvent, overrideText?: string) => {
     if (e) e.preventDefault();
-    const answerToSubmit = (overrideText !== undefined ? overrideText : userAnswer).trim();
+    const answerToSubmit = (
+      overrideText !== undefined
+        ? overrideText
+        : modalityRef.current === 'voice'
+        ? liveSpokenTextRef.current || liveSpokenText
+        : userAnswer
+    ).trim();
+
     if (!answerToSubmit || isStreaming || !sessionId || isCompleted) return;
 
     // Barge-in: stop any running speech or recording
@@ -540,11 +652,13 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
 
     setUserAnswer('');
     userAnswerRef.current = '';
+    setLiveSpokenText('');
+    liveSpokenTextRef.current = '';
     setOriginalTranscript('');
     setErrorMessage(null);
     setLatestGrade(null);
 
-    // Append user answer immediately to UI transcript
+    // Append user answer immediately to UI transcript on the RIGHT side
     const userMsg: MessageItem = {
       id: `user-${Date.now()}`,
       role: 'user',
@@ -613,7 +727,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                 accumulatedCoachText += parsed.delta || '';
                 setStreamingText(accumulatedCoachText);
               } else if (currentEvent === 'done') {
-                // Finalize coach response in messages
+                // Finalize coach response in messages on the LEFT side
                 const finalContent =
                   accumulatedCoachText ||
                   gradeEventData?.rubric?.suggestedFollowup ||
@@ -643,7 +757,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                     speakText(finalContent, newCoachMsgId);
                   }
                 } else {
-                  // In Voice Mode: coach automatically speaks reply, then activates listening for the next turn!
+                  // In Voice Mode: coach speaks reply out loud, then automatically starts listening!
                   if (modalityRef.current === 'voice') {
                     speakText(finalContent, newCoachMsgId, () => {
                       if (modalityRef.current === 'voice') {
@@ -816,7 +930,7 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                   ? 'bg-primary text-white shadow-xs'
                   : 'text-text-secondary hover:text-text-primary'
               }`}
-              title="Voice Mode: Hands-free spoken conversation with auto-speaking coach"
+              title="Voice Mode: Hands-free spoken conversation"
             >
               <Mic className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Voice</span>
@@ -876,62 +990,6 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         <div className="mb-3 p-3 rounded-xl bg-danger-subtle border border-danger-border text-danger-text text-xs flex items-center space-x-2">
           <AlertCircle className="w-4 h-4 shrink-0" />
           <span>{errorMessage}</span>
-        </div>
-      )}
-
-      {/* Voice Mode Banner: Coach Speaking status */}
-      {modality === 'voice' && ttsState === 'speaking' && (
-        <div className="flex items-center justify-between bg-primary-subtle border border-primary-border text-primary-text px-3.5 py-2 rounded-xl text-xs mb-2.5 shadow-2xs animate-fade-in">
-          <div className="flex items-center space-x-2">
-            <Volume2 className="w-4 h-4 text-primary animate-pulse" />
-            <span className="font-semibold">Coach is speaking out loud...</span>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              stopSpeech();
-              startListening();
-            }}
-            className="px-2.5 py-1 bg-surface rounded-lg border border-primary-border text-[11px] font-bold text-primary hover:bg-primary hover:text-white transition-all shadow-2xs"
-          >
-            Stop & Speak Now
-          </button>
-        </div>
-      )}
-
-      {/* Voice Mode Banner: Listening / Silence Turn Detection */}
-      {modality === 'voice' && recordingState === 'listening' && (
-        <div className="flex items-center justify-between bg-danger-subtle border border-danger-border text-danger-text px-3.5 py-2 rounded-xl text-xs mb-2.5 shadow-2xs animate-fade-in">
-          <div className="flex items-center space-x-2">
-            <Radio className="w-4 h-4 text-danger animate-ping shrink-0" />
-            <span className="font-semibold">
-              {silenceCountdown !== null
-                ? `Silence detected... Auto-submitting in ${silenceCountdown}s`
-                : 'Coach is listening... Speak your answer'}
-            </span>
-          </div>
-          <div className="flex items-center space-x-1.5">
-            {userAnswer.trim().length > 0 && (
-              <button
-                type="button"
-                onClick={() => {
-                  stopListening();
-                  handleSubmitAnswer();
-                }}
-                className="px-2.5 py-1 bg-primary text-white rounded-lg text-[11px] font-bold hover:bg-primary-hover shadow-xs transition-all"
-              >
-                Send Now
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={stopListening}
-              className="px-2 py-1 bg-surface border border-danger-border text-[11px] font-semibold text-danger-text rounded-lg hover:bg-danger-subtle transition-all"
-              title="Pause listening"
-            >
-              <MicOff className="w-3.5 h-3.5" />
-            </button>
-          </div>
         </div>
       )}
 
@@ -1011,7 +1069,46 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
           </div>
         ))}
 
-        {/* Live SSE Streaming Tokens Display */}
+        {/* Live Spoken User Turn (Appears dynamically in the conversation thread on the RIGHT side) */}
+        {modality === 'voice' && (liveSpokenText.trim().length > 0 || recordingState === 'listening') && (
+          <div className="flex flex-col items-end animate-fade-in">
+            <div className="max-w-[88%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed bg-primary text-white rounded-br-sm shadow-soft border border-white/20">
+              <div className="flex items-center justify-between space-x-3 mb-1.5 opacity-85 text-[10px] font-bold uppercase tracking-wider">
+                <span className="flex items-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-white animate-ping" />
+                  <span>You (Speaking...)</span>
+                </span>
+                <span>Step {currentStep}</span>
+              </div>
+              <div className="whitespace-pre-wrap leading-relaxed">
+                {liveSpokenText || (
+                  <span className="italic opacity-80">Listening to your voice... Speak your answer...</span>
+                )}
+                {liveSpokenText && (
+                  <span className="inline-block w-1.5 h-3.5 ml-1 bg-white/80 animate-pulse" />
+                )}
+              </div>
+              {silenceCountdown !== null && (
+                <div className="mt-2.5 pt-2 border-t border-white/20 text-[11px] text-white/90 flex items-center justify-between">
+                  <span className="font-medium">Auto-submitting in {silenceCountdown}s of silence...</span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const text = liveSpokenTextRef.current || liveSpokenText;
+                      stopListening();
+                      handleSubmitAnswer(undefined, text);
+                    }}
+                    className="text-[10px] bg-white text-primary px-2.5 py-0.5 rounded-full font-bold shadow-2xs hover:bg-white/90"
+                  >
+                    Send Now
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Live SSE Streaming Tokens Display (LEFT Side) */}
         {isStreaming && (
           <div className="flex flex-col items-start">
             <div className="max-w-[88%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed bg-surface border border-primary/40 text-text-primary rounded-bl-sm shadow-soft">
@@ -1086,15 +1183,134 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
         </div>
       )}
 
-      {/* Bottom Answer Input Form */}
-      {!isCompleted && (
+      {/* Voice Mode: Dedicated Voice HUD (NO text SMS box) */}
+      {modality === 'voice' && !isCompleted && (
+        <div className="mt-3 bg-surface rounded-2xl p-3.5 border border-surface-border shadow-soft animate-fade-in">
+          <div className="flex items-center justify-between">
+            {/* Left: Turn Status & Visual Feedback */}
+            <div className="flex items-center space-x-3">
+              {ttsState === 'speaking' ? (
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-primary-subtle border border-primary-border flex items-center justify-center text-primary shadow-xs">
+                    <Volume2 className="w-5 h-5 animate-pulse" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-text-primary flex items-center space-x-1.5">
+                      <span>Coach Speaking</span>
+                      <span className="w-2 h-2 rounded-full bg-primary animate-ping" />
+                    </div>
+                    <div className="text-[11px] text-text-muted">Speak or tap below to interrupt</div>
+                  </div>
+                </div>
+              ) : isStreaming ? (
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-primary-subtle border border-primary-border flex items-center justify-center text-primary shadow-xs">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-text-primary">Coach Evaluating...</div>
+                    <div className="text-[11px] text-text-muted">Analyzing architecture trade-offs</div>
+                  </div>
+                </div>
+              ) : recordingState === 'listening' ? (
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-danger-subtle border border-danger-border flex items-center justify-center text-danger shadow-xs animate-pulse">
+                    <Radio className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-danger-text flex items-center space-x-1.5">
+                      <span>{liveSpokenText ? 'Speaking...' : 'Listening...'}</span>
+                      <span className="w-2 h-2 rounded-full bg-danger animate-ping" />
+                    </div>
+                    <div className="text-[11px] text-text-muted">
+                      {silenceCountdown !== null
+                        ? `Auto-submitting in ${silenceCountdown}s...`
+                        : 'Pause 2s to submit, or tap Done Speaking'}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-2.5">
+                  <div className="w-10 h-10 rounded-2xl bg-surface-subtle border border-surface-border flex items-center justify-center text-text-muted">
+                    <MicOff className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-bold text-text-primary">Mic Paused</div>
+                    <div className="text-[11px] text-text-muted">Tap Start Speaking to answer</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right: Interactive Controls */}
+            <div className="flex items-center space-x-2">
+              {ttsState === 'speaking' ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    stopSpeech();
+                    startListening();
+                  }}
+                  className="px-3.5 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold shadow-primary transition-all flex items-center space-x-1.5"
+                >
+                  <Square className="w-3.5 h-3.5 fill-current" />
+                  <span>Interrupt</span>
+                </button>
+              ) : recordingState === 'listening' ? (
+                <>
+                  {liveSpokenText.trim().length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const textToSubmit = liveSpokenTextRef.current || liveSpokenText;
+                        stopListening();
+                        handleSubmitAnswer(undefined, textToSubmit);
+                      }}
+                      className="px-3.5 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold shadow-primary transition-all flex items-center space-x-1.5"
+                    >
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Done Speaking</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={stopListening}
+                    className="p-2 rounded-xl border border-surface-border hover:bg-surface-subtle text-text-secondary transition-all"
+                    title="Pause Microphone"
+                  >
+                    <MicOff className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <button
+                  type="button"
+                  onClick={startListening}
+                  className="px-4 py-2 bg-primary hover:bg-primary-hover text-white rounded-xl text-xs font-bold shadow-primary transition-all flex items-center space-x-1.5"
+                >
+                  <Mic className="w-4 h-4" />
+                  <span>Start Speaking</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={handleSkipStep}
+                disabled={isStreaming}
+                className="p-2 rounded-xl text-text-muted hover:text-warning-text transition-colors"
+                title="Skip Step"
+              >
+                <SkipForward className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Text Mode: Standard Keyboard typing form (Only shown in Text Mode) */}
+      {modality === 'text' && !isCompleted && (
         <form onSubmit={handleSubmitAnswer} className="mt-3">
           <div className="flex items-center justify-between text-[11px] text-text-muted px-1 mb-1">
-            <span>
-              {modality === 'voice'
-                ? '🎙️ Voice conversation active with turn detection & auto-submit'
-                : '💬 Text mode active — Type your response and press Enter'}
-            </span>
+            <span>Type your architectural response and press Enter to send</span>
             <button
               type="button"
               onClick={handleSkipStep}
@@ -1106,19 +1322,10 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
             </button>
           </div>
 
-          {/* Fallback Transcribing indicator */}
-          {recordingState === 'transcribing' && (
-            <div className="flex items-center space-x-2 text-xs text-tertiary-text bg-tertiary-subtle border border-tertiary-border px-3 py-1.5 rounded-xl mb-1.5">
-              <Loader2 className="w-3.5 h-3.5 animate-spin text-tertiary shrink-0" />
-              <span>Transcribing audio with Whisper AI...</span>
-            </div>
-          )}
-
           <div className="relative flex items-center">
             <textarea
               value={userAnswer}
               onChange={(e) => {
-                stopSpeech();
                 setUserAnswer(e.target.value);
                 userAnswerRef.current = e.target.value;
               }}
@@ -1128,53 +1335,16 @@ export const ActiveSessionView: React.FC<ActiveSessionViewProps> = ({
                   handleSubmitAnswer();
                 }
               }}
-              disabled={isStreaming || recordingState === 'transcribing'}
-              placeholder={
-                recordingState === 'listening'
-                  ? 'Listening to speech... Speak your answer...'
-                  : modality === 'voice'
-                  ? 'Click mic to speak, or type your architectural reasoning...'
-                  : 'State your architectural reasoning (e.g. data structures, algorithms, scaling risks)...'
-              }
+              disabled={isStreaming}
+              placeholder="State your architectural reasoning (e.g. data structures, algorithms, scaling risks)..."
               rows={2}
-              className={`w-full pl-3.5 pr-24 py-2.5 rounded-2xl bg-surface border text-text-primary placeholder:text-text-muted text-xs sm:text-sm resize-none transition-all shadow-xs ${
-                recordingState === 'listening'
-                  ? 'border-danger focus:border-danger focus:ring-1 focus:ring-danger'
-                  : 'border-surface-border focus:border-primary focus:ring-1 focus:ring-primary'
-              }`}
+              className="w-full pl-3.5 pr-14 py-2.5 rounded-2xl bg-surface border border-surface-border focus:border-primary focus:ring-1 focus:ring-primary text-text-primary placeholder:text-text-muted text-xs sm:text-sm resize-none transition-all shadow-xs"
             />
 
             <div className="absolute right-2 flex items-center space-x-1">
-              {recordingState === 'listening' ? (
-                <button
-                  type="button"
-                  onClick={toggleMicrophone}
-                  className="p-1.5 bg-danger-subtle text-danger border border-danger-border rounded-lg animate-pulse transition-colors"
-                  title="Recording active. Click to finish listening."
-                >
-                  <Radio className="w-4 h-4 text-danger" />
-                </button>
-              ) : recordingState === 'transcribing' ? (
-                <div className="p-1.5 text-tertiary" title="Transcribing voice recording...">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={toggleMicrophone}
-                  className={`p-1.5 rounded-lg transition-colors ${
-                    modality === 'voice'
-                      ? 'text-primary hover:bg-primary-subtle'
-                      : 'text-text-muted hover:text-text-primary'
-                  }`}
-                  title="Speak answer (Microphone)"
-                >
-                  <Mic className="w-4 h-4" />
-                </button>
-              )}
               <button
                 type="submit"
-                disabled={!userAnswer.trim() || isStreaming || recordingState === 'transcribing'}
+                disabled={!userAnswer.trim() || isStreaming}
                 className="p-2 rounded-xl bg-primary hover:bg-primary-hover disabled:opacity-40 text-white transition-all shadow-primary"
                 title="Submit Answer"
               >
