@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Brain, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
+import { MindsetLogo } from './MindsetLogo';
 import { TabType, NAV_TABS } from './Navigation';
 
 interface HeaderProps {
@@ -41,10 +42,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, onSelectTab }) => {
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
         {/* Brand */}
         <div className="flex items-center space-x-3 shrink-0">
-          <div className="relative flex items-center justify-center w-9 h-9 rounded-xl bg-primary p-0.5 shadow-md shadow-primary/20">
-            <div className="w-full h-full bg-surface rounded-[10px] flex items-center justify-center">
-              <Brain className="w-5 h-5 text-primary" />
-            </div>
+          <div className="flex items-center justify-center shrink-0">
+            <MindsetLogo size={34} className="hover:scale-105 transition-transform cursor-pointer" />
           </div>
           <div>
             <div className="flex items-center space-x-2">

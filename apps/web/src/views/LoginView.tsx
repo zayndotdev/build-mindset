@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { KeyRound, Eye, EyeOff, ShieldCheck, ArrowRight, Loader2, Sparkles } from 'lucide-react';
+import { Eye, EyeOff, ShieldCheck, ArrowRight, Loader2, Sparkles } from 'lucide-react';
+import { MindsetLogo } from '../components/MindsetLogo';
 
 export const LoginView: React.FC = () => {
   const { login, setup, setupRequired } = useAuth();
@@ -43,8 +44,8 @@ export const LoginView: React.FC = () => {
         {/* Card */}
         <div className="bg-surface rounded-2xl p-6 sm:p-8 shadow-card border border-surface-border card-primary-glow">
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-primary-subtle border border-primary-border text-primary mb-3 shadow-xs">
-              <KeyRound className="w-6 h-6" />
+            <div className="flex justify-center mb-4">
+              <MindsetLogo size={54} className="drop-shadow-xs" />
             </div>
             <h1 className="text-xl font-extrabold text-text-primary tracking-tight">
               {setupRequired ? 'First-Run Setup' : 'Welcome Back'}
